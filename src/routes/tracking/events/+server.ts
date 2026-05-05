@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
 import { createTrackingEvent } from '$lib/server/telemetryStore';
 import { rateLimit } from '$lib/server/rateLimit';
+import { isAdminAuthenticatedCached } from '$lib/server/auth';
 
 const MAX_REQUEST_BYTES = 8_192;
 const MAX_PAYLOAD_BYTES = 4_096;
@@ -76,16 +77,23 @@ export const OPTIONS: RequestHandler = (event) => {
 };
 
 export const POST: RequestHandler = async (event) => {
+	if (!(await isAdminAuthenticatedCached(event))) {
+		return new Response(JSON.stringify({ ok: false, message: 'Forbidden.' }), {
+			status: 403,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
+
 	if (!isSameOrigin(event.request, event.url.origin)) {
 		return new Response(JSON.stringify({ ok: false, message: 'Forbidden origin.' }), {
 			status: 403,
-			headers: { 'Content-Type': 'application/json' }
+			headers: { 'Content-Type': 'application/json' },
 		});
 	}
 	if (tooLarge(event.request)) {
 		return new Response(JSON.stringify({ ok: false, message: 'Payload too large.' }), {
 			status: 413,
-			headers: { 'Content-Type': 'application/json' }
+			headers: { 'Content-Type': 'application/json' },
 		});
 	}
 
@@ -93,7 +101,7 @@ export const POST: RequestHandler = async (event) => {
 	if (!(await rateLimit(`tracking-events:${ip}`, { windowMs: 60_000, max: 120 }))) {
 		return new Response(JSON.stringify({ ok: false, message: 'Rate limit exceeded.' }), {
 			status: 429,
-			headers: { 'Content-Type': 'application/json' }
+			headers: { 'Content-Type': 'application/json' },
 		});
 	}
 
@@ -101,7 +109,7 @@ export const POST: RequestHandler = async (event) => {
 	const type = getEventType(data.type);
 	const name = normalizeText(
 		typeof data.event === 'string' ? data.event : data.name,
-		MAX_NAME_LENGTH
+		MAX_NAME_LENGTH,
 	);
 	const pathValue = normalizeText(data.path, MAX_PATH_LENGTH);
 	const referrer = normalizeText(event.request.headers.get('referer'), MAX_REFERRER_LENGTH);
@@ -116,7 +124,7 @@ export const POST: RequestHandler = async (event) => {
 
 	return new Response(JSON.stringify({ ok: true }), {
 		headers: {
-			'Content-Type': 'application/json'
-		}
+			'Content-Type': 'application/json',
+		},
 	});
 };

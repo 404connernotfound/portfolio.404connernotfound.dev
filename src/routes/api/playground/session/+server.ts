@@ -5,7 +5,10 @@ import { rateLimit } from '$lib/server/rateLimit';
 import { isAdminAuthenticatedCached } from '$lib/server/auth';
 import { playgroundConfig } from '$lib/server/playground/config';
 import { createRuntimeSession, terminateSessionWithToken } from '$lib/server/playground/runtime';
-import { ensurePlaygroundWebSocketServer, getPlaygroundWsClientUrl } from '$lib/server/playground/ws';
+import {
+	ensurePlaygroundWebSocketServer,
+	getPlaygroundWsClientUrl,
+} from '$lib/server/playground/ws';
 
 type SessionCreateBody = {
 	playsetId?: number;
@@ -37,13 +40,13 @@ export const POST: RequestHandler = async (event) => {
 	if (!playgroundConfig.enabled) {
 		return json({ ok: false, message: 'Playground is disabled.' }, { status: 503 });
 	}
-	if (playgroundConfig.requireAdmin && !(await isAdminAuthenticatedCached(event))) {
-		return json({ ok: false, message: 'Playground requires admin authentication.' }, { status: 403 });
+	if (!(await isAdminAuthenticatedCached(event))) {
+		return json(
+			{ ok: false, message: 'Playground requires admin authentication.' },
+			{ status: 403 },
+		);
 	}
-	if (
-		playgroundConfig.enforceSameOrigin &&
-		!hasAllowedOrigin(event.request, event.url.origin)
-	) {
+	if (playgroundConfig.enforceSameOrigin && !hasAllowedOrigin(event.request, event.url.origin)) {
 		return json({ ok: false, message: 'Forbidden origin.' }, { status: 403 });
 	}
 
@@ -51,10 +54,13 @@ export const POST: RequestHandler = async (event) => {
 	if (
 		!(await rateLimit(`playground:create:${ip}`, {
 			windowMs: 60_000,
-			max: playgroundConfig.createRateLimitPerMinute
+			max: playgroundConfig.createRateLimitPerMinute,
 		}))
 	) {
-		return json({ ok: false, message: 'Rate limit exceeded. Try again in a minute.' }, { status: 429 });
+		return json(
+			{ ok: false, message: 'Rate limit exceeded. Try again in a minute.' },
+			{ status: 429 },
+		);
 	}
 
 	ensurePlaygroundWebSocketServer();
@@ -63,7 +69,12 @@ export const POST: RequestHandler = async (event) => {
 	const playsetId = Number(body.playsetId ?? 0);
 	const playsetSlug = typeof body.playsetSlug === 'string' ? body.playsetSlug.trim() : '';
 
-	const playset = playsetId > 0 ? await getPlaysetById(playsetId) : playsetSlug ? await getPlaysetBySlug(playsetSlug) : undefined;
+	const playset =
+		playsetId > 0
+			? await getPlaysetById(playsetId)
+			: playsetSlug
+				? await getPlaysetBySlug(playsetSlug)
+				: undefined;
 	if (!playset) {
 		return json({ ok: false, message: 'Playset not found.' }, { status: 404 });
 	}
@@ -75,15 +86,15 @@ export const POST: RequestHandler = async (event) => {
 		const runtimeSession = await createRuntimeSession(
 			playset.id,
 			ip,
-			event.request.headers.get('user-agent')
+			event.request.headers.get('user-agent'),
 		);
 		if (runtimeSession.status !== 'active') {
 			return json(
 				{
 					ok: false,
-					message: runtimeSession.reason ?? 'Unable to activate session.'
+					message: runtimeSession.reason ?? 'Unable to activate session.',
 				},
-				{ status: 503 }
+				{ status: 503 },
 			);
 		}
 
@@ -92,16 +103,16 @@ export const POST: RequestHandler = async (event) => {
 			session: {
 				sessionId: runtimeSession.sessionId,
 				joinToken: runtimeSession.joinToken,
-				status: runtimeSession.status
+				status: runtimeSession.status,
 			},
 			playset: {
 				id: runtimeSession.playset.id,
 				name: runtimeSession.playset.name,
 				slug: runtimeSession.playset.slug,
 				runtime: runtimeSession.playset.runtime,
-				defaultCommand: runtimeSession.playset.defaultCommand
+				defaultCommand: runtimeSession.playset.defaultCommand,
 			},
-			wsUrl: getPlaygroundWsClientUrl(event.url)
+			wsUrl: getPlaygroundWsClientUrl(event.url),
 		});
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unable to create playground session.';
@@ -110,19 +121,22 @@ export const POST: RequestHandler = async (event) => {
 };
 
 export const DELETE: RequestHandler = async (event) => {
-	if (playgroundConfig.requireAdmin && !(await isAdminAuthenticatedCached(event))) {
-		return json({ ok: false, message: 'Playground requires admin authentication.' }, { status: 403 });
+	if (!(await isAdminAuthenticatedCached(event))) {
+		return json(
+			{ ok: false, message: 'Playground requires admin authentication.' },
+			{ status: 403 },
+		);
 	}
-	if (
-		playgroundConfig.enforceSameOrigin &&
-		!hasAllowedOrigin(event.request, event.url.origin)
-	) {
+	if (playgroundConfig.enforceSameOrigin && !hasAllowedOrigin(event.request, event.url.origin)) {
 		return json({ ok: false, message: 'Forbidden origin.' }, { status: 403 });
 	}
 
 	const ip = event.getClientAddress();
 	if (!(await rateLimit(`playground:delete:${ip}`, { windowMs: 60_000, max: 30 }))) {
-		return json({ ok: false, message: 'Rate limit exceeded. Try again in a minute.' }, { status: 429 });
+		return json(
+			{ ok: false, message: 'Rate limit exceeded. Try again in a minute.' },
+			{ status: 429 },
+		);
 	}
 
 	const body = (await parseJson<SessionDeleteBody>(event.request)) ?? {};

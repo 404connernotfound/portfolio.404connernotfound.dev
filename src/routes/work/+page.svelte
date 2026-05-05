@@ -13,7 +13,12 @@
 	$: otherWork = data.workItems.filter((item) => item.featured !== 1);
 
 	const parseHighlights = (value: string | null) =>
-		value ? value.split('\n').map((line) => line.trim()).filter(Boolean) : [];
+		value
+			? value
+					.split('\n')
+					.map((line) => line.trim())
+					.filter(Boolean)
+			: [];
 </script>
 
 <SeoHead title={formatTitle('Work')} description={data.siteSettings.workIntro} />
@@ -43,7 +48,10 @@
 			<div class="mt-8 space-y-6">
 				{#each featuredWork as project, index}
 					{@const highlightItems = parseHighlights(project.highlights)}
-					<MotionReveal delay={0.08 * index} className="card grid gap-6 lg:grid-cols-[0.55fr_0.45fr]">
+					<MotionReveal
+						delay={0.08 * index}
+						className="card grid gap-6 lg:grid-cols-[0.55fr_0.45fr]"
+					>
 						<div class="space-y-4">
 							<div class="flex flex-wrap gap-2">
 								<span class="badge">Featured</span>
@@ -89,7 +97,7 @@
 									loading="lazy"
 								/>
 							{:else}
-								Preview
+								Repository
 							{/if}
 						</div>
 					</MotionReveal>
@@ -114,7 +122,7 @@
 									loading="lazy"
 								/>
 							{:else}
-								Preview
+								Repository
 							{/if}
 						</div>
 						<div class="flex flex-wrap gap-2">

@@ -18,18 +18,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			'/about',
 			'/work',
 			'/resume',
-			'/blog',
 			'/contact',
 			'/privacy-policy',
 			'/cookie-policy',
-			'/testimonials',
-			'/create-testimonials',
-			'/subscribe',
-			'/assets',
-			'/playground',
-			'/journey',
-			'/collaborate',
-			'/vision'
 		];
 		const staticUrls = staticPaths.map((path) => buildUrlEntry(`${origin}${path}`, now));
 
@@ -46,7 +37,7 @@ ${[...staticUrls, ...postUrls].join('')}
 
 	return new Response(body, {
 		headers: {
-			'Content-Type': 'application/xml'
-		}
+			'Content-Type': 'application/xml',
+		},
 	});
 };

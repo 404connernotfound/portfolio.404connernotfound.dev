@@ -3,13 +3,9 @@
 	export let githubUrl: string;
 
 	const links = [
-		{ label: 'Home', href: '/' },
-		{ label: 'About', href: '/about' },
 		{ label: 'Work', href: '/work' },
 		{ label: 'Resume', href: '/resume' },
-		{ label: 'Blog', href: '/blog' },
-		{ label: 'Playground', href: '/playground' },
-		{ label: 'Contact', href: '/contact' }
+		{ label: 'Contact', href: '/contact' },
 	];
 
 	const isActive = (href: string) => {
@@ -20,7 +16,9 @@
 </script>
 
 <header class="relative z-20 px-6 pb-4 pt-8 sm:px-10 lg:px-16">
-	<div class="site-nav-shell flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/10 p-6 shadow-soft backdrop-blur-lg md:flex-row md:items-center md:justify-between">
+	<div
+		class="site-nav-shell flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/10 p-6 shadow-soft backdrop-blur-lg md:flex-row md:items-center md:justify-between"
+	>
 		<a href="/" class="text-xl font-semibold uppercase tracking-[0.18em] text-white">
 			404connernotfound
 		</a>
@@ -40,7 +38,6 @@
 			{/each}
 		</nav>
 		<div class="flex flex-wrap gap-3">
-			<a class="nav-pill" href="/contact">Say Hi</a>
 			<a
 				class="nav-pill border-ink-100/70 bg-ink-900 text-white hover:border-ink-100"
 				href={githubUrl}

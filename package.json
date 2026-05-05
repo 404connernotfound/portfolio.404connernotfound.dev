@@ -56,5 +56,15 @@
 		"redis": "^5.8.2",
 		"svelte-motion": "^0.12.2",
 		"ws": "^8.19.0"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"better-sqlite3",
+			"esbuild"
+		],
+		"ignoredBuiltDependencies": [
+			"@parcel/watcher",
+			"svelte-preprocess"
+		]
 	}
 }

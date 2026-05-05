@@ -5,14 +5,14 @@
 	export let title: string;
 	export let description: string;
 	export let type: 'website' | 'article' = 'website';
-	export let image = '/og-default.jpg';
+	export let image = '';
 	export let imageAlt = `${siteName} preview`;
 	export let noindex = false;
-	export let structuredData: Record<string, unknown> | Record<string, unknown>[] | null = null;
 
 	$: canonical = `${$page.url.origin}${$page.url.pathname}`;
-	$: imageUrl = new URL(image || '/og-default.jpg', $page.url.origin).toString();
-	$: robots = noindex ? 'noindex, nofollow' : 'index, follow';
+	$: imageUrl = image ? new URL(image, $page.url.origin).toString() : '';
+	$: robots =
+		noindex || $page.url.pathname.startsWith('/admin') ? 'noindex, nofollow' : 'index, follow';
 	$: twitterCard = image ? 'summary_large_image' : 'summary';
 </script>
 
@@ -27,17 +27,17 @@
 	<meta property="og:type" content={type} />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:site_name" content={siteName} />
-	<meta property="og:image" content={imageUrl} />
-	<meta property="og:image:alt" content={imageAlt} />
+	{#if imageUrl}
+		<meta property="og:image" content={imageUrl} />
+		<meta property="og:image:alt" content={imageAlt} />
+	{/if}
 	<meta property="og:locale" content="en_US" />
 
 	<meta name="twitter:card" content={twitterCard} />
 	<meta name="twitter:title" content={title} />
 	<meta name="twitter:description" content={description} />
-	<meta name="twitter:image" content={imageUrl} />
-	<meta name="twitter:image:alt" content={imageAlt} />
-
-	{#if structuredData}
-		<script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+	{#if imageUrl}
+		<meta name="twitter:image" content={imageUrl} />
+		<meta name="twitter:image:alt" content={imageAlt} />
 	{/if}
 </svelte:head>

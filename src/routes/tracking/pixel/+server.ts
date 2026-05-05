@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
 import { createTrackingEvent } from '$lib/server/telemetryStore';
 import { rateLimit } from '$lib/server/rateLimit';
+import { isAdminAuthenticatedCached } from '$lib/server/auth';
 
 const PIXEL_BASE64 = 'R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 const MAX_NAME_LENGTH = 160;
@@ -40,6 +41,10 @@ const isSameSitePixel = (event: Parameters<RequestHandler>[0]) => {
 };
 
 export const GET: RequestHandler = async (event) => {
+	if (!(await isAdminAuthenticatedCached(event))) {
+		return new Response('Forbidden', { status: 403 });
+	}
+
 	if (!isSameSitePixel(event)) {
 		return new Response('Forbidden', { status: 403 });
 	}
@@ -52,11 +57,11 @@ export const GET: RequestHandler = async (event) => {
 	const url = event.url;
 	const name = normalizeText(
 		url.searchParams.get('event') ?? url.searchParams.get('name'),
-		MAX_NAME_LENGTH
+		MAX_NAME_LENGTH,
 	);
 	const pathValue = normalizeText(
 		url.searchParams.get('path') ?? url.searchParams.get('page'),
-		MAX_PATH_LENGTH
+		MAX_PATH_LENGTH,
 	);
 	const referrer = normalizeText(event.request.headers.get('referer'), MAX_REFERRER_LENGTH);
 	const userAgent = normalizeText(event.request.headers.get('user-agent'), MAX_UA_LENGTH);
@@ -64,15 +69,7 @@ export const GET: RequestHandler = async (event) => {
 	const safeIp = normalizeText(ip, 80);
 
 	try {
-		await createTrackingEvent(
-			'pixel',
-			name,
-			pathValue,
-			referrer,
-			userAgent,
-			safeIp,
-			payload
-		);
+		await createTrackingEvent('pixel', name, pathValue, referrer, userAgent, safeIp, payload);
 	} catch {
 		// Ignore tracking failures.
 	}
@@ -83,7 +80,7 @@ export const GET: RequestHandler = async (event) => {
 			'Content-Type': 'image/gif',
 			'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
 			Pragma: 'no-cache',
-			Expires: '0'
-		}
+			Expires: '0',
+		},
 	});
 };

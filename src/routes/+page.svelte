@@ -8,7 +8,7 @@
 	export let data: PageData;
 
 	let heroRef: HTMLElement;
-	const defaultOgImage = '/og-default.jpg';
+	const defaultOgImage = '';
 
 	const parseHighlights = (value: string | null) =>
 		value
@@ -49,7 +49,7 @@
 						y: 24,
 						duration: 0.9,
 						ease: 'power3.out',
-						stagger: 0.12
+						stagger: 0.12,
 					});
 				}
 
@@ -61,7 +61,7 @@
 						duration: 0.8,
 						ease: 'power3.out',
 						stagger: 0.1,
-						delay: 0.2
+						delay: 0.2,
 					});
 				}
 
@@ -73,14 +73,14 @@
 						scale: 0.98,
 						duration: 1,
 						ease: 'power3.out',
-						delay: 0.18
+						delay: 0.18,
 					});
 					gsap.to(heroPanel, {
 						y: -10,
 						duration: 3.3,
 						repeat: -1,
 						yoyo: true,
-						ease: 'sine.inOut'
+						ease: 'sine.inOut',
 					});
 				}
 			}, heroRef);
@@ -109,8 +109,10 @@
 			</h1>
 			<p class="max-w-xl text-lg text-ink-200" data-hero>{data.siteSettings.heroSubheadline}</p>
 			<div class="flex flex-wrap gap-4" data-hero>
-				<a class="nav-pill cta-primary border-ink-100 bg-ink-900 text-white" href="/work">View the work</a>
-				<a class="nav-pill" href="/contact">Start a project</a>
+				<a class="nav-pill cta-primary border-ink-100 bg-ink-900 text-white" href="/work"
+					>View systems work</a
+				>
+				<a class="nav-pill" href="/resume">Resume</a>
 			</div>
 			{#if data.stackItems.length}
 				<div class="flex flex-wrap gap-2" data-hero>
@@ -164,9 +166,7 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="card text-sm text-ink-200">
-				Stack updates are in progress. Check back soon.
-			</div>
+			<div class="card text-sm text-ink-200">Stack updates are in progress. Check back soon.</div>
 		{/if}
 	</div>
 </section>
@@ -194,7 +194,7 @@
 									loading="lazy"
 								/>
 							{:else}
-								Preview
+								Repository
 							{/if}
 						</div>
 						<div class="flex flex-wrap gap-2">

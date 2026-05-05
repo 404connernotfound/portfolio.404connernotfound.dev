@@ -1,3 +1,3 @@
-export const siteName = '404connernotfound';
+export const siteName = 'Conner - Low-Level Systems Engineer';
 
-export const formatTitle = (pageTitle: string) => `${siteName} | ${pageTitle}`;
+export const formatTitle = (pageTitle: string) => `${pageTitle} | ${siteName}`;

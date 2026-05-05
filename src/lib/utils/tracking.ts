@@ -10,12 +10,13 @@ export type TrackingPayload = {
 const sendPayload = (payload: TrackingPayload) => {
 	if (dev) return;
 	if (typeof window === 'undefined') return;
+	if (!window.location.pathname.startsWith('/admin')) return;
 
 	const body = JSON.stringify({
 		type: payload.type ?? 'event',
 		name: payload.name ?? null,
 		path: payload.path ?? null,
-		...(payload.data ?? {})
+		...(payload.data ?? {}),
 	});
 
 	if (navigator.sendBeacon) {
@@ -28,7 +29,7 @@ const sendPayload = (payload: TrackingPayload) => {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body,
-		keepalive: true
+		keepalive: true,
 	}).catch(() => undefined);
 };
 
@@ -41,6 +42,6 @@ export const trackPageview = (path?: string) => {
 	sendPayload({
 		type: 'pageview',
 		name: document.title || 'pageview',
-		path: pagePath
+		path: pagePath,
 	});
 };

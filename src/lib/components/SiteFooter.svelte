@@ -27,7 +27,7 @@
 			.filter((section) => groups.has(section))
 			.map((section) => ({
 				title: section,
-				links: groups.get(section) ?? []
+				links: groups.get(section) ?? [],
 			}));
 
 		for (const [section, links] of groups.entries()) {
@@ -43,13 +43,13 @@
 <footer class="section-pad relative z-10">
 	<div class="glass grid gap-10 p-10 md:grid-cols-[1.4fr_1fr_1fr]">
 		<div class="space-y-4">
-			<p class="badge">{footerBadge || '404connernotfound'}</p>
+			<p class="badge">{footerBadge || 'Conner'}</p>
 			<h2 class="text-3xl font-semibold text-white">
-				{footerHeadline || 'Building loud, expressive web experiences.'}
+				{footerHeadline || 'Low-level systems engineer building hardware-specific software.'}
 			</h2>
 			<p class="text-base text-ink-200">
 				{footerBody ||
-					'Personal portfolio, experiments, and shipping logs. Content updates as the archive grows.'}
+					'Rust-heavy systems, embedded-adjacent tooling, filesystem indexing, and network appliance work by Conner.'}
 			</p>
 			{#if footerCtaLabel && footerCtaHref}
 				<a class="link-underline" href={footerCtaHref}>{footerCtaLabel}</a>
@@ -76,8 +76,10 @@
 			</div>
 		{/each}
 	</div>
-	<div class="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs uppercase tracking-[0.2em] text-ink-300">
-		<span>© {currentYear} 404connernotfound</span>
-		<span>Built with SvelteKit + GSAP + svelte-motion</span>
+	<div
+		class="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs uppercase tracking-[0.2em] text-ink-300"
+	>
+		<span>© {currentYear} Conner</span>
+		<span>Rust / systems / embedded fit</span>
 	</div>
 </footer>

@@ -192,6 +192,165 @@ type PlaygroundOperationalCounts = {
 };
 
 const DEFAULT_DB_PATH = 'data/portfolio.sqlite';
+const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
+	heroHeadline:
+		'Conner - low-level systems engineer building embedded and hardware-specific software.',
+	heroSubheadline:
+		'I build Rust-heavy systems, filesystem tools, network appliances, language runtimes, and niche programs close to the machine.',
+	heroNoteTitle: 'Best fit',
+	heroNoteBody: 'Embedded systems, hardware-adjacent tooling, and low-level Rust work.',
+	heroHighlightsTitle: 'Proof',
+	heroHighlightsBody:
+		'TinyOne, Unum.rs, PiFi2, and Winux PTree show language, ML runtime, network appliance, and filesystem indexing work.',
+	aboutHeadline: 'I build low-level systems that turn constraints into working tools.',
+	aboutBody:
+		'My work sits close to hardware and OS boundaries: Rust programs, embedded-adjacent networking tools, filesystem indexers, language runtimes, and specialized software where correctness and practical constraints matter.',
+	focusHeadline: 'Low-level systems, embedded fit',
+	focusBody:
+		'I am strongest when the problem involves hardware constraints, networking, filesystems, runtimes, or niche tooling that needs careful engineering instead of broad product glue.',
+	stackTitle: 'Systems stack',
+	stackIntro: 'Tools and domains I use for Rust-heavy, hardware-aware programs.',
+	workTitle: 'Selected systems work',
+	workIntro:
+		'Rust, networking, language runtime, ML engine, and filesystem indexing projects that show how I build close to the machine.',
+	blogTitle: 'Notes',
+	blogIntro: 'Build logs, motion experiments, and deep dives.',
+	contactTitle: 'Let’s connect.',
+	contactBody: 'Want to collaborate or just say hello? Drop a note and I’ll get back to you.',
+	contactEmail: 'contact@404connernotfound.dev',
+	githubUrl: 'https://github.com/ConnerAdamsMaine',
+	footerBadge: 'Conner',
+	footerHeadline: 'Low-level systems engineer building hardware-specific software.',
+	footerBody:
+		'Rust-heavy systems, embedded-adjacent tooling, filesystem indexing, and network appliance work by Conner.',
+	footerCtaLabel: 'Say hello',
+	footerCtaHref: '/contact',
+	maintenanceEnabled: 0,
+	maintenanceTitle: 'Maintenance in progress',
+	maintenanceBody: 'We are tuning things up. Please check back soon.',
+	error403Title: 'Access denied',
+	error403Body: 'You do not have permission to view this page.',
+	error404Title: 'Page not found',
+	error404Body: 'We could not find the page you were looking for.',
+	error500Title: 'Something went wrong',
+	error500Body: 'An unexpected error occurred. Please try again shortly.',
+};
+
+const DEFAULT_FOOTER_LINKS: Omit<FooterLink, 'id'>[] = [
+	{ section: 'Pages', label: 'Home', href: '/', external: 0, sort: 1 },
+	{ section: 'Pages', label: 'About', href: '/about', external: 0, sort: 2 },
+	{ section: 'Pages', label: 'Work', href: '/work', external: 0, sort: 3 },
+	{ section: 'Pages', label: 'Resume', href: '/resume', external: 0, sort: 4 },
+	{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 5 },
+	{
+		section: 'Links',
+		label: 'GitHub',
+		href: 'https://github.com/ConnerAdamsMaine',
+		external: 1,
+		sort: 1,
+	},
+	{ section: 'Links', label: 'Resume', href: '/resume', external: 0, sort: 2 },
+	{
+		section: 'Links',
+		label: 'Email',
+		href: 'mailto:contact@404connernotfound.dev',
+		external: 0,
+		sort: 3,
+	},
+];
+
+const DEFAULT_STACK_ITEMS: Omit<StackItem, 'id'>[] = [
+	{
+		label: 'Rust systems',
+		detail: 'Language runtimes, filesystem indexers, CLIs, daemons, and low-level tooling.',
+		category: 'Core',
+		sort: 10,
+	},
+	{
+		label: 'Embedded fit',
+		detail:
+			'Hardware-specific applications, Raspberry Pi networking, and constrained environments.',
+		category: 'Hardware',
+		sort: 20,
+	},
+	{
+		label: 'Networking',
+		detail: 'AP/router/modem/switch workflows, firewall configuration, and appliance behavior.',
+		category: 'Infrastructure',
+		sort: 30,
+	},
+	{
+		label: 'Filesystems and runtimes',
+		detail:
+			'Index lookup paths, background services, language implementation, and execution engines.',
+		category: 'Systems',
+		sort: 40,
+	},
+];
+
+const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
+	{
+		title: 'TinyOne',
+		description: 'A tiny Turing-complete language written in Rust.',
+		longDescription:
+			'TinyOne is a compact language implementation focused on proving out a small Turing-complete runtime in Rust. It shows language design, parser/runtime work, and the ability to reduce a computing model to something understandable and executable.',
+		highlights:
+			'Turing-complete language implementation\nWritten in Rust with a small runtime surface\nProof of language and systems fundamentals',
+		role: 'Language runtime',
+		tech: 'Rust',
+		link: 'https://github.com/ConnerAdamsMaine/TinyOne',
+		imagePath: null,
+		imageAlt: null,
+		featured: 1,
+		sort: 10,
+	},
+	{
+		title: 'Unum.rs',
+		description: 'A partially complete LLM training and inferencing engine.',
+		longDescription:
+			'Unum.rs is an in-progress Rust engine for LLM training and inference. The repository keeps its known design and implementation issues in problems.md, making the current state explicit instead of hiding incomplete work.',
+		highlights:
+			'Rust-based ML systems work\nTraining and inference engine architecture\nKnown problems tracked directly in the repository',
+		role: 'ML systems',
+		tech: 'Rust, LLMs',
+		link: 'https://github.com/ConnerAdamsMaine/Unum.rs',
+		imagePath: null,
+		imageAlt: null,
+		featured: 1,
+		sort: 20,
+	},
+	{
+		title: 'PiFi2',
+		description: 'A Raspberry Pi networking program for AP, router, modem, and switch workflows.',
+		longDescription:
+			'PiFi2 is designed to turn a Raspberry Pi into a configurable network appliance with access point, router, modem, or switch behavior plus smart switching, quality-of-life controls, and firewall configuration.',
+		highlights:
+			'Targets Raspberry Pi hardware\nAP, router, modem, and switch use cases\nSmart switching, QoL, and firewall configuration',
+		role: 'Network appliance',
+		tech: 'Raspberry Pi, networking',
+		link: 'https://github.com/ConnerAdamsMaine/PiFi2',
+		imagePath: null,
+		imageAlt: null,
+		featured: 1,
+		sort: 30,
+	},
+	{
+		title: 'Winux PTree',
+		description:
+			'A Rust-based filesystem indexer with CLI lookups and a daemon for background indexing.',
+		longDescription:
+			'PTree is a Rust filesystem indexing system for Winux with command-line lookup integrations and a background daemon that keeps index data available for fast traversal and search workflows.',
+		highlights:
+			'Rust filesystem indexing\nCLI integration for index lookups\nBackground daemon for ongoing indexing',
+		role: 'Filesystem tooling',
+		tech: 'Rust, CLI, daemon',
+		link: 'https://github.com/Winux-Core/Winux-PTree',
+		imagePath: null,
+		imageAlt: null,
+		featured: 1,
+		sort: 40,
+	},
+];
 let db: Database.Database | null = null;
 let dbInitialized = false;
 const CACHE_TTL_MS = 10_000;
@@ -210,7 +369,7 @@ const cache = {
 	assets: null as CacheEntry<Asset[]> | null,
 	testimonials: null as CacheEntry<Testimonial[]> | null,
 	footerLinks: null as CacheEntry<FooterLink[]> | null,
-	playsets: null as CacheEntry<Playset[]> | null
+	playsets: null as CacheEntry<Playset[]> | null,
 };
 
 const getCached = <T>(entry: CacheEntry<T> | null) => {
@@ -219,8 +378,9 @@ const getCached = <T>(entry: CacheEntry<T> | null) => {
 	return entry.data;
 };
 
-type CacheData<K extends keyof typeof cache> =
-	(typeof cache)[K] extends CacheEntry<infer T> | null ? T : never;
+type CacheData<K extends keyof typeof cache> = (typeof cache)[K] extends CacheEntry<infer T> | null
+	? T
+	: never;
 
 const setCache = <K extends keyof typeof cache>(key: K, data: CacheData<K>) => {
 	cache[key] = { data, fetchedAt: Date.now() } as (typeof cache)[K];
@@ -239,9 +399,7 @@ const ensureDbPath = (dbPath: string) => {
 	}
 };
 
-const shouldAutoSeed = runtimeEnv.DB_AUTO_SEED
-	? runtimeEnv.DB_AUTO_SEED === 'true'
-	: isDev;
+const shouldAutoSeed = runtimeEnv.DB_AUTO_SEED ? runtimeEnv.DB_AUTO_SEED === 'true' : isDev;
 
 const resolveDbPath = (dbPath: string) =>
 	path.isAbsolute(dbPath) ? dbPath : path.resolve(process.cwd(), dbPath);
@@ -516,9 +674,9 @@ const ensureWorkItemsColumns = (database: Database.Database) => {
 };
 
 const ensurePostsColumns = (database: Database.Database) => {
-	const columns = (
-		database.prepare('PRAGMA table_info(posts)').all() as { name: string }[]
-	).map((column) => column.name);
+	const columns = (database.prepare('PRAGMA table_info(posts)').all() as { name: string }[]).map(
+		(column) => column.name,
+	);
 
 	if (!columns.includes('draft')) {
 		database.exec('ALTER TABLE posts ADD COLUMN draft INTEGER NOT NULL DEFAULT 0');
@@ -695,9 +853,9 @@ const ensurePlaysetColumnsCompatibility = (database: Database.Database) => {
 		.all() as { name: string }[];
 	if (tables.length === 0) return;
 
-	const columns = (
-		database.prepare('PRAGMA table_info(playsets)').all() as { name: string }[]
-	).map((column) => column.name);
+	const columns = (database.prepare('PRAGMA table_info(playsets)').all() as { name: string }[]).map(
+		(column) => column.name,
+	);
 
 	const ensureColumn = (name: string, definition: string) => {
 		if (!columns.includes(name)) {
@@ -756,7 +914,7 @@ const ensurePlaysetColumnsCompatibility = (database: Database.Database) => {
 					WHEN verify_status IS NULL OR verify_status = '' THEN 'pending'
 					ELSE verify_status
 				END
-		`
+		`,
 		)
 		.run();
 };
@@ -818,46 +976,11 @@ const seedDefaults = (database: Database.Database) => {
 				@maintenanceEnabled, @maintenanceTitle, @maintenanceBody, @error403Title, @error403Body, @error404Title, @error404Body, @error500Title, @error500Body,
 				@updatedAt
 			)
-		`
+		`,
 		)
 		.run({
-			heroHeadline:
-				'404ConnerNotFound - Building immersive applications across web, desktop, embedding, and networks.',
-			heroSubheadline: 'Proficiency over promises.',
-			heroNoteTitle: 'In the lab',
-			heroNoteBody: 'Payload CMS, media pipelines, and richer case studies.',
-			heroHighlightsTitle: 'Highlights',
-			heroHighlightsBody: 'Latest focus, experiments, and releases.',
-			aboutHeadline: 'I build shit to prove others wrong.',
-			aboutBody: 'This site is my live workspace. I iterate, interoperate, and dedicate for the sake of advancements.',
-			focusHeadline: 'I build, I break, I fix',
-			focusBody:
-				'Like I came, I saw, I conquered but I made, I tried, and I failed... then I succeeded.',
-			stackTitle: 'My stack',
-			stackIntro: 'The tools I reach for when shipping immersive, reliable work.',
-			workTitle: 'My work',
-			workIntro: 'Selected projects, prototypes, and experiments.',
-			blogTitle: 'Notes',
-			blogIntro: 'Build logs, motion experiments, and deep dives.',
-			contactTitle: 'Let’s connect.',
-			contactBody: 'Want to collaborate or just say hello? Drop a note and I’ll get back to you.',
-			contactEmail: 'contact@404connernotfound.dev',
-			githubUrl: 'https://github.com/ConnerAdamsMaine',
-			footerBadge: '404connernotfound',
-			footerHeadline: 'Building loud, expressive web experiences.',
-			footerBody: 'Personal portfolio, experiments, and shipping logs. Content updates as the archive grows.',
-			footerCtaLabel: 'Say hello',
-			footerCtaHref: '/contact',
-			maintenanceEnabled: 0,
-			maintenanceTitle: 'Maintenance in progress',
-			maintenanceBody: 'We are tuning things up. Please check back soon.',
-			error403Title: 'Access denied',
-			error403Body: 'You do not have permission to view this page.',
-			error404Title: 'Page not found',
-			error404Body: 'We could not find the page you were looking for.',
-			error500Title: 'Something went wrong',
-			error500Body: 'An unexpected error occurred. Please try again shortly.',
-			updatedAt: now
+			...DEFAULT_SITE_SETTINGS,
+			updatedAt: now,
 		});
 };
 
@@ -870,25 +993,63 @@ const seedFooterLinks = (database: Database.Database) => {
 		return;
 	}
 
-	const rows = [
-		{ section: 'Pages', label: 'Home', href: '/', external: 0, sort: 1 },
-		{ section: 'Pages', label: 'About', href: '/about', external: 0, sort: 2 },
-		{ section: 'Pages', label: 'Work', href: '/work', external: 0, sort: 3 },
-		{ section: 'Pages', label: 'Blog', href: '/blog', external: 0, sort: 4 },
-		{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 5 },
-		{ section: 'Links', label: 'About', href: '/about', external: 0, sort: 1 },
-		{ section: 'Links', label: 'Work', href: '/work', external: 0, sort: 2 },
-		{ section: 'Links', label: 'GitHub', href: 'https://github.com/ConnerAdamsMaine', external: 1, sort: 3 },
-		{ section: 'Links', label: 'Discord', href: '', external: 1, sort: 4 },
-		{ section: 'Links', label: 'YouTube', href: '', external: 1, sort: 5 }
-	];
-
 	const insert = database.prepare(
-		'INSERT INTO footer_links (section, label, href, external, sort) VALUES (?, ?, ?, ?, ?)'
+		'INSERT INTO footer_links (section, label, href, external, sort) VALUES (?, ?, ?, ?, ?)',
 	);
 
-	for (const row of rows) {
+	for (const row of DEFAULT_FOOTER_LINKS) {
 		insert.run(row.section, row.label, row.href, row.external, row.sort);
+	}
+};
+
+const seedStackItems = (database: Database.Database) => {
+	const existing = database.prepare('SELECT COUNT(*) as count FROM stack_items').get() as {
+		count: number;
+	};
+
+	if (existing.count > 0) {
+		return;
+	}
+
+	const insert = database.prepare(
+		'INSERT INTO stack_items (label, detail, category, sort) VALUES (?, ?, ?, ?)',
+	);
+
+	for (const row of DEFAULT_STACK_ITEMS) {
+		insert.run(row.label, row.detail, row.category, row.sort);
+	}
+};
+
+const seedWorkItems = (database: Database.Database) => {
+	const existing = database.prepare('SELECT COUNT(*) as count FROM work_items').get() as {
+		count: number;
+	};
+
+	if (existing.count > 0) {
+		return;
+	}
+
+	const insert = database.prepare(
+		`INSERT INTO work_items (
+			title, description, long_description, highlights, role, tech, link,
+			image_path, image_alt, featured, sort
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	);
+
+	for (const row of DEFAULT_WORK_ITEMS) {
+		insert.run(
+			row.title,
+			row.description,
+			row.longDescription,
+			row.highlights,
+			row.role,
+			row.tech,
+			row.link,
+			row.imagePath,
+			row.imageAlt,
+			row.featured,
+			row.sort,
+		);
 	}
 };
 
@@ -915,7 +1076,7 @@ const seedPlaysets = (database: Database.Database) => {
 			defaultCommand: 'node -v',
 			enabled: 1,
 			maxSessions: 6,
-			idleTimeoutSeconds: 900
+			idleTimeoutSeconds: 900,
 		},
 		{
 			name: 'Python Shell',
@@ -927,7 +1088,7 @@ const seedPlaysets = (database: Database.Database) => {
 			defaultCommand: 'python --version',
 			enabled: 1,
 			maxSessions: 6,
-			idleTimeoutSeconds: 900
+			idleTimeoutSeconds: 900,
 		},
 		{
 			name: 'Rust Shell',
@@ -939,8 +1100,8 @@ const seedPlaysets = (database: Database.Database) => {
 			defaultCommand: 'rustc --version',
 			enabled: 1,
 			maxSessions: 4,
-			idleTimeoutSeconds: 1200
-		}
+			idleTimeoutSeconds: 1200,
+		},
 	];
 
 	const insert = database.prepare(
@@ -948,7 +1109,7 @@ const seedPlaysets = (database: Database.Database) => {
 			name, slug, runtime, description, docker_image, start_command, default_command,
 			artifact_type, artifact_path, extracted_path, compose_path, verify_status, verify_log, last_verified_at,
 			enabled, max_sessions, idle_timeout_seconds, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	);
 
 	for (const row of rows) {
@@ -971,9 +1132,132 @@ const seedPlaysets = (database: Database.Database) => {
 			row.maxSessions,
 			row.idleTimeoutSeconds,
 			now,
-			now
+			now,
 		);
 	}
+};
+
+const ensurePortfolioPositioning = (database: Database.Database) => {
+	database
+		.prepare(
+			`
+			UPDATE site_settings
+			SET
+				hero_headline = CASE
+					WHEN hero_headline IN ('404ConnerNotFound - Building immersive applications across web, desktop, embedding, and networks.', '') THEN @heroHeadline
+					ELSE hero_headline
+				END,
+				hero_subheadline = CASE
+					WHEN hero_subheadline IN ('Proficiency over promises.', '') THEN @heroSubheadline
+					ELSE hero_subheadline
+				END,
+				hero_note_title = CASE
+					WHEN hero_note_title IN ('In the lab', '') THEN @heroNoteTitle
+					ELSE hero_note_title
+				END,
+				hero_note_body = CASE
+					WHEN hero_note_body IN ('Payload CMS, media pipelines, and richer case studies.', '') THEN @heroNoteBody
+					ELSE hero_note_body
+				END,
+				hero_highlights_title = CASE
+					WHEN hero_highlights_title IN ('Highlights', '') THEN @heroHighlightsTitle
+					ELSE hero_highlights_title
+				END,
+				hero_highlights_body = CASE
+					WHEN hero_highlights_body IN ('Latest focus, experiments, and releases.', '') THEN @heroHighlightsBody
+					ELSE hero_highlights_body
+				END,
+				about_headline = CASE
+					WHEN about_headline IN ('I build shit to prove others wrong.', '') THEN @aboutHeadline
+					ELSE about_headline
+				END,
+				about_body = CASE
+					WHEN about_body IN ('This site is my live workspace. I iterate, interoperate, and dedicate for the sake of advancements.', '') THEN @aboutBody
+					ELSE about_body
+				END,
+				focus_headline = CASE
+					WHEN focus_headline IN ('I build, I break, I fix', '') THEN @focusHeadline
+					ELSE focus_headline
+				END,
+				focus_body = CASE
+					WHEN focus_body IN ('Like I came, I saw, I conquered but I made, I tried, and I failed... then I succeeded.', '') THEN @focusBody
+					ELSE focus_body
+				END,
+				stack_title = CASE
+					WHEN stack_title IN ('My stack', '') THEN @stackTitle
+					ELSE stack_title
+				END,
+				stack_intro = CASE
+					WHEN stack_intro IN ('The tools I reach for when shipping immersive, reliable work.', '') THEN @stackIntro
+					ELSE stack_intro
+				END,
+				work_title = CASE
+					WHEN work_title IN ('My work', '') THEN @workTitle
+					ELSE work_title
+				END,
+				work_intro = CASE
+					WHEN work_intro IN ('Selected projects, prototypes, and experiments.', '') THEN @workIntro
+					ELSE work_intro
+				END,
+				footer_badge = CASE
+					WHEN footer_badge IN ('404connernotfound', '') THEN @footerBadge
+					ELSE footer_badge
+				END,
+				footer_headline = CASE
+					WHEN footer_headline IN ('Building loud, expressive web experiences.', '') THEN @footerHeadline
+					ELSE footer_headline
+				END,
+				footer_body = CASE
+					WHEN footer_body IN ('Personal portfolio, experiments, and shipping logs. Content updates as the archive grows.', '') THEN @footerBody
+					ELSE footer_body
+				END
+			WHERE id = 1
+		`,
+		)
+		.run(DEFAULT_SITE_SETTINGS);
+};
+
+const prunePlaceholderFooterLinks = (database: Database.Database) => {
+	database
+		.prepare(
+			`DELETE FROM footer_links
+			 WHERE href IS NULL
+				OR href = ''
+				OR (label = 'YouTube' AND href = '#')
+				OR (label = 'Blog' AND href = '/blog')
+				OR (section = 'Links' AND label IN ('About', 'Work') AND href IN ('/about', '/work'))`,
+		)
+		.run();
+};
+
+const ensureFooterLinks = (database: Database.Database) => {
+	const existing = database.prepare('SELECT section, label FROM footer_links').all() as {
+		section: string;
+		label: string;
+	}[];
+	const known = new Set(existing.map((row) => `${row.section}:${row.label}`));
+	const insert = database.prepare(
+		'INSERT INTO footer_links (section, label, href, external, sort) VALUES (?, ?, ?, ?, ?)',
+	);
+	const update = database.prepare(
+		'UPDATE footer_links SET href = ?, external = ?, sort = ? WHERE section = ? AND label = ?',
+	);
+
+	for (const row of DEFAULT_FOOTER_LINKS) {
+		if (known.has(`${row.section}:${row.label}`)) {
+			update.run(row.href, row.external, row.sort, row.section, row.label);
+			continue;
+		}
+		insert.run(row.section, row.label, row.href, row.external, row.sort);
+	}
+};
+
+const ensurePortfolioContent = (database: Database.Database) => {
+	ensurePortfolioPositioning(database);
+	prunePlaceholderFooterLinks(database);
+	ensureFooterLinks(database);
+	seedStackItems(database);
+	seedWorkItems(database);
 };
 
 const ensureDefaultsForExistingRow = (database: Database.Database) => {
@@ -1055,7 +1339,7 @@ const ensureDefaultsForExistingRow = (database: Database.Database) => {
 					ELSE error_500_body
 				END
 			WHERE id = 1
-		`
+		`,
 		)
 		.run();
 };
@@ -1075,9 +1359,10 @@ const runMigrations = (database: Database.Database) => {
 		);
 	`);
 
-	const applied = database
-		.prepare('SELECT id, name FROM migrations ORDER BY id ASC')
-		.all() as { id: number; name: string }[];
+	const applied = database.prepare('SELECT id, name FROM migrations ORDER BY id ASC').all() as {
+		id: number;
+		name: string;
+	}[];
 	const appliedIds = new Set(applied.map((row) => row.id));
 	const appliedNames = new Set(applied.map((row) => row.name));
 	let nextId = applied.reduce((max, row) => Math.max(max, row.id), 0) + 1;
@@ -1102,7 +1387,8 @@ const runMigrations = (database: Database.Database) => {
 		{ id: 17, name: 'playground_seed_playsets', up: seedPlaysets },
 		{ id: 18, name: 'playset_columns_compat', up: ensurePlaysetColumnsCompatibility },
 		{ id: 19, name: 'work_items_media_columns', up: ensureWorkItemsColumns },
-		{ id: 20, name: 'lead_capture_tables', up: ensureLeadCaptureTables }
+		{ id: 20, name: 'lead_capture_tables', up: ensureLeadCaptureTables },
+		{ id: 21, name: 'portfolio_content_defaults', up: ensurePortfolioContent },
 	];
 
 	for (const migration of migrations) {
@@ -1135,6 +1421,7 @@ const bootstrapDb = (database: Database.Database) => {
 	runMigrations(database);
 	seedDefaults(database);
 	seedFooterLinks(database);
+	ensurePortfolioContent(database);
 	seedPlaysets(database);
 };
 
@@ -1158,6 +1445,7 @@ export const getDb = () => {
 		if (shouldAutoSeed) {
 			seedDefaults(database);
 			seedFooterLinks(database);
+			ensurePortfolioContent(database);
 			seedPlaysets(database);
 		}
 
@@ -1179,7 +1467,7 @@ export const seedDatabase = () => {
 		'assets',
 		'testimonials',
 		'footerLinks',
-		'playsets'
+		'playsets',
 	);
 };
 
@@ -1228,7 +1516,7 @@ export const getSiteSettings = () => {
 				error_500_body as error500Body
 			FROM site_settings
 			WHERE id = 1
-		`
+		`,
 		)
 		.get() as SiteSettings;
 
@@ -1281,7 +1569,7 @@ export const updateSiteSettings = (payload: Omit<SiteSettings, 'id'>) => {
 				error_500_body = @error500Body,
 				updated_at = @updatedAt
 			WHERE id = 1
-		`
+		`,
 		)
 		.run({ ...payload, updatedAt: now });
 
@@ -1293,9 +1581,7 @@ export const getStackItems = () => {
 	if (cached) return cached;
 	const database = getDb();
 	const rows = database
-		.prepare(
-			'SELECT id, label, detail, category, sort FROM stack_items ORDER BY sort ASC, id DESC'
-		)
+		.prepare('SELECT id, label, detail, category, sort FROM stack_items ORDER BY sort ASC, id DESC')
 		.all() as StackItem[];
 
 	setCache('stackItems', rows);
@@ -1306,7 +1592,7 @@ export const createStackItem = (
 	label: string,
 	detail: string | null,
 	category: string | null,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
@@ -1321,7 +1607,7 @@ export const updateStackItem = (
 	label: string,
 	detail: string | null,
 	category: string | null,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
@@ -1373,7 +1659,7 @@ export const getWorkItems = () => {
 			`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
 			 image_path as imagePath, image_alt as imageAlt, featured, sort
 			 FROM work_items
-			 ORDER BY sort ASC, id DESC`
+			 ORDER BY sort ASC, id DESC`,
 		)
 		.all() as WorkItem[];
 
@@ -1387,14 +1673,14 @@ export const getFeaturedWork = () => {
 	const workItems = getCached(cache.workItems);
 	const rows = workItems
 		? workItems.filter((item) => item.featured === 1)
-			: (getDb()
-					.prepare(
-						`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
+		: (getDb()
+				.prepare(
+					`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
 						 image_path as imagePath, image_alt as imageAlt, featured, sort
 						 FROM work_items
 						 WHERE featured = 1
-						 ORDER BY sort ASC, id DESC`
-					)
+						 ORDER BY sort ASC, id DESC`,
+				)
 				.all() as WorkItem[]);
 
 	setCache('featuredWork', rows);
@@ -1412,14 +1698,14 @@ export const createWorkItem = (
 	imagePath: string | null,
 	imageAlt: string | null,
 	featured: number,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`INSERT INTO work_items (
 				title, description, long_description, highlights, role, tech, link, image_path, image_alt, featured, sort
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(
 			title,
@@ -1432,7 +1718,7 @@ export const createWorkItem = (
 			imagePath,
 			imageAlt,
 			featured,
-			sort
+			sort,
 		);
 
 	clearCache('workItems', 'featuredWork');
@@ -1450,7 +1736,7 @@ export const updateWorkItem = (
 	imagePath: string | null,
 	imageAlt: string | null,
 	featured: number,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
@@ -1458,7 +1744,7 @@ export const updateWorkItem = (
 			`UPDATE work_items
 			 SET title = ?, description = ?, long_description = ?, highlights = ?, role = ?, tech = ?, link = ?,
 				 image_path = ?, image_alt = ?, featured = ?, sort = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(
 			title,
@@ -1472,7 +1758,7 @@ export const updateWorkItem = (
 			imageAlt,
 			featured,
 			sort,
-			id
+			id,
 		);
 
 	clearCache('workItems', 'featuredWork');
@@ -1493,7 +1779,7 @@ export const getPosts = () => {
 		.prepare(
 			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
 			 FROM posts
-			 ORDER BY published_at DESC, created_at DESC`
+			 ORDER BY published_at DESC, created_at DESC`,
 		)
 		.all() as BlogPost[];
 
@@ -1512,7 +1798,7 @@ export const getPublishedPosts = () => {
 			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
 			 FROM posts
 			 WHERE draft = 0
-			 ORDER BY published_at DESC, created_at DESC`
+			 ORDER BY published_at DESC, created_at DESC`,
 		)
 		.all() as BlogPost[];
 };
@@ -1527,7 +1813,7 @@ export const getPostBySlug = (slug: string) => {
 		.prepare(
 			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
 			 FROM posts
-			 WHERE slug = ?`
+			 WHERE slug = ?`,
 		)
 		.get(slug) as BlogPost | undefined;
 
@@ -1544,7 +1830,7 @@ export const getPublishedPostBySlug = (slug: string) => {
 		.prepare(
 			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
 			 FROM posts
-			 WHERE slug = ? AND draft = 0`
+			 WHERE slug = ? AND draft = 0`,
 		)
 		.get(slug) as BlogPost | undefined;
 
@@ -1562,9 +1848,9 @@ const ensureUniqueSlug = (database: Database.Database, slug: string, currentId?:
 	let candidate = slug || 'post';
 	let suffix = 1;
 	for (;;) {
-		const existing = database
-			.prepare('SELECT id FROM posts WHERE slug = ?')
-			.get(candidate) as { id: number } | undefined;
+		const existing = database.prepare('SELECT id FROM posts WHERE slug = ?').get(candidate) as
+			| { id: number }
+			| undefined;
 
 		if (!existing || (currentId && existing.id === currentId)) {
 			return candidate;
@@ -1583,7 +1869,7 @@ export const createPost = (
 	draft: number,
 	featured: number,
 	publishedAt: string | null,
-	slug?: string
+	slug?: string,
 ) => {
 	const database = getDb();
 	const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
@@ -1593,7 +1879,7 @@ export const createPost = (
 	database
 		.prepare(
 			`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, now);
 
@@ -1609,7 +1895,7 @@ export const updatePost = (
 	draft: number,
 	featured: number,
 	publishedAt: string | null,
-	slug?: string
+	slug?: string,
 ) => {
 	const database = getDb();
 	const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
@@ -1619,7 +1905,7 @@ export const updatePost = (
 		.prepare(
 			`UPDATE posts
 			 SET title = ?, slug = ?, excerpt = ?, content = ?, tags = ?, draft = ?, featured = ?, published_at = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, id);
 
@@ -1641,7 +1927,7 @@ export const getAssets = () => {
 		.prepare(
 			`SELECT id, label, filename, path, mime, size, public, created_at as createdAt
 			 FROM assets
-			 ORDER BY created_at DESC, id DESC`
+			 ORDER BY created_at DESC, id DESC`,
 		)
 		.all() as Asset[];
 
@@ -1657,14 +1943,14 @@ export const createAsset = (
 	pathValue: string,
 	mime: string,
 	size: number,
-	isPublic: number
+	isPublic: number,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
 	database
 		.prepare(
 			`INSERT INTO assets (label, filename, path, mime, size, public, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(label, filename, pathValue, mime, size, isPublic, now);
 
@@ -1677,7 +1963,7 @@ export const updateAsset = (id: number, label: string, isPublic: number) => {
 		.prepare(
 			`UPDATE assets
 			 SET label = ?, public = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(label, isPublic, id);
 
@@ -1700,7 +1986,7 @@ export const createInboundMessage = (
 	email: string,
 	scope: string,
 	ip: string | null,
-	userAgent: string | null
+	userAgent: string | null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -1708,7 +1994,7 @@ export const createInboundMessage = (
 	database
 		.prepare(
 			`INSERT INTO inbound_messages (channel, name, email, scope, ip, user_agent, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(
 			safeChannel,
@@ -1717,7 +2003,7 @@ export const createInboundMessage = (
 			clampString(scope.trim(), 10_000),
 			ip ? clampString(ip, 80) : null,
 			userAgent ? clampString(userAgent, 512) : null,
-			now
+			now,
 		);
 };
 
@@ -1726,7 +2012,7 @@ export const upsertNewsletterSubscription = (
 	email: string,
 	interest: string | null,
 	ip: string | null,
-	userAgent: string | null
+	userAgent: string | null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -1742,7 +2028,7 @@ export const upsertNewsletterSubscription = (
 			 	interest = excluded.interest,
 			 	ip = excluded.ip,
 			 	user_agent = excluded.user_agent,
-			 	updated_at = excluded.updated_at`
+			 	updated_at = excluded.updated_at`,
 		)
 		.run(
 			normalizedEmail,
@@ -1751,7 +2037,7 @@ export const upsertNewsletterSubscription = (
 			ip ? clampString(ip, 80) : null,
 			userAgent ? clampString(userAgent, 512) : null,
 			now,
-			now
+			now,
 		);
 };
 
@@ -1762,14 +2048,14 @@ export const createTrackingEvent = (
 	referrer: string | null,
 	userAgent: string | null,
 	ip: string | null,
-	payload: string | null
+	payload: string | null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
 	database
 		.prepare(
 			`INSERT INTO tracking_events (type, name, path, referrer, user_agent, ip, payload, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(type, name, pathValue, referrer, userAgent, ip, payload, now);
 };
@@ -1781,7 +2067,7 @@ export const getTrackingEvents = (limit = 100) => {
 			`SELECT id, type, name, path, referrer, user_agent as userAgent, ip, payload, created_at as createdAt
 			 FROM tracking_events
 			 ORDER BY created_at DESC, id DESC
-			 LIMIT ?`
+			 LIMIT ?`,
 		)
 		.all(limit) as TrackingEvent[];
 };
@@ -1795,14 +2081,14 @@ export const getTrackingCounts = () => {
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM tracking_events
-			 WHERE created_at >= datetime('now', '-1 day')`
+			 WHERE created_at >= datetime('now', '-1 day')`,
 		)
 		.get() as { count: number };
 	const lastWeek = database
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM tracking_events
-			 WHERE created_at >= datetime('now', '-7 day')`
+			 WHERE created_at >= datetime('now', '-7 day')`,
 		)
 		.get() as { count: number };
 	const byType = database
@@ -1810,7 +2096,7 @@ export const getTrackingCounts = () => {
 			`SELECT type, COUNT(*) as count
 			 FROM tracking_events
 			 GROUP BY type
-			 ORDER BY count DESC`
+			 ORDER BY count DESC`,
 		)
 		.all() as { type: string; count: number }[];
 	const topPaths = database
@@ -1820,7 +2106,7 @@ export const getTrackingCounts = () => {
 			 WHERE path IS NOT NULL AND path != ''
 			 GROUP BY path
 			 ORDER BY count DESC
-			 LIMIT 8`
+			 LIMIT 8`,
 		)
 		.all() as { path: string; count: number }[];
 
@@ -1829,7 +2115,7 @@ export const getTrackingCounts = () => {
 		lastDay: lastDay.count,
 		lastWeek: lastWeek.count,
 		byType,
-		topPaths
+		topPaths,
 	};
 };
 
@@ -1841,7 +2127,7 @@ export const getTestimonials = () => {
 		.prepare(
 			`SELECT id, name, role, company, quote, project, result, email, approved, created_at as createdAt
 			 FROM testimonials
-			 ORDER BY created_at DESC, id DESC`
+			 ORDER BY created_at DESC, id DESC`,
 		)
 		.all() as Testimonial[];
 
@@ -1860,14 +2146,14 @@ export const createTestimonial = (
 	quote: string,
 	project: string | null,
 	result: string | null,
-	email: string | null
+	email: string | null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
 	database
 		.prepare(
 			`INSERT INTO testimonials (name, role, company, quote, project, result, email, approved, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
 		)
 		.run(name, role, company, quote, project, result, email, now);
 
@@ -1880,7 +2166,7 @@ export const updateTestimonialApproval = (id: number, approved: number) => {
 		.prepare(
 			`UPDATE testimonials
 			 SET approved = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(approved, id);
 
@@ -1902,7 +2188,7 @@ export const getFooterLinks = () => {
 		.prepare(
 			`SELECT id, section, label, href, external, sort
 			 FROM footer_links
-			 ORDER BY section ASC, sort ASC, id ASC`
+			 ORDER BY section ASC, sort ASC, id ASC`,
 		)
 		.all() as FooterLink[];
 
@@ -1915,12 +2201,12 @@ export const createFooterLink = (
 	label: string,
 	href: string | null,
 	external: number,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
 		.prepare(
-			'INSERT INTO footer_links (section, label, href, external, sort) VALUES (?, ?, ?, ?, ?)'
+			'INSERT INTO footer_links (section, label, href, external, sort) VALUES (?, ?, ?, ?, ?)',
 		)
 		.run(section, label, href, external, sort);
 
@@ -1933,14 +2219,14 @@ export const updateFooterLink = (
 	label: string,
 	href: string | null,
 	external: number,
-	sort: number
+	sort: number,
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`UPDATE footer_links
 			 SET section = ?, label = ?, href = ?, external = ?, sort = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(section, label, href, external, sort, id);
 
@@ -1966,9 +2252,9 @@ const ensureUniquePlaysetSlug = (database: Database.Database, slug: string, curr
 	let candidate = base;
 	let suffix = 1;
 	for (;;) {
-		const existing = database
-			.prepare('SELECT id FROM playsets WHERE slug = ?')
-			.get(candidate) as { id: number } | undefined;
+		const existing = database.prepare('SELECT id FROM playsets WHERE slug = ?').get(candidate) as
+			| { id: number }
+			| undefined;
 		if (!existing || (currentId && existing.id === currentId)) {
 			return candidate;
 		}
@@ -1989,7 +2275,7 @@ export const getPlaysets = () => {
 				enabled, max_sessions as maxSessions, idle_timeout_seconds as idleTimeoutSeconds,
 				created_at as createdAt, updated_at as updatedAt
 			FROM playsets
-			ORDER BY enabled DESC, name ASC`
+			ORDER BY enabled DESC, name ASC`,
 		)
 		.all() as Playset[];
 	setCache('playsets', rows);
@@ -2000,7 +2286,8 @@ export const getEnabledPlaysets = () => getPlaysets().filter((playset) => playse
 
 export const getPlaysetById = (id: number) => getPlaysets().find((playset) => playset.id === id);
 
-export const getPlaysetBySlug = (slug: string) => getPlaysets().find((playset) => playset.slug === slug);
+export const getPlaysetBySlug = (slug: string) =>
+	getPlaysets().find((playset) => playset.slug === slug);
 
 export const createPlayset = (
 	name: string,
@@ -2012,7 +2299,7 @@ export const createPlayset = (
 	enabled: number,
 	maxSessions: number,
 	idleTimeoutSeconds: number,
-	slug?: string
+	slug?: string,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -2024,7 +2311,7 @@ export const createPlayset = (
 				name, slug, runtime, description, docker_image, start_command, default_command,
 				artifact_type, artifact_path, extracted_path, compose_path, verify_status, verify_log, last_verified_at,
 				enabled, max_sessions, idle_timeout_seconds, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(
 			name,
@@ -2045,7 +2332,7 @@ export const createPlayset = (
 			maxSessions,
 			idleTimeoutSeconds,
 			now,
-			now
+			now,
 		);
 	clearCache('playsets');
 };
@@ -2061,7 +2348,7 @@ export const updatePlayset = (
 	enabled: number,
 	maxSessions: number,
 	idleTimeoutSeconds: number,
-	slug?: string
+	slug?: string,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -2073,7 +2360,7 @@ export const updatePlayset = (
 			 SET name = ?, slug = ?, runtime = ?, description = ?, docker_image = ?, start_command = ?,
 				 default_command = ?, artifact_type = ?, artifact_path = ?, enabled = ?, max_sessions = ?,
 				 idle_timeout_seconds = ?, updated_at = ?
-			 WHERE id = ?`
+			 WHERE id = ?`,
 		)
 		.run(
 			name,
@@ -2089,7 +2376,7 @@ export const updatePlayset = (
 			maxSessions,
 			idleTimeoutSeconds,
 			now,
-			id
+			id,
 		);
 	clearCache('playsets');
 };
@@ -2106,7 +2393,7 @@ export const countActivePlaygroundSessionsForPlayset = (playsetId: number) => {
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM playground_sessions
-			 WHERE playset_id = ? AND status IN ('starting', 'active')`
+			 WHERE playset_id = ? AND status IN ('starting', 'active')`,
 		)
 		.get(playsetId) as { count: number };
 	return row.count;
@@ -2118,7 +2405,7 @@ export const createPlaygroundSession = (
 	joinToken: string,
 	clientIp: string | null,
 	userAgent: string | null,
-	status = 'starting'
+	status = 'starting',
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -2127,7 +2414,7 @@ export const createPlaygroundSession = (
 			`INSERT INTO playground_sessions (
 				session_id, playset_id, status, join_token, container_id, reason, client_ip, user_agent,
 				created_at, updated_at, ended_at
-			) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, NULL)`
+			) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, NULL)`,
 		)
 		.run(sessionId, playsetId, status, joinToken, clientIp, userAgent, now, now);
 };
@@ -2141,7 +2428,7 @@ export const getPlaygroundSessionBySessionId = (sessionId: string) => {
 				container_id as containerId, reason, client_ip as clientIp, user_agent as userAgent,
 				created_at as createdAt, updated_at as updatedAt, ended_at as endedAt
 			FROM playground_sessions
-			WHERE session_id = ?`
+			WHERE session_id = ?`,
 		)
 		.get(sessionId) as PlaygroundSession | undefined;
 };
@@ -2149,7 +2436,7 @@ export const getPlaygroundSessionBySessionId = (sessionId: string) => {
 export const updatePlaygroundSessionStatus = (
 	sessionId: string,
 	status: string,
-	options?: { containerId?: string | null; reason?: string | null; ended?: boolean }
+	options?: { containerId?: string | null; reason?: string | null; ended?: boolean },
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -2163,7 +2450,7 @@ export const updatePlaygroundSessionStatus = (
 		.prepare(
 			`UPDATE playground_sessions
 			 SET status = ?, container_id = ?, reason = ?, updated_at = ?, ended_at = ?
-			 WHERE session_id = ?`
+			 WHERE session_id = ?`,
 		)
 		.run(status, nextContainerId, nextReason, now, endedAt, sessionId);
 };
@@ -2175,7 +2462,7 @@ export const createPlaygroundSocketConnection = (wsId: string, sessionId: string
 		.prepare(
 			`INSERT INTO playground_socket_connections (
 				ws_id, session_id, connected_at, disconnected_at, close_code, close_reason
-			) VALUES (?, ?, ?, NULL, NULL, NULL)`
+			) VALUES (?, ?, ?, NULL, NULL, NULL)`,
 		)
 		.run(wsId, sessionId, now);
 };
@@ -2183,7 +2470,7 @@ export const createPlaygroundSocketConnection = (wsId: string, sessionId: string
 export const closePlaygroundSocketConnection = (
 	wsId: string,
 	closeCode: number | null,
-	closeReason: string | null
+	closeReason: string | null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
@@ -2191,7 +2478,7 @@ export const closePlaygroundSocketConnection = (
 		.prepare(
 			`UPDATE playground_socket_connections
 			 SET disconnected_at = ?, close_code = ?, close_reason = ?
-			 WHERE ws_id = ?`
+			 WHERE ws_id = ?`,
 		)
 		.run(now, closeCode, closeReason, wsId);
 };
@@ -2202,14 +2489,14 @@ export const createPlaygroundLog = (
 	level: string,
 	event: string,
 	message: string,
-	payload: string | null = null
+	payload: string | null = null,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
 	database
 		.prepare(
 			`INSERT INTO playground_logs (session_id, ws_id, level, event, message, payload, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(sessionId, wsId, level, event, message, payload, now);
 };
@@ -2223,7 +2510,7 @@ export const getPlaygroundLogsBySession = (sessionId: string, limit = 200) => {
 			FROM playground_logs
 			WHERE session_id = ?
 			ORDER BY id DESC
-			LIMIT ?`
+			LIMIT ?`,
 		)
 		.all(sessionId, limit) as PlaygroundLog[];
 };
@@ -2236,7 +2523,7 @@ export const getRecentPlaygroundLogs = (limit = 200) => {
 				id, session_id as sessionId, ws_id as wsId, level, event, message, payload, created_at as createdAt
 			FROM playground_logs
 			ORDER BY id DESC
-			LIMIT ?`
+			LIMIT ?`,
 		)
 		.all(limit) as PlaygroundLog[];
 };
@@ -2253,35 +2540,37 @@ export const getRecentPlaygroundSessions = (limit = 200) => {
 			FROM playground_sessions s
 			INNER JOIN playsets p ON p.id = s.playset_id
 			ORDER BY s.created_at DESC, s.id DESC
-			LIMIT ?`
+			LIMIT ?`,
 		)
 		.all(limit) as PlaygroundSessionListItem[];
 };
 
 export const getPlaygroundOperationalCounts = () => {
 	const database = getDb();
-	const totalSessions = database.prepare('SELECT COUNT(*) as count FROM playground_sessions').get() as {
+	const totalSessions = database
+		.prepare('SELECT COUNT(*) as count FROM playground_sessions')
+		.get() as {
 		count: number;
 	};
 	const activeSessions = database
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM playground_sessions
-			 WHERE status IN ('starting', 'active')`
+			 WHERE status IN ('starting', 'active')`,
 		)
 		.get() as { count: number };
 	const failedSessions = database
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM playground_sessions
-			 WHERE status = 'failed'`
+			 WHERE status = 'failed'`,
 		)
 		.get() as { count: number };
 	const activeSocketConnections = database
 		.prepare(
 			`SELECT COUNT(*) as count
 			 FROM playground_socket_connections
-			 WHERE disconnected_at IS NULL`
+			 WHERE disconnected_at IS NULL`,
 		)
 		.get() as { count: number };
 	const totalLogs = database.prepare('SELECT COUNT(*) as count FROM playground_logs').get() as {
@@ -2293,7 +2582,7 @@ export const getPlaygroundOperationalCounts = () => {
 		activeSessions: activeSessions.count,
 		failedSessions: failedSessions.count,
 		activeSocketConnections: activeSocketConnections.count,
-		totalLogs: totalLogs.count
+		totalLogs: totalLogs.count,
 	} as PlaygroundOperationalCounts;
 };
 
@@ -2311,5 +2600,5 @@ export type {
 	PlaygroundSessionListItem,
 	PlaygroundSocketConnection,
 	PlaygroundLog,
-	PlaygroundOperationalCounts
+	PlaygroundOperationalCounts,
 };
