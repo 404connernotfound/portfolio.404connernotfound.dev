@@ -9,6 +9,11 @@ node_modules
 /build
 /data
 error.log
+npm-debug.log*
+
+# Local browser/tool artifacts
+/.playwright-mcp
+/portfolio-home-*.png
 
 # OS
 .DS_Store
@@ -19,6 +24,10 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+/deploy/portfolio.env
+
+# npm is the package manager for this repo
+/pnpm-lock.yaml
 
 # Vite
 vite.config.js.timestamp-*

@@ -27,6 +27,9 @@ host_app_port="${host_app_port:-3000}"
 curl -fsS "http://127.0.0.1:${host_app_port}/healthz" >/dev/null
 echo "App health passed on 127.0.0.1:${host_app_port}."
 
+curl -fsSI "http://127.0.0.1:${host_app_port}/uploads/resume/resume.pdf" >/dev/null
+echo "Resume PDF passed on 127.0.0.1:${host_app_port}."
+
 if curl -fsSI -H "Host: ${DOMAIN}" http://127.0.0.1/ >/dev/null 2>&1; then
 	echo "Host-header HTTP smoke passed through local Nginx."
 elif [[ "${REQUIRE_NGINX}" == "1" ]]; then
@@ -38,6 +41,9 @@ fi
 
 if curl -kfsSI --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/" >/dev/null 2>&1; then
 	echo "Loopback HTTPS smoke passed with --resolve."
+	if curl -kfsSI --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/uploads/resume/resume.pdf" >/dev/null 2>&1; then
+		echo "Loopback HTTPS resume PDF smoke passed with --resolve."
+	fi
 elif [[ "${REQUIRE_NGINX}" == "1" ]]; then
 	echo "Nginx HTTPS smoke failed." >&2
 	exit 1

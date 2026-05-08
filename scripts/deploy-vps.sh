@@ -37,6 +37,7 @@ if [[ "${DRY_RUN}" == "1" ]]; then
 	docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" config
 	exit 0
 fi
+docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" rm -sf static-seed >/dev/null 2>&1 || true
 docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d --build --wait
 docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" ps
 
@@ -45,6 +46,8 @@ if command -v curl >/dev/null 2>&1; then
 	host_app_port="${host_app_port:-3000}"
 	curl -fsS "http://127.0.0.1:${host_app_port}/healthz" >/dev/null
 	echo "Local app health check passed at http://127.0.0.1:${host_app_port}/healthz"
+	curl -fsSI "http://127.0.0.1:${host_app_port}/uploads/resume/resume.pdf" >/dev/null
+	echo "Resume PDF static check passed at http://127.0.0.1:${host_app_port}/uploads/resume/resume.pdf"
 fi
 
 cat <<EOF

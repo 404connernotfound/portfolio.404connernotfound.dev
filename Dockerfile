@@ -31,12 +31,13 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/build ./build
 COPY --from=build --chown=node:node /app/.svelte-kit ./.svelte-kit
 COPY --from=build --chown=node:node /app/static ./static
+COPY --from=build --chown=node:node /app/static ./static-defaults
 COPY --from=build --chown=node:node /app/scripts ./scripts
 COPY --from=build --chown=node:node /app/src ./src
 COPY --from=build --chown=node:node /app/svelte.config.js /app/tsconfig.json /app/vite.config.ts ./
 
 RUN mkdir -p /data /app/static/uploads /app/static/assets/uploads /app/static/assets/work \
-	&& chown -R node:node /data /app/static/uploads /app/static/assets
+	&& chown -R node:node /data /app/static /app/static-defaults
 
 USER node
 

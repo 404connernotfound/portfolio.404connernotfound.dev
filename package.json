@@ -16,6 +16,8 @@
 		"deploy:vps": "bash scripts/deploy-vps.sh",
 		"deploy:cleanup": "bash scripts/cleanup-vps.sh",
 		"deploy:smoke:no-dns": "bash scripts/smoke-vps-no-dns.sh",
+		"deploy:auto-update": "bash scripts/auto-update-vps.sh",
+		"deploy:auto-update:install": "bash scripts/install-auto-update.sh",
 		"nginx:setup": "bash scripts/setup-cloudflare-nginx.sh",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

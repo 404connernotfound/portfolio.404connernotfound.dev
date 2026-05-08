@@ -75,6 +75,7 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ./scripts/deploy-vps.sh
    ```
    This runs `docker compose --env-file deploy/portfolio.env up -d --build --wait`, including a one-shot `migrate` service that seeds PostgreSQL before the app starts.
+   It also runs a one-shot `static-seed` service that copies bundled static uploads, including `static/uploads/resume/resume.pdf`, into the Docker volumes Nginx serves from. Existing uploaded files are not overwritten.
 
 3. In Cloudflare, create a proxied `A` or `AAAA` record for `portfolio.404connernotfound.dev` pointing to the VPS public IP. Set SSL/TLS mode to `Full (strict)`.
 
@@ -92,8 +93,15 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
 6. Verify locally and through Cloudflare:
    ```bash
    curl -fsS http://127.0.0.1:3000/healthz
+   curl -fsSI http://127.0.0.1:3000/uploads/resume/resume.pdf
    curl -I https://portfolio.404connernotfound.dev/
    ```
+
+7. Optional: install the GitHub auto-updater on the VPS:
+   ```bash
+   sudo SERVICE_USER=portfolio SERVICE_GROUP=portfolio ./scripts/install-auto-update.sh
+   ```
+   The installer writes a systemd service and timer. Every 30 minutes it fetches `origin/main`, fast-forwards only when the checkout is clean, runs `docker compose down --remove-orphans`, and starts the rebuilt stack with `scripts/deploy-vps.sh`.
 
 Before DNS is live, you can still test the stack on the VPS:
 ```bash
@@ -115,6 +123,10 @@ Useful maintenance commands:
 docker compose --env-file deploy/portfolio.env ps
 docker compose --env-file deploy/portfolio.env logs -f app
 docker compose --env-file deploy/portfolio.env run --rm app npm run db:migrate:postgres
+DRY_RUN=1 ./scripts/auto-update-vps.sh
+sudo systemctl start portfolio-auto-update.service
+sudo systemctl status portfolio-auto-update.timer
+sudo journalctl -u portfolio-auto-update.service -n 100 --no-pager
 ./scripts/cleanup-vps.sh
 REMOVE_VOLUMES=1 ./scripts/cleanup-vps.sh
 sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
@@ -159,6 +171,8 @@ sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 ## Deployment Notes
 - Docker Compose stack: `docker-compose.yml`
 - Production env template: `deploy/portfolio.env.example`
+- Auto-update timer installer: `scripts/install-auto-update.sh`
+- Auto-update worker: `scripts/auto-update-vps.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
 - Nginx template used by automation: `nginx/portfolio.conf.template`
 - Procfile: `Procfile`

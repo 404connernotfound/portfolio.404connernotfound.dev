@@ -10,11 +10,28 @@ x-app-env: &app-env
   env_file:
     - ${PORTFOLIO_ENV_FILE:-./deploy/portfolio.env}
 
+x-static-volumes:
+  uploads: &uploads-volume portfolio_uploads:/app/static/uploads
+  asset-uploads: &asset-uploads-volume portfolio_asset_uploads:/app/static/assets/uploads
+  work-assets: &work-assets-volume portfolio_work_assets:/app/static/assets/work
+
 services:
+  static-seed:
+    <<: *app-image
+    user: "0:0"
+    restart: "no"
+    volumes:
+      - *uploads-volume
+      - *asset-uploads-volume
+      - *work-assets-volume
+    command: ["sh", "scripts/seed-static-volumes.sh"]
+
   app:
     <<: [*app-image, *app-env]
     restart: unless-stopped
     depends_on:
+      static-seed:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -26,9 +43,9 @@ services:
       - "127.0.0.1:${HOST_PLAYGROUND_WS_PORT:-24680}:${PLAYGROUND_WS_PORT:-24680}"
     volumes:
       - portfolio_sqlite_data:/data
-      - portfolio_uploads:/app/static/uploads
-      - portfolio_asset_uploads:/app/static/assets/uploads
-      - portfolio_work_assets:/app/static/assets/work
+      - *uploads-volume
+      - *asset-uploads-volume
+      - *work-assets-volume
     healthcheck:
       test:
         [
@@ -46,13 +63,15 @@ services:
     <<: [*app-image, *app-env]
     restart: "no"
     depends_on:
+      static-seed:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     volumes:
       - portfolio_sqlite_data:/data
-      - portfolio_uploads:/app/static/uploads
-      - portfolio_asset_uploads:/app/static/assets/uploads
-      - portfolio_work_assets:/app/static/assets/work
+      - *uploads-volume
+      - *asset-uploads-volume
+      - *work-assets-volume
     command: ["npm", "run", "db:seed"]
 
   postgres:

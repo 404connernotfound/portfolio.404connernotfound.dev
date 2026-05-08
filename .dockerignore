@@ -12,6 +12,7 @@ error.log
 .env.*
 !.env.example
 deploy/portfolio.env
+pnpm-lock.yaml
 
 portfolio-home-*.png
 portfolio-home-desktop.png
