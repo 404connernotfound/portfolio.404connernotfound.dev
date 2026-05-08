@@ -129,8 +129,12 @@ sudo systemctl status portfolio-auto-update.timer
 sudo journalctl -u portfolio-auto-update.service -n 100 --no-pager
 ./scripts/cleanup-vps.sh
 REMOVE_VOLUMES=1 ./scripts/cleanup-vps.sh
+DRY_RUN=1 ./scripts/clean-slate-vps.sh
+sudo ./scripts/clean-slate-vps.sh
 sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 ```
+
+Use `scripts/clean-slate-vps.sh` when the VPS should look like the portfolio service was never started. It does not require `deploy/portfolio.env`; if the env file is missing, it uses the example env or a temporary cleanup env. By default it removes the Docker Compose project containers, networks, volumes, local app image, generated `deploy/portfolio.env`, the auto-update systemd units, the legacy `portfolio.service`, and the Nginx site config. TLS cert removal is opt-in with `REMOVE_TLS=1`.
 
 ## Admin
 - Login: `/admin/login`
@@ -171,6 +175,7 @@ sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 ## Deployment Notes
 - Docker Compose stack: `docker-compose.yml`
 - Production env template: `deploy/portfolio.env.example`
+- Clean-slate VPS cleanup: `scripts/clean-slate-vps.sh`
 - Auto-update timer installer: `scripts/install-auto-update.sh`
 - Auto-update worker: `scripts/auto-update-vps.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
