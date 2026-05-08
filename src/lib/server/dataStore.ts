@@ -447,8 +447,8 @@ const ensurePostgresPortfolioContent = async () => {
 	}
 };
 
-const ensurePostgresSeeded = async () => {
-	if (!shouldAutoSeed) return;
+const ensurePostgresSeeded = async (force = false) => {
+	if (!shouldAutoSeed && !force) return;
 
 	const row = await queryPostgres<{ count: number }>(
 		'SELECT COUNT(*)::int as count FROM site_settings',
@@ -650,9 +650,9 @@ const ensureUniquePlaysetSlugPg = async (slug: string, currentId?: number) => {
 
 export const seedDatabase = async () => {
 	await sqliteDb.seedDatabase();
-	const ready = await ensurePostgresReady();
-	if (ready) {
-		await ensurePostgresSeeded();
+	if (isPostgresConfigured()) {
+		await ensurePostgresAppSchema();
+		await ensurePostgresSeeded(true);
 	}
 };
 

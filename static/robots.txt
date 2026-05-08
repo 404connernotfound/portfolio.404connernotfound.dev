@@ -10,4 +10,4 @@ Disallow: /subscribe
 Disallow: /testimonials
 Disallow: /tracking
 Disallow: /vision
-Sitemap: /sitemap.xml
+Sitemap: https://portfolio.404connernotfound.dev/sitemap.xml

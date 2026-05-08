@@ -9,9 +9,12 @@ export const GET: RequestHandler = async () => {
 	const cpu = process.cpuUsage();
 	const eventLoop = performance.eventLoopUtilization();
 	const [postgres, redis] = await Promise.all([pingPostgres(), pingRedis()]);
+	const dependenciesOk = [postgres, redis].every((dependency) => !dependency.configured || dependency.ok);
+	const status = dependenciesOk ? 'ok' : 'degraded';
+	const verbose = process.env.HEALTHZ_VERBOSE === 'true' || process.env.NODE_ENV !== 'production';
 
-	const body = {
-		status: 'ok',
+	const body = verbose ? {
+		status,
 		timestamp: new Date().toISOString(),
 		uptimeSeconds: process.uptime(),
 		memory: {
@@ -32,9 +35,13 @@ export const GET: RequestHandler = async () => {
 			redis
 		},
 		latencySpikes: [] as string[]
+	} : {
+		status,
+		timestamp: new Date().toISOString()
 	};
 
 	return new Response(JSON.stringify(body), {
+		status: dependenciesOk ? 200 : 503,
 		headers: {
 			'Content-Type': 'application/json',
 			'Cache-Control': 'no-store'
