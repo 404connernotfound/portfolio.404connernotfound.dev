@@ -21,6 +21,11 @@ import {
 	queryPostgres,
 	executePostgres,
 } from '$lib/server/postgres';
+import {
+	parseStoredReferences,
+	serializeReferences,
+	type BlogReference,
+} from '../utils/content';
 
 const runtimeEnv = process.env;
 const isDev = runtimeEnv.NODE_ENV !== 'production';
@@ -30,6 +35,18 @@ const nowIso = () => new Date().toISOString();
 
 let pgReadyPromise: Promise<boolean> | null = null;
 let pgSeedPromise: Promise<void> | null = null;
+
+type BlogPostRow = Omit<BlogPost, 'references'> & {
+	referencesJson: string | null;
+};
+
+const mapPostRow = (row: BlogPostRow): BlogPost => {
+	const { referencesJson, ...post } = row;
+	return {
+		...post,
+		references: parseStoredReferences(referencesJson),
+	};
+};
 
 const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
 	heroHeadline:
@@ -79,8 +96,9 @@ const DEFAULT_FOOTER_LINKS: Omit<FooterLink, 'id'>[] = [
 	{ section: 'Pages', label: 'Home', href: '/', external: 0, sort: 1 },
 	{ section: 'Pages', label: 'About', href: '/about', external: 0, sort: 2 },
 	{ section: 'Pages', label: 'Work', href: '/work', external: 0, sort: 3 },
-	{ section: 'Pages', label: 'Resume', href: '/resume', external: 0, sort: 4 },
-	{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 5 },
+	{ section: 'Pages', label: 'Blog', href: '/blog', external: 0, sort: 4 },
+	{ section: 'Pages', label: 'Resume', href: '/resume', external: 0, sort: 5 },
+	{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 6 },
 	{
 		section: 'Links',
 		label: 'GitHub',
@@ -139,6 +157,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust',
 		link: 'https://github.com/ConnerAdamsMaine/TinyOne',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 10,
@@ -154,6 +173,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust, LLMs',
 		link: 'https://github.com/ConnerAdamsMaine/Unum.rs',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 20,
@@ -169,6 +189,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Raspberry Pi, networking',
 		link: 'https://github.com/ConnerAdamsMaine/PiFi2',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 30,
@@ -185,6 +206,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust, CLI, daemon',
 		link: 'https://github.com/Winux-Core/Winux-PTree',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 40,
@@ -385,7 +407,6 @@ const ensurePostgresPortfolioContent = async () => {
 		 WHERE href IS NULL
 			OR href = ''
 			OR (label = 'YouTube' AND href = '#')
-			OR (label = 'Blog' AND href = '/blog')
 			OR (section = 'Links' AND label IN ('About', 'Work') AND href IN ('/about', '/work'))`,
 	);
 
@@ -427,8 +448,8 @@ const ensurePostgresPortfolioContent = async () => {
 			await executePostgres(
 				`INSERT INTO work_items (
 					title, description, long_description, highlights, role, tech, link,
-					image_path, image_alt, featured, sort
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+					image_path, image_url, image_alt, featured, sort
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
 				[
 					rowData.title,
 					rowData.description,
@@ -438,6 +459,7 @@ const ensurePostgresPortfolioContent = async () => {
 					rowData.tech,
 					rowData.link,
 					rowData.imagePath,
+					rowData.imageUrl,
 					rowData.imageAlt,
 					rowData.featured,
 					rowData.sort,
@@ -875,7 +897,7 @@ export const getWorkItems = async (): Promise<WorkItem[]> =>
 		() =>
 			queryPostgres<WorkItem>(
 				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech, link,
-				 image_path as "imagePath", image_alt as "imageAlt", featured, sort
+				 image_path as "imagePath", image_url as "imageUrl", image_alt as "imageAlt", featured, sort
 				 FROM work_items
 				 ORDER BY sort ASC, id DESC`,
 			),
@@ -887,7 +909,7 @@ export const getFeaturedWork = async (): Promise<WorkItem[]> =>
 		() =>
 			queryPostgres<WorkItem>(
 				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech, link,
-				 image_path as "imagePath", image_alt as "imageAlt", featured, sort
+				 image_path as "imagePath", image_url as "imageUrl", image_alt as "imageAlt", featured, sort
 				 FROM work_items
 				 WHERE featured = 1
 				 ORDER BY sort ASC, id DESC`,
@@ -907,13 +929,14 @@ export const createWorkItem = async (
 	imageAlt: string | null,
 	featured: number,
 	sort: number,
+	imageUrl: string | null = null,
 ) => {
 	await withDbFallback(
 		() =>
 			executePostgres(
 				`INSERT INTO work_items (
-					title, description, long_description, highlights, role, tech, link, image_path, image_alt, featured, sort
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+					title, description, long_description, highlights, role, tech, link, image_path, image_url, image_alt, featured, sort
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
 				[
 					title,
 					description,
@@ -923,6 +946,7 @@ export const createWorkItem = async (
 					tech,
 					link,
 					imagePath,
+					imageUrl,
 					imageAlt,
 					featured,
 					sort,
@@ -941,6 +965,7 @@ export const createWorkItem = async (
 				imageAlt,
 				featured,
 				sort,
+				imageUrl,
 			),
 	);
 	await invalidateWorkCaches();
@@ -959,14 +984,15 @@ export const updateWorkItem = async (
 	imageAlt: string | null,
 	featured: number,
 	sort: number,
+	imageUrl: string | null = null,
 ) => {
 	await withDbFallback(
 		() =>
 			executePostgres(
 				`UPDATE work_items
 				 SET title = $1, description = $2, long_description = $3, highlights = $4, role = $5, tech = $6, link = $7,
-					 image_path = $8, image_alt = $9, featured = $10, sort = $11
-				 WHERE id = $12`,
+					 image_path = $8, image_url = $9, image_alt = $10, featured = $11, sort = $12
+				 WHERE id = $13`,
 				[
 					title,
 					description,
@@ -976,6 +1002,7 @@ export const updateWorkItem = async (
 					tech,
 					link,
 					imagePath,
+					imageUrl,
 					imageAlt,
 					featured,
 					sort,
@@ -996,6 +1023,7 @@ export const updateWorkItem = async (
 				imageAlt,
 				featured,
 				sort,
+				imageUrl,
 			),
 	);
 	await invalidateWorkCaches();
@@ -1011,37 +1039,44 @@ export const deleteWorkItem = async (id: number) => {
 
 export const getPosts = async (): Promise<BlogPost[]> =>
 	withDbFallback(
-		() =>
-			queryPostgres<BlogPost>(
-				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt"
+		async () => {
+			const rows = await queryPostgres<BlogPostRow>(
+				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt",
+				 references_json as "referencesJson"
 				 FROM posts
 				 ORDER BY published_at DESC, created_at DESC`,
-			),
+			);
+			return rows.map(mapPostRow);
+		},
 		() => sqliteDb.getPosts(),
 	);
 
 export const getPublishedPosts = async (): Promise<BlogPost[]> =>
 	withDbFallback(
-		() =>
-			queryPostgres<BlogPost>(
-				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt"
+		async () => {
+			const rows = await queryPostgres<BlogPostRow>(
+				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt",
+				 references_json as "referencesJson"
 				 FROM posts
 				 WHERE draft = 0
 				 ORDER BY published_at DESC, created_at DESC`,
-			),
+			);
+			return rows.map(mapPostRow);
+		},
 		() => sqliteDb.getPublishedPosts(),
 	);
 
 export const getPostBySlug = async (slug: string): Promise<BlogPost | undefined> =>
 	withDbFallback(
 		async () => {
-			const rows = await queryPostgres<BlogPost>(
-				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt"
+			const rows = await queryPostgres<BlogPostRow>(
+				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt",
+				 references_json as "referencesJson"
 				 FROM posts
 				 WHERE slug = $1`,
 				[slug],
 			);
-			return rows[0];
+			return rows[0] ? mapPostRow(rows[0]) : undefined;
 		},
 		() => sqliteDb.getPostBySlug(slug),
 	);
@@ -1049,13 +1084,14 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | undefined>
 export const getPublishedPostBySlug = async (slug: string): Promise<BlogPost | undefined> =>
 	withDbFallback(
 		async () => {
-			const rows = await queryPostgres<BlogPost>(
-				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt"
+			const rows = await queryPostgres<BlogPostRow>(
+				`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as "publishedAt", created_at as "createdAt",
+				 references_json as "referencesJson"
 				 FROM posts
 				 WHERE slug = $1 AND draft = 0`,
 				[slug],
 			);
-			return rows[0];
+			return rows[0] ? mapPostRow(rows[0]) : undefined;
 		},
 		() => sqliteDb.getPublishedPostBySlug(slug),
 	);
@@ -1069,18 +1105,32 @@ export const createPost = async (
 	featured: number,
 	publishedAt: string | null,
 	slug?: string,
+	references: BlogReference[] = [],
 ) => {
 	await withDbFallback(
 		async () => {
 			const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
 			const finalSlug = await ensureUniquePostSlugPg(baseSlug);
+			const referencesJson = serializeReferences(references);
 			await executePostgres(
-				`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-				[title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, nowIso()],
+				`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at, references_json)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+				[
+					title,
+					finalSlug,
+					excerpt,
+					content,
+					tags,
+					draft,
+					featured,
+					publishedAt,
+					nowIso(),
+					referencesJson,
+				],
 			);
 		},
-		() => sqliteDb.createPost(title, excerpt, content, tags, draft, featured, publishedAt, slug),
+		() =>
+			sqliteDb.createPost(title, excerpt, content, tags, draft, featured, publishedAt, slug, references),
 	);
 	await invalidatePostCaches();
 };
@@ -1095,20 +1145,33 @@ export const updatePost = async (
 	featured: number,
 	publishedAt: string | null,
 	slug?: string,
+	references: BlogReference[] = [],
 ) => {
 	await withDbFallback(
 		async () => {
 			const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
 			const finalSlug = await ensureUniquePostSlugPg(baseSlug, id);
+			const referencesJson = serializeReferences(references);
 			await executePostgres(
 				`UPDATE posts
-				 SET title = $1, slug = $2, excerpt = $3, content = $4, tags = $5, draft = $6, featured = $7, published_at = $8
-				 WHERE id = $9`,
-				[title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, id],
+				 SET title = $1, slug = $2, excerpt = $3, content = $4, tags = $5, draft = $6, featured = $7, published_at = $8, references_json = $9
+				 WHERE id = $10`,
+				[title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, referencesJson, id],
 			);
 		},
 		() =>
-			sqliteDb.updatePost(id, title, excerpt, content, tags, draft, featured, publishedAt, slug),
+			sqliteDb.updatePost(
+				id,
+				title,
+				excerpt,
+				content,
+				tags,
+				draft,
+				featured,
+				publishedAt,
+				slug,
+				references,
+			),
 	);
 	await invalidatePostCaches();
 };

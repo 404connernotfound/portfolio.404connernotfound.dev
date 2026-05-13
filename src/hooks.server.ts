@@ -6,14 +6,8 @@ const shouldBypassMaintenance = (pathname: string) =>
 	pathname.startsWith('/admin') || pathname === '/maintenance';
 
 const loginRequiredPaths = new Set([
-	'/assets',
 	'/collaborate',
-	'/create-testimonials',
-	'/journey',
-	'/playground',
 	'/subscribe',
-	'/testimonials',
-	'/vision',
 ]);
 
 const normalizePath = (pathname: string) => {

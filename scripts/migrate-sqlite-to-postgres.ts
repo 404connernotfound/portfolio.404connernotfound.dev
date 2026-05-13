@@ -66,6 +66,7 @@ const specs: TableSpec[] = [
 			'tech',
 			'link',
 			'image_path',
+			'image_url',
 			'image_alt',
 			'featured',
 			'sort'
@@ -74,7 +75,19 @@ const specs: TableSpec[] = [
 	},
 	{
 		name: 'posts',
-		columns: ['id', 'title', 'slug', 'excerpt', 'content', 'tags', 'draft', 'featured', 'published_at', 'created_at'],
+		columns: [
+			'id',
+			'title',
+			'slug',
+			'excerpt',
+			'content',
+			'tags',
+			'draft',
+			'featured',
+			'published_at',
+			'created_at',
+			'references_json'
+		],
 		conflictColumns: ['id']
 	},
 	{

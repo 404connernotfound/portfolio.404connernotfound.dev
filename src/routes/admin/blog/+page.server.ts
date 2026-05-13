@@ -6,17 +6,18 @@ import {
 	getPosts,
 	createPost,
 	updatePost,
-	deletePost
+	deletePost,
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
+import { parseBlogReferencesForm } from '$lib/server/contentValidation';
 
 const MAX_LENGTHS = {
 	title: 120,
 	excerpt: 300,
 	content: 20000,
 	tags: 200,
-	slug: 120
+	slug: 120,
 };
 
 const parseNumber = (value: FormDataEntryValue | null, fallback = 0) => {
@@ -34,6 +35,17 @@ const parseText = (value: FormDataEntryValue | null) => {
 const parseCheckbox = (data: FormData, name: string) =>
 	data.getAll(name).some((value) => value === '1') ? 1 : 0;
 
+const todayDate = () => new Date().toISOString().slice(0, 10);
+
+const parsePublishing = (data: FormData, publishedAt: string | null) => {
+	const state = String(data.get('publishState') ?? '').trim();
+	const draft = state === 'publish' ? 0 : state === 'draft' ? 1 : parseCheckbox(data, 'draft');
+	return {
+		draft,
+		publishedAt: draft === 0 && !publishedAt ? todayDate() : publishedAt,
+	};
+};
+
 const ensureMaxLength = (value: string, max: number, label: string) =>
 	value.length > max ? `${label} must be ${max} characters or fewer.` : null;
 
@@ -45,7 +57,7 @@ export const load: PageServerLoad = async (event) => {
 	return {
 		siteSettings: await getSiteSettings(),
 		posts: await getPosts(),
-		csrfToken: getCsrfToken(event)
+		csrfToken: getCsrfToken(event),
 	};
 };
 
@@ -56,13 +68,13 @@ export const actions: Actions = {
 		if (!validateCsrfToken(event, data)) {
 			return fail(403, { action: 'updateBlogSection', message: 'Invalid CSRF token.' });
 		}
-			const current = await getSiteSettings();
-			const { id: _id, ...rest } = current;
-			void _id;
-			await updateSiteSettings({
+		const current = await getSiteSettings();
+		const { id: _id, ...rest } = current;
+		void _id;
+		await updateSiteSettings({
 			...rest,
 			blogTitle: String(data.get('blogTitle') ?? '').trim(),
-			blogIntro: String(data.get('blogIntro') ?? '').trim()
+			blogIntro: String(data.get('blogIntro') ?? '').trim(),
 		});
 		return { success: true, message: 'Blog section saved.', action: 'updateBlogSection' };
 	},
@@ -79,6 +91,8 @@ export const actions: Actions = {
 		const content = parseText(data.get('content'));
 		const tags = parseText(data.get('tags'));
 		const publishedAt = parseText(data.get('publishedAt'));
+		const publishing = parsePublishing(data, publishedAt);
+		const referenceResult = parseBlogReferencesForm(data);
 		const errors: Record<string, string> = {};
 
 		if (!title) errors.title = 'Title is required.';
@@ -92,9 +106,14 @@ export const actions: Actions = {
 		if (contentError) errors.content = contentError;
 		const tagsError = ensureOptionalMaxLength(tags, MAX_LENGTHS.tags, 'Tags');
 		if (tagsError) errors.tags = tagsError;
+		Object.assign(errors, referenceResult.errors);
 
 		if (Object.keys(errors).length > 0) {
-			return fail(400, { action: 'createPost', message: 'Check the highlighted fields.', fieldErrors: errors });
+			return fail(400, {
+				action: 'createPost',
+				message: 'Check the highlighted fields.',
+				fieldErrors: errors,
+			});
 		}
 
 		await createPost(
@@ -102,13 +121,18 @@ export const actions: Actions = {
 			excerpt,
 			content,
 			tags,
-			parseCheckbox(data, 'draft'),
+			publishing.draft,
 			parseCheckbox(data, 'featured'),
-			publishedAt,
-			slug ?? undefined
+			publishing.publishedAt,
+			slug ?? undefined,
+			referenceResult.references,
 		);
 
-		return { success: true, message: 'Post added.', action: 'createPost' };
+		return {
+			success: true,
+			message: publishing.draft === 1 ? 'Draft saved.' : 'Post published.',
+			action: 'createPost',
+		};
 	},
 	updatePost: async (event) => {
 		await requireAdminCached(event);
@@ -124,6 +148,8 @@ export const actions: Actions = {
 		const content = parseText(data.get('content'));
 		const tags = parseText(data.get('tags'));
 		const publishedAt = parseText(data.get('publishedAt'));
+		const publishing = parsePublishing(data, publishedAt);
+		const referenceResult = parseBlogReferencesForm(data);
 		const errors: Record<string, string> = {};
 
 		if (id <= 0) errors.id = 'Invalid post.';
@@ -138,9 +164,15 @@ export const actions: Actions = {
 		if (contentError) errors.content = contentError;
 		const tagsError = ensureOptionalMaxLength(tags, MAX_LENGTHS.tags, 'Tags');
 		if (tagsError) errors.tags = tagsError;
+		Object.assign(errors, referenceResult.errors);
 
 		if (Object.keys(errors).length > 0) {
-			return fail(400, { action: 'updatePost', message: 'Check the highlighted fields.', fieldErrors: errors, itemId: id });
+			return fail(400, {
+				action: 'updatePost',
+				message: 'Check the highlighted fields.',
+				fieldErrors: errors,
+				itemId: id,
+			});
 		}
 
 		await updatePost(
@@ -149,13 +181,19 @@ export const actions: Actions = {
 			excerpt,
 			content,
 			tags,
-			parseCheckbox(data, 'draft'),
+			publishing.draft,
 			parseCheckbox(data, 'featured'),
-			publishedAt,
-			slug ?? undefined
+			publishing.publishedAt,
+			slug ?? undefined,
+			referenceResult.references,
 		);
 
-		return { success: true, message: 'Post updated.', action: 'updatePost', itemId: id };
+		return {
+			success: true,
+			message: publishing.draft === 1 ? 'Draft updated.' : 'Post published.',
+			action: 'updatePost',
+			itemId: id,
+		};
 	},
 	deletePost: async (event) => {
 		await requireAdminCached(event);
@@ -169,5 +207,5 @@ export const actions: Actions = {
 		}
 		await deletePost(id);
 		return { success: true, message: 'Post deleted.', action: 'deletePost', itemId: id };
-	}
+	},
 };

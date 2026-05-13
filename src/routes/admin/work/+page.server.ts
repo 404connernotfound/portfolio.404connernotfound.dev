@@ -12,11 +12,12 @@ import {
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
+import { parseExternalImageUrl } from '$lib/server/contentValidation';
 
 const MAX_LENGTHS = {
 	title: 120,
 	description: 500,
-	longDescription: 1500,
+	longDescription: 4000,
 	highlights: 600,
 	role: 80,
 	tech: 80,
@@ -141,6 +142,7 @@ export const actions: Actions = {
 		const linkRaw = parseText(data.get('link'));
 		const imageAlt = parseText(data.get('imageAlt'));
 		const imageFile = parseImageFile(data.get('image'));
+		const imageUrlResult = parseExternalImageUrl(data.get('imageUrl'));
 		const errors: Record<string, string> = {};
 
 		if (!title) errors.title = 'Title is required.';
@@ -159,6 +161,7 @@ export const actions: Actions = {
 		if (techError) errors.tech = techError;
 		const imageAltError = ensureOptionalMaxLength(imageAlt, MAX_LENGTHS.imageAlt, 'Image alt');
 		if (imageAltError) errors.imageAlt = imageAltError;
+		if (imageUrlResult.error) errors.imageUrl = imageUrlResult.error;
 		if (linkRaw && !isSafeUrl(linkRaw)) {
 			errors.link = 'Link must be http(s), mailto, or a relative path.';
 		}
@@ -186,7 +189,8 @@ export const actions: Actions = {
 			imagePath,
 			imageAlt,
 			parseCheckbox(data, 'featured'),
-			parseNumber(data.get('sort'))
+			parseNumber(data.get('sort')),
+			imageUrlResult.imageUrl
 		);
 
 		return { success: true, message: 'Work item added.', action: 'createWork' };
@@ -208,6 +212,7 @@ export const actions: Actions = {
 		const linkRaw = parseText(data.get('link'));
 		const imageAlt = parseText(data.get('imageAlt'));
 		const imageFile = parseImageFile(data.get('image'));
+		const imageUrlResult = parseExternalImageUrl(data.get('imageUrl'));
 		const removeImage = data.getAll('removeImage').some((value) => value === '1');
 		const errors: Record<string, string> = {};
 		const current = (await getWorkItems()).find((item) => item.id === id);
@@ -230,6 +235,7 @@ export const actions: Actions = {
 		if (techError) errors.tech = techError;
 		const imageAltError = ensureOptionalMaxLength(imageAlt, MAX_LENGTHS.imageAlt, 'Image alt');
 		if (imageAltError) errors.imageAlt = imageAltError;
+		if (imageUrlResult.error) errors.imageUrl = imageUrlResult.error;
 		if (linkRaw && !isSafeUrl(linkRaw)) {
 			errors.link = 'Link must be http(s), mailto, or a relative path.';
 		}
@@ -272,7 +278,8 @@ export const actions: Actions = {
 			imagePath,
 			imageAlt,
 			parseCheckbox(data, 'featured'),
-			parseNumber(data.get('sort'))
+			parseNumber(data.get('sort')),
+			imageUrlResult.imageUrl
 		);
 
 		return { success: true, message: 'Work item updated.', action: 'updateWork', itemId: id };

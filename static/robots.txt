@@ -1,13 +1,7 @@
 # allow crawling most pages; keep admin out of search
 User-agent: *
 Disallow: /admin
-Disallow: /assets
 Disallow: /collaborate
-Disallow: /create-testimonials
-Disallow: /journey
-Disallow: /playground
 Disallow: /subscribe
-Disallow: /testimonials
 Disallow: /tracking
-Disallow: /vision
 Sitemap: https://portfolio.404connernotfound.dev/sitemap.xml

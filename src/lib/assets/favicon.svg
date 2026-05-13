@@ -1,7 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-	<title id="title">Conner systems mark</title>
-	<rect width="64" height="64" rx="12" fill="#0b0c17" />
-	<path d="M18 16h28v7H27v6h15v7H27v6h19v7H18z" fill="#f3f4f8" />
-	<path d="M45 14h5v36h-5z" fill="#55b1ff" />
-	<path d="M14 14h5v36h-5z" fill="#a47bff" />
+	<title id="title">Conner low-level systems icon</title>
+	<defs>
+		<linearGradient id="bg" x1="8" x2="56" y1="6" y2="58" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#10162f" />
+			<stop offset="1" stop-color="#05050b" />
+		</linearGradient>
+		<linearGradient id="trace" x1="10" x2="54" y1="54" y2="10" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#a47bff" />
+			<stop offset="1" stop-color="#55b1ff" />
+		</linearGradient>
+	</defs>
+	<rect width="64" height="64" rx="14" fill="url(#bg)" />
+	<rect x="7" y="7" width="50" height="50" rx="11" fill="#0b0c17" stroke="url(#trace)" stroke-width="2" />
+	<path d="M18 3v8M30 3v8M42 3v8M18 53v8M30 53v8M42 53v8" stroke="#55b1ff" stroke-width="3" stroke-linecap="round" opacity=".72" />
+	<path d="M3 18h8M3 30h8M3 42h8M53 18h8M53 30h8M53 42h8" stroke="#a47bff" stroke-width="3" stroke-linecap="round" opacity=".72" />
+	<path d="M43 19H27c-7 0-12 5-12 12v2c0 7 5 12 12 12h16" fill="none" stroke="#f3f4f8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+	<path d="M27 29l6 4-6 4" fill="none" stroke="#55b1ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+	<path d="M36 39h10" stroke="#a47bff" stroke-width="4" stroke-linecap="round" />
 </svg>

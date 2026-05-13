@@ -17,6 +17,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			'/',
 			'/about',
 			'/work',
+			'/blog',
 			'/resume',
 			'/contact',
 			'/privacy-policy',

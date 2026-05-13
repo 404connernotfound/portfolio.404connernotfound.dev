@@ -3,7 +3,9 @@
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import AdminNav from '$lib/components/AdminNav.svelte';
 	import AdminModal from '$lib/components/AdminModal.svelte';
+	import SafeImage from '$lib/components/SafeImage.svelte';
 	import { formatTitle } from '$lib/utils/seo';
+	import { resolveWorkCoverImage } from '$lib/utils/content';
 	import type { PageData, ActionData } from './$types';
 
 	export let data: PageData;
@@ -117,6 +119,7 @@
 			</h2>
 			{#if data.workItems.length}
 				{#each data.workItems as item}
+					{@const coverImage = resolveWorkCoverImage(item)}
 					<MotionReveal className="card space-y-4">
 						{#if isAction('updateWork') && feedback?.success && feedback?.itemId === item.id && feedback?.message}
 							<p class="text-xs text-aurora-200">{feedback?.message}</p>
@@ -131,13 +134,20 @@
 								<div
 									class="aspect-[4/3] w-full max-w-xs overflow-hidden rounded-2xl border border-ink-200/30 bg-white/5"
 								>
-									{#if item.imagePath}
-										<img
-											src={item.imagePath}
+									{#if coverImage}
+										<SafeImage
+											src={coverImage}
 											alt={item.imageAlt ?? `${item.title} preview`}
-											class="h-full w-full object-cover"
-											loading="lazy"
-										/>
+											className="h-full w-full object-cover"
+										>
+											<svelte:fragment slot="fallback">
+												<div
+													class="flex h-full w-full items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
+												>
+													Preview unavailable
+												</div>
+											</svelte:fragment>
+										</SafeImage>
 									{:else}
 										<div
 											class="flex h-full w-full items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
@@ -186,6 +196,7 @@
 						title={`Edit work: ${item.title}`}
 						description="Update project details in a focused editor."
 						on:close={closeEditModal}
+						maxWidthClass="max-w-6xl"
 					>
 						{#if isAction('updateWork') && feedback?.itemId === item.id && feedback?.message}
 							<p class={`mb-4 text-sm ${feedback?.success ? 'text-aurora-200' : 'text-ink-200'}`}>
@@ -221,8 +232,8 @@
 									name="description"
 									required
 									maxlength="500"
-									rows="3"
-									class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+									rows="4"
+									class="mt-2 w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-6 text-white"
 									aria-invalid={Boolean(fieldError('updateWork', 'description', item.id))}
 								>{item.description}</textarea>
 								{#if fieldError('updateWork', 'description', item.id)}
@@ -231,14 +242,14 @@
 							</div>
 							<div>
 								<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for={`work-long-${item.id}`}>
-									Long description
+									Markdown description
 								</label>
 								<textarea
 									id={`work-long-${item.id}`}
 									name="longDescription"
-									maxlength="1500"
-									rows="5"
-									class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+									maxlength="4000"
+									rows="10"
+									class="mt-2 min-h-[18rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updateWork', 'longDescription', item.id))}
 								>{item.longDescription ?? ''}</textarea>
 								{#if fieldError('updateWork', 'longDescription', item.id)}
@@ -329,6 +340,25 @@
 										{#if fieldError('updateWork', 'image', item.id)}
 											<p class="mt-2 text-xs text-red-200">{fieldError('updateWork', 'image', item.id)}</p>
 										{/if}
+										<label class="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for={`work-image-url-${item.id}`}>
+											External cover URL
+										</label>
+										<input
+											id={`work-image-url-${item.id}`}
+											name="imageUrl"
+											type="url"
+											inputmode="url"
+											value={item.imageUrl ?? ''}
+											maxlength="2048"
+											class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+											aria-invalid={Boolean(fieldError('updateWork', 'imageUrl', item.id))}
+										/>
+										<p class="mt-2 text-xs text-ink-200">
+											Uploaded image renders first. External URL is used when no uploaded image is set.
+										</p>
+										{#if fieldError('updateWork', 'imageUrl', item.id)}
+											<p class="mt-2 text-xs text-red-200">{fieldError('updateWork', 'imageUrl', item.id)}</p>
+										{/if}
 										<label class="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for={`work-image-alt-${item.id}`}>
 											Image alt text
 										</label>
@@ -353,13 +383,20 @@
 									<div
 										class="aspect-[4/3] overflow-hidden rounded-2xl border border-ink-200/30 bg-white/5"
 									>
-										{#if item.imagePath}
-											<img
-												src={item.imagePath}
+										{#if coverImage}
+											<SafeImage
+												src={coverImage}
 												alt={item.imageAlt ?? `${item.title} preview`}
-												class="h-full w-full object-cover"
-												loading="lazy"
-											/>
+												className="h-full w-full object-cover"
+											>
+												<svelte:fragment slot="fallback">
+													<div
+														class="flex h-full w-full items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
+													>
+														Preview unavailable
+													</div>
+												</svelte:fragment>
+											</SafeImage>
 										{:else}
 											<div
 												class="flex h-full w-full items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
@@ -432,6 +469,7 @@
 	title="Add work item"
 	description="Create a new project entry without leaving your list."
 	on:close={closeCreateModal}
+	maxWidthClass="max-w-6xl"
 >
 	{#if isAction('createWork') && feedback?.message}
 		<p class={`mb-4 text-sm ${feedback?.success ? 'text-aurora-200' : 'text-ink-200'}`}>
@@ -460,29 +498,29 @@
 			<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="workDescription">
 				Description
 			</label>
-			<textarea
-				id="workDescription"
-				name="description"
-				required
-				maxlength="500"
-				rows="3"
-				class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-				aria-invalid={Boolean(fieldError('createWork', 'description'))}
-			></textarea>
+		<textarea
+			id="workDescription"
+			name="description"
+			required
+			maxlength="500"
+			rows="4"
+			class="mt-2 w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-6 text-white"
+			aria-invalid={Boolean(fieldError('createWork', 'description'))}
+		></textarea>
 			{#if fieldError('createWork', 'description')}
 				<p class="mt-2 text-xs text-red-200">{fieldError('createWork', 'description')}</p>
 			{/if}
 		</div>
 		<div>
 			<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="workLongDescription">
-				Long description
+				Markdown description
 			</label>
 			<textarea
 				id="workLongDescription"
 				name="longDescription"
-				maxlength="1500"
-				rows="4"
-				class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+				maxlength="4000"
+				rows="10"
+				class="mt-2 min-h-[18rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 				aria-invalid={Boolean(fieldError('createWork', 'longDescription'))}
 			></textarea>
 			{#if fieldError('createWork', 'longDescription')}
@@ -569,6 +607,24 @@
 				/>
 				{#if fieldError('createWork', 'image')}
 					<p class="mt-2 text-xs text-red-200">{fieldError('createWork', 'image')}</p>
+				{/if}
+				<label class="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="workImageUrl">
+					External cover URL
+				</label>
+				<input
+					id="workImageUrl"
+					name="imageUrl"
+					type="url"
+					inputmode="url"
+					maxlength="2048"
+					class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+					aria-invalid={Boolean(fieldError('createWork', 'imageUrl'))}
+				/>
+				<p class="mt-2 text-xs text-ink-200">
+					Uploaded image renders first. External URL is used when no uploaded image is set.
+				</p>
+				{#if fieldError('createWork', 'imageUrl')}
+					<p class="mt-2 text-xs text-red-200">{fieldError('createWork', 'imageUrl')}</p>
 				{/if}
 				<label class="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="workImageAlt">
 					Image alt text

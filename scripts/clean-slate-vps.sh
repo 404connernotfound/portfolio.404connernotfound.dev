@@ -48,7 +48,6 @@ HOST=0.0.0.0
 PORT=3000
 ORIGIN=https://portfolio.404connernotfound.dev
 HOST_APP_PORT=3000
-HOST_PLAYGROUND_WS_PORT=24680
 POSTGRES_DB=portfolio
 POSTGRES_USER=portfolio
 POSTGRES_PASSWORD=unused-cleanup-password
@@ -58,7 +57,6 @@ REDIS_URL=redis://redis:6379
 ADMIN_SESSION_SECRET=unused-cleanup-secret
 ADMIN_EMAIL=cleanup@example.com
 ADMIN_PASSWORD=unused-cleanup-password
-PLAYGROUND_WS_PORT=24680
 EOF
 	printf '%s\n' "${TEMP_ENV_FILE}"
 }

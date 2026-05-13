@@ -1,7 +1,10 @@
 <script lang="ts">
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import SafeImage from '$lib/components/SafeImage.svelte';
 	import { formatTitle } from '$lib/utils/seo';
+	import { resolveWorkCoverImage } from '$lib/utils/content';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -48,6 +51,7 @@
 			<div class="mt-8 space-y-6">
 				{#each featuredWork as project, index}
 					{@const highlightItems = parseHighlights(project.highlights)}
+					{@const coverImage = resolveWorkCoverImage(project)}
 					<MotionReveal
 						delay={0.08 * index}
 						className="card grid gap-6 lg:grid-cols-[0.55fr_0.45fr]"
@@ -63,7 +67,10 @@
 								{/if}
 							</div>
 							<h3 class="text-2xl font-semibold text-white">{project.title}</h3>
-							<p class="text-sm text-ink-200">{project.longDescription ?? project.description}</p>
+							<MarkdownContent
+								source={project.longDescription ?? project.description}
+								className="markdown-compact"
+							/>
 							{#if highlightItems.length}
 								<ul class="space-y-2 text-sm text-ink-100">
 									{#each highlightItems as highlight}
@@ -89,13 +96,16 @@
 						<div
 							class="media-frame aspect-[4/3] rounded-2xl border border-ink-200/20 bg-white/5 shadow-soft flex items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
 						>
-							{#if project.imagePath}
-								<img
-									src={project.imagePath}
+							{#if coverImage}
+								<SafeImage
+									src={coverImage}
 									alt={project.imageAlt ?? `${project.title} preview`}
-									class="h-full w-full rounded-2xl object-cover"
-									loading="lazy"
-								/>
+									width={1200}
+									height={900}
+									className="h-full w-full rounded-2xl object-cover"
+								>
+									<svelte:fragment slot="fallback">Repository</svelte:fragment>
+								</SafeImage>
 							{:else}
 								Repository
 							{/if}
@@ -110,17 +120,21 @@
 		{#if otherWork.length}
 			<div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 				{#each otherWork as project, index}
+					{@const coverImage = resolveWorkCoverImage(project)}
 					<MotionReveal delay={0.07 * index} className="card">
 						<div
 							class="media-frame aspect-[4/3] rounded-2xl border border-ink-200/20 bg-white/5 shadow-soft flex items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
 						>
-							{#if project.imagePath}
-								<img
-									src={project.imagePath}
+							{#if coverImage}
+								<SafeImage
+									src={coverImage}
 									alt={project.imageAlt ?? `${project.title} preview`}
-									class="h-full w-full rounded-2xl object-cover"
-									loading="lazy"
-								/>
+									width={1200}
+									height={900}
+									className="h-full w-full rounded-2xl object-cover"
+								>
+									<svelte:fragment slot="fallback">Repository</svelte:fragment>
+								</SafeImage>
 							{:else}
 								Repository
 							{/if}
@@ -137,7 +151,7 @@
 							{/if}
 						</div>
 						<h3 class="mt-3 text-2xl font-semibold text-white">{project.title}</h3>
-						<p class="mt-2 text-sm text-ink-200">{project.description}</p>
+						<MarkdownContent source={project.description} className="markdown-compact mt-2" />
 						{#if project.link}
 							<a
 								class="link-underline mt-6"

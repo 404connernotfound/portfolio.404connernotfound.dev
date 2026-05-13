@@ -8,13 +8,10 @@
 		{ label: 'Stack', href: '/admin/stack' },
 		{ label: 'Work', href: '/admin/work' },
 		{ label: 'Blog', href: '/admin/blog' },
-		{ label: 'Testimonials', href: '/admin/testimonials' },
 		{ label: 'Contact', href: '/admin/contact' },
 		{ label: 'Errors', href: '/admin/errors' },
 		{ label: 'Footer', href: '/admin/footer' },
-		{ label: 'Assets', href: '/admin/assets' },
 		{ label: 'Tracking', href: '/admin/tracking' },
-		{ label: 'Playground', href: '/admin/playground' },
 		{ label: 'Resume', href: '/admin/resume' }
 	];
 

@@ -3,6 +3,7 @@
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { formatTitle } from '$lib/utils/seo';
+	import { resolveWorkCoverImage } from '$lib/utils/content';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -96,7 +97,7 @@
 <SeoHead
 	title={formatTitle('Home')}
 	description={data.siteSettings.heroSubheadline || data.siteSettings.heroHeadline}
-	image={data.featuredWork[0]?.imagePath ?? defaultOgImage}
+	image={data.featuredWork[0] ? (resolveWorkCoverImage(data.featuredWork[0]) ?? defaultOgImage) : defaultOgImage}
 	imageAlt={data.featuredWork[0]?.imageAlt ?? 'Featured project preview'}
 />
 
@@ -181,15 +182,18 @@
 			{#each data.featuredWork as project, index}
 				{@const highlights = parseHighlights(project.highlights)}
 				{@const caseSummary = summarizeCaseStudy(project.longDescription)}
+				{@const coverImage = resolveWorkCoverImage(project)}
 				<MotionReveal delay={0.08 * index} className="card flex h-full flex-col justify-between">
 					<div class="space-y-3">
 						<div
 							class="media-frame aspect-[4/3] rounded-2xl border border-ink-200/20 bg-white/5 shadow-soft flex items-center justify-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-200"
 						>
-							{#if project.imagePath}
+							{#if coverImage}
 								<img
-									src={project.imagePath}
+									src={coverImage}
 									alt={project.imageAlt ?? `${project.title} preview`}
+									width="1200"
+									height="900"
 									class="h-full w-full rounded-2xl object-cover"
 									loading="lazy"
 								/>

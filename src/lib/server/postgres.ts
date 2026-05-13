@@ -69,6 +69,7 @@ const appSchemaSql = `
 		tech TEXT,
 		link TEXT,
 		image_path TEXT,
+		image_url TEXT,
 		image_alt TEXT,
 		featured INTEGER NOT NULL DEFAULT 0,
 		sort INTEGER NOT NULL DEFAULT 0
@@ -84,8 +85,12 @@ const appSchemaSql = `
 		draft INTEGER NOT NULL DEFAULT 0,
 		featured INTEGER NOT NULL DEFAULT 0,
 		published_at TEXT,
-		created_at TEXT NOT NULL
+		created_at TEXT NOT NULL,
+		references_json TEXT
 	);
+
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS image_url TEXT;
+	ALTER TABLE posts ADD COLUMN IF NOT EXISTS references_json TEXT;
 
 	CREATE TABLE IF NOT EXISTS assets (
 		id BIGSERIAL PRIMARY KEY,

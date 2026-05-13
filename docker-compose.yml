@@ -12,7 +12,6 @@ x-app-env: &app-env
 
 x-static-volumes:
   uploads: &uploads-volume portfolio_uploads:/app/static/uploads
-  asset-uploads: &asset-uploads-volume portfolio_asset_uploads:/app/static/assets/uploads
   work-assets: &work-assets-volume portfolio_work_assets:/app/static/assets/work
 
 services:
@@ -22,7 +21,6 @@ services:
     restart: "no"
     volumes:
       - *uploads-volume
-      - *asset-uploads-volume
       - *work-assets-volume
     command: ["sh", "scripts/seed-static-volumes.sh"]
 
@@ -40,11 +38,9 @@ services:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:${HOST_APP_PORT:-3000}:3000"
-      - "127.0.0.1:${HOST_PLAYGROUND_WS_PORT:-24680}:${PLAYGROUND_WS_PORT:-24680}"
     volumes:
       - portfolio_sqlite_data:/data
       - *uploads-volume
-      - *asset-uploads-volume
       - *work-assets-volume
     healthcheck:
       test:
@@ -70,7 +66,6 @@ services:
     volumes:
       - portfolio_sqlite_data:/data
       - *uploads-volume
-      - *asset-uploads-volume
       - *work-assets-volume
     command: ["npm", "run", "db:seed"]
 
@@ -106,5 +101,4 @@ volumes:
   portfolio_redis_data:
   portfolio_sqlite_data:
   portfolio_uploads:
-  portfolio_asset_uploads:
   portfolio_work_assets:

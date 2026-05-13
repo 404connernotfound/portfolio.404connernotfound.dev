@@ -3,10 +3,8 @@ set -euo pipefail
 
 DOMAIN="${DOMAIN:-portfolio.404connernotfound.dev}"
 APP_UPSTREAM="${APP_UPSTREAM:-127.0.0.1:3000}"
-PLAYGROUND_UPSTREAM="${PLAYGROUND_UPSTREAM:-127.0.0.1:24680}"
 UPLOADS_ROOT="${UPLOADS_ROOT:-/var/lib/docker/volumes/portfolio_portfolio_uploads/_data}"
 WORK_ASSETS_ROOT="${WORK_ASSETS_ROOT:-/var/lib/docker/volumes/portfolio_portfolio_work_assets/_data}"
-ASSET_UPLOADS_ROOT="${ASSET_UPLOADS_ROOT:-/var/lib/docker/volumes/portfolio_portfolio_asset_uploads/_data}"
 TLS_CERT_PATH="${TLS_CERT_PATH:-/etc/ssl/cloudflare/${DOMAIN}/origin.pem}"
 TLS_KEY_PATH="${TLS_KEY_PATH:-/etc/ssl/cloudflare/${DOMAIN}/origin.key}"
 CLOUDFLARE_REALIP_CONF="${CLOUDFLARE_REALIP_CONF:-/etc/nginx/cloudflare-realip.conf}"
@@ -69,10 +67,8 @@ trap 'rm -f "${tmp}"' EXIT
 sed \
 	-e "s#__DOMAIN__#${DOMAIN}#g" \
 	-e "s#__APP_UPSTREAM__#${APP_UPSTREAM}#g" \
-	-e "s#__PLAYGROUND_UPSTREAM__#${PLAYGROUND_UPSTREAM}#g" \
 	-e "s#__UPLOADS_ROOT__#${UPLOADS_ROOT}#g" \
 	-e "s#__WORK_ASSETS_ROOT__#${WORK_ASSETS_ROOT}#g" \
-	-e "s#__ASSET_UPLOADS_ROOT__#${ASSET_UPLOADS_ROOT}#g" \
 	-e "s#__TLS_CERT_PATH__#${TLS_CERT_PATH}#g" \
 	-e "s#__TLS_KEY_PATH__#${TLS_KEY_PATH}#g" \
 	"${TEMPLATE}" \

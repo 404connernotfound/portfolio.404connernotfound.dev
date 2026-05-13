@@ -17,10 +17,8 @@ seed_tree() {
 }
 
 seed_tree "${STATIC_DEFAULTS_DIR}/uploads" "${STATIC_DIR}/uploads"
-seed_tree "${STATIC_DEFAULTS_DIR}/assets/uploads" "${STATIC_DIR}/assets/uploads"
 seed_tree "${STATIC_DEFAULTS_DIR}/assets/work" "${STATIC_DIR}/assets/work"
 
 chown -R node:node \
 	"${STATIC_DIR}/uploads" \
-	"${STATIC_DIR}/assets/uploads" \
 	"${STATIC_DIR}/assets/work"

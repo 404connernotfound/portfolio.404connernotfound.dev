@@ -1,6 +1,11 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+	parseStoredReferences,
+	serializeReferences,
+	type BlogReference
+} from '../utils/content';
 const runtimeEnv = process.env;
 const isDev = runtimeEnv.NODE_ENV !== 'production';
 
@@ -60,6 +65,7 @@ type WorkItem = {
 	tech: string | null;
 	link: string | null;
 	imagePath: string | null;
+	imageUrl: string | null;
 	imageAlt: string | null;
 	featured: number;
 	sort: number;
@@ -76,6 +82,11 @@ type BlogPost = {
 	featured: number;
 	publishedAt: string | null;
 	createdAt: string;
+	references: BlogReference[];
+};
+
+type BlogPostRow = Omit<BlogPost, 'references'> & {
+	referencesJson: string | null;
 };
 
 type Asset = {
@@ -240,8 +251,9 @@ const DEFAULT_FOOTER_LINKS: Omit<FooterLink, 'id'>[] = [
 	{ section: 'Pages', label: 'Home', href: '/', external: 0, sort: 1 },
 	{ section: 'Pages', label: 'About', href: '/about', external: 0, sort: 2 },
 	{ section: 'Pages', label: 'Work', href: '/work', external: 0, sort: 3 },
-	{ section: 'Pages', label: 'Resume', href: '/resume', external: 0, sort: 4 },
-	{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 5 },
+	{ section: 'Pages', label: 'Blog', href: '/blog', external: 0, sort: 4 },
+	{ section: 'Pages', label: 'Resume', href: '/resume', external: 0, sort: 5 },
+	{ section: 'Pages', label: 'Contact', href: '/contact', external: 0, sort: 6 },
 	{
 		section: 'Links',
 		label: 'GitHub',
@@ -300,6 +312,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust',
 		link: 'https://github.com/ConnerAdamsMaine/TinyOne',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 10,
@@ -315,6 +328,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust, LLMs',
 		link: 'https://github.com/ConnerAdamsMaine/Unum.rs',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 20,
@@ -330,6 +344,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Raspberry Pi, networking',
 		link: 'https://github.com/ConnerAdamsMaine/PiFi2',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 30,
@@ -346,6 +361,7 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 		tech: 'Rust, CLI, daemon',
 		link: 'https://github.com/Winux-Core/Winux-PTree',
 		imagePath: null,
+		imageUrl: null,
 		imageAlt: null,
 		featured: 1,
 		sort: 40,
@@ -463,6 +479,7 @@ const createTables = (database: Database.Database) => {
 			tech TEXT,
 			link TEXT,
 			image_path TEXT,
+			image_url TEXT,
 			image_alt TEXT,
 			featured INTEGER DEFAULT 0,
 			sort INTEGER DEFAULT 0
@@ -478,7 +495,8 @@ const createTables = (database: Database.Database) => {
 			draft INTEGER DEFAULT 0,
 			featured INTEGER DEFAULT 0,
 			published_at TEXT,
-			created_at TEXT NOT NULL
+			created_at TEXT NOT NULL,
+			references_json TEXT
 		);
 
 		CREATE TABLE IF NOT EXISTS assets (
@@ -670,6 +688,7 @@ const ensureWorkItemsColumns = (database: Database.Database) => {
 	ensureColumn('long_description', 'TEXT');
 	ensureColumn('highlights', 'TEXT');
 	ensureColumn('image_path', 'TEXT');
+	ensureColumn('image_url', 'TEXT');
 	ensureColumn('image_alt', 'TEXT');
 };
 
@@ -680,6 +699,9 @@ const ensurePostsColumns = (database: Database.Database) => {
 
 	if (!columns.includes('draft')) {
 		database.exec('ALTER TABLE posts ADD COLUMN draft INTEGER NOT NULL DEFAULT 0');
+	}
+	if (!columns.includes('references_json')) {
+		database.exec('ALTER TABLE posts ADD COLUMN references_json TEXT');
 	}
 };
 
@@ -1032,8 +1054,8 @@ const seedWorkItems = (database: Database.Database) => {
 	const insert = database.prepare(
 		`INSERT INTO work_items (
 			title, description, long_description, highlights, role, tech, link,
-			image_path, image_alt, featured, sort
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			image_path, image_url, image_alt, featured, sort
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	);
 
 	for (const row of DEFAULT_WORK_ITEMS) {
@@ -1046,6 +1068,7 @@ const seedWorkItems = (database: Database.Database) => {
 			row.tech,
 			row.link,
 			row.imagePath,
+			row.imageUrl,
 			row.imageAlt,
 			row.featured,
 			row.sort,
@@ -1224,7 +1247,6 @@ const prunePlaceholderFooterLinks = (database: Database.Database) => {
 			 WHERE href IS NULL
 				OR href = ''
 				OR (label = 'YouTube' AND href = '#')
-				OR (label = 'Blog' AND href = '/blog')
 				OR (section = 'Links' AND label IN ('About', 'Work') AND href IN ('/about', '/work'))`,
 		)
 		.run();
@@ -1389,6 +1411,14 @@ const runMigrations = (database: Database.Database) => {
 		{ id: 19, name: 'work_items_media_columns', up: ensureWorkItemsColumns },
 		{ id: 20, name: 'lead_capture_tables', up: ensureLeadCaptureTables },
 		{ id: 21, name: 'portfolio_content_defaults', up: ensurePortfolioContent },
+		{
+			id: 22,
+			name: 'markdown_content_columns',
+			up: (database) => {
+				ensureWorkItemsColumns(database);
+				ensurePostsColumns(database);
+			}
+		},
 	];
 
 	for (const migration of migrations) {
@@ -1657,7 +1687,7 @@ export const getWorkItems = () => {
 	const rows = database
 		.prepare(
 			`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
-			 image_path as imagePath, image_alt as imageAlt, featured, sort
+			 image_path as imagePath, image_url as imageUrl, image_alt as imageAlt, featured, sort
 			 FROM work_items
 			 ORDER BY sort ASC, id DESC`,
 		)
@@ -1676,7 +1706,7 @@ export const getFeaturedWork = () => {
 		: (getDb()
 				.prepare(
 					`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
-						 image_path as imagePath, image_alt as imageAlt, featured, sort
+						 image_path as imagePath, image_url as imageUrl, image_alt as imageAlt, featured, sort
 						 FROM work_items
 						 WHERE featured = 1
 						 ORDER BY sort ASC, id DESC`,
@@ -1699,13 +1729,14 @@ export const createWorkItem = (
 	imageAlt: string | null,
 	featured: number,
 	sort: number,
+	imageUrl: string | null = null,
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`INSERT INTO work_items (
-				title, description, long_description, highlights, role, tech, link, image_path, image_alt, featured, sort
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				title, description, long_description, highlights, role, tech, link, image_path, image_url, image_alt, featured, sort
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(
 			title,
@@ -1716,6 +1747,7 @@ export const createWorkItem = (
 			tech,
 			link,
 			imagePath,
+			imageUrl,
 			imageAlt,
 			featured,
 			sort,
@@ -1737,13 +1769,14 @@ export const updateWorkItem = (
 	imageAlt: string | null,
 	featured: number,
 	sort: number,
+	imageUrl: string | null = null,
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`UPDATE work_items
 			 SET title = ?, description = ?, long_description = ?, highlights = ?, role = ?, tech = ?, link = ?,
-				 image_path = ?, image_alt = ?, featured = ?, sort = ?
+				 image_path = ?, image_url = ?, image_alt = ?, featured = ?, sort = ?
 			 WHERE id = ?`,
 		)
 		.run(
@@ -1755,6 +1788,7 @@ export const updateWorkItem = (
 			tech,
 			link,
 			imagePath,
+			imageUrl,
 			imageAlt,
 			featured,
 			sort,
@@ -1771,20 +1805,30 @@ export const deleteWorkItem = (id: number) => {
 	clearCache('workItems', 'featuredWork');
 };
 
+const mapPostRow = (row: BlogPostRow): BlogPost => {
+	const { referencesJson, ...post } = row;
+	return {
+		...post,
+		references: parseStoredReferences(referencesJson)
+	};
+};
+
 export const getPosts = () => {
 	const cached = getCached(cache.posts);
 	if (cached) return cached;
 	const database = getDb();
 	const rows = database
 		.prepare(
-			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
+			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt,
+			 references_json as referencesJson
 			 FROM posts
 			 ORDER BY published_at DESC, created_at DESC`,
 		)
-		.all() as BlogPost[];
+		.all() as BlogPostRow[];
 
-	setCache('posts', rows);
-	return rows;
+	const posts = rows.map(mapPostRow);
+	setCache('posts', posts);
+	return posts;
 };
 
 export const getPublishedPosts = () => {
@@ -1793,14 +1837,16 @@ export const getPublishedPosts = () => {
 		return cached.filter((post) => post.draft === 0);
 	}
 	const database = getDb();
-	return database
+	const rows = database
 		.prepare(
-			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
+			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt,
+			 references_json as referencesJson
 			 FROM posts
 			 WHERE draft = 0
 			 ORDER BY published_at DESC, created_at DESC`,
 		)
-		.all() as BlogPost[];
+		.all() as BlogPostRow[];
+	return rows.map(mapPostRow);
 };
 
 export const getPostBySlug = (slug: string) => {
@@ -1811,13 +1857,14 @@ export const getPostBySlug = (slug: string) => {
 	const database = getDb();
 	const row = database
 		.prepare(
-			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
+			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt,
+			 references_json as referencesJson
 			 FROM posts
 			 WHERE slug = ?`,
 		)
-		.get(slug) as BlogPost | undefined;
+		.get(slug) as BlogPostRow | undefined;
 
-	return row;
+	return row ? mapPostRow(row) : undefined;
 };
 
 export const getPublishedPostBySlug = (slug: string) => {
@@ -1828,13 +1875,14 @@ export const getPublishedPostBySlug = (slug: string) => {
 	const database = getDb();
 	const row = database
 		.prepare(
-			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt
+			`SELECT id, title, slug, excerpt, content, tags, draft, featured, published_at as publishedAt, created_at as createdAt,
+			 references_json as referencesJson
 			 FROM posts
 			 WHERE slug = ? AND draft = 0`,
 		)
-		.get(slug) as BlogPost | undefined;
+		.get(slug) as BlogPostRow | undefined;
 
-	return row;
+	return row ? mapPostRow(row) : undefined;
 };
 
 const slugify = (value: string) =>
@@ -1870,18 +1918,20 @@ export const createPost = (
 	featured: number,
 	publishedAt: string | null,
 	slug?: string,
+	references: BlogReference[] = [],
 ) => {
 	const database = getDb();
 	const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
 	const finalSlug = ensureUniqueSlug(database, baseSlug);
 	const now = new Date().toISOString();
+	const referencesJson = serializeReferences(references);
 
 	database
 		.prepare(
-			`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at, references_json)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
-		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, now);
+		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, now, referencesJson);
 
 	clearCache('posts');
 };
@@ -1896,18 +1946,20 @@ export const updatePost = (
 	featured: number,
 	publishedAt: string | null,
 	slug?: string,
+	references: BlogReference[] = [],
 ) => {
 	const database = getDb();
 	const baseSlug = slug && slug.length > 0 ? slug : slugify(title);
 	const finalSlug = ensureUniqueSlug(database, baseSlug, id);
+	const referencesJson = serializeReferences(references);
 
 	database
 		.prepare(
 			`UPDATE posts
-			 SET title = ?, slug = ?, excerpt = ?, content = ?, tags = ?, draft = ?, featured = ?, published_at = ?
+			 SET title = ?, slug = ?, excerpt = ?, content = ?, tags = ?, draft = ?, featured = ?, published_at = ?, references_json = ?
 			 WHERE id = ?`,
 		)
-		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, id);
+		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, referencesJson, id);
 
 	clearCache('posts');
 };

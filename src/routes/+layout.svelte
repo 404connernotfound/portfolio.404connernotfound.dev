@@ -17,6 +17,19 @@
 		scrollProgress = max <= 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / max));
 	};
 
+	const handleImageError = (event: Event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLImageElement)) return;
+		if (target.dataset.imageFallback !== '1') return;
+		if (target.dataset.imageFallbackApplied === '1') return;
+		target.dataset.imageFallbackApplied = '1';
+		const fallback = document.createElement('span');
+		fallback.className = 'image-fallback';
+		fallback.textContent =
+			target.dataset.imageFallbackText || target.alt || 'Image unavailable';
+		target.replaceWith(fallback);
+	};
+
 	onMount(() => {
 		const media = window.matchMedia('(prefers-reduced-motion: reduce)');
 		const updateMotionPreference = () => {
@@ -27,6 +40,7 @@
 		updateScrollProgress();
 		window.addEventListener('scroll', updateScrollProgress, { passive: true });
 		window.addEventListener('resize', updateScrollProgress);
+		window.addEventListener('error', handleImageError, true);
 		media.addEventListener('change', updateMotionPreference);
 
 		afterNavigate(({ to }) => {
@@ -39,6 +53,7 @@
 		return () => {
 			window.removeEventListener('scroll', updateScrollProgress);
 			window.removeEventListener('resize', updateScrollProgress);
+			window.removeEventListener('error', handleImageError, true);
 			media.removeEventListener('change', updateMotionPreference);
 		};
 	});

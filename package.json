@@ -29,7 +29,7 @@
 		"format:write": "prettier --write .",
 		"db:seed": "tsx scripts/seed-db.ts",
 		"db:migrate:postgres": "tsx scripts/migrate-sqlite-to-postgres.ts",
-		"test": "echo \"No tests specified\""
+		"test": "tsx tests/content.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.5.2",
@@ -38,7 +38,6 @@
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^25.2.1",
 		"@types/pg": "^8.15.6",
-		"@types/ws": "^8.18.1",
 		"@typescript-eslint/eslint-plugin": "^7.18.0",
 		"@typescript-eslint/parser": "^7.18.0",
 		"autoprefixer": "^10.4.20",
@@ -63,8 +62,7 @@
 		"gsap": "^3.14.2",
 		"pg": "^8.16.3",
 		"redis": "^5.8.2",
-		"svelte-motion": "^0.12.2",
-		"ws": "^8.19.0"
+		"svelte-motion": "^0.12.2"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
