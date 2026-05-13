@@ -90,10 +90,17 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
 
 For a no-downtime GitHub update, use the hot updater instead:
 ```bash
-DRY_RUN=1 sudo ./scripts/zero-downtime-update-vps.sh
-sudo ./scripts/zero-downtime-update-vps.sh
+DRY_RUN=1 sudo ./scripts/quick-redeploy.sh
+sudo ./scripts/quick-redeploy.sh
 ```
 It fetches the newest `origin/main`, creates a temporary release checkout, builds a revision-tagged Docker image, runs the static seed and database seed steps, starts the new app container on a free localhost port, health-checks `/healthz`, then reloads Nginx to proxy to the new container. The container currently serving traffic is left running. Set `HOT_UPDATE_PRUNE_OLD=1` when you want old hot-update containers removed after the new one is live.
+
+To redeploy the current local checkout without fetching GitHub:
+```bash
+HOT_UPDATE_SKIP_GITHUB=1 DRY_RUN=1 sudo ./scripts/quick-redeploy.sh
+HOT_UPDATE_SKIP_GITHUB=1 sudo ./scripts/quick-redeploy.sh
+```
+This builds directly from the files in the current checkout and uses a timestamped image/container name.
 
 Before DNS is live, you can still test the stack on the VPS:
 ```bash
@@ -163,7 +170,7 @@ Use `scripts/clean-slate-vps.sh` when the VPS should look like the portfolio ser
 - Clean-slate VPS cleanup: `scripts/clean-slate-vps.sh`
 - Auto-update timer installer: `scripts/install-auto-update.sh`
 - Auto-update worker: `scripts/auto-update-vps.sh`
-- Zero-downtime GitHub updater: `scripts/zero-downtime-update-vps.sh`
+- Zero-downtime GitHub updater: `scripts/quick-redeploy.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
 - Nginx template used by automation: `nginx/portfolio.conf.template`
 - Procfile: `Procfile`

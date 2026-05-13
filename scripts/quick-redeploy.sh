@@ -5,7 +5,7 @@ REPO_DIR="${REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 ENV_FILE="${ENV_FILE:-${REPO_DIR}/deploy/portfolio.env}"
 COMPOSE_FILE="${COMPOSE_FILE:-${REPO_DIR}/docker-compose.yml}"
 HOT_UPDATE_REMOTE="${HOT_UPDATE_REMOTE:-origin}"
-HOT_UPDATE_BRANCH="${HOT_UPDATE_BRANCH:-$(git -C "${REPO_DIR}" branch --show-current 2>/dev/null || true)}"
+HOT_UPDATE_BRANCH="${HOT_UPDATE_BRANCH:-}"
 HOT_UPDATE_LOCK_FILE="${HOT_UPDATE_LOCK_FILE:-/tmp/portfolio-zero-downtime-update.lock}"
 HOT_UPDATE_RELEASE_ROOT="${HOT_UPDATE_RELEASE_ROOT:-/tmp/portfolio-releases}"
 HOT_UPDATE_PORT_START="${HOT_UPDATE_PORT_START:-3001}"
@@ -19,6 +19,7 @@ HOT_UPDATE_WORK_ASSETS_VOLUME="${HOT_UPDATE_WORK_ASSETS_VOLUME:-portfolio_portfo
 HOT_UPDATE_HEALTH_TIMEOUT="${HOT_UPDATE_HEALTH_TIMEOUT:-90}"
 HOT_UPDATE_APPLY_NGINX="${HOT_UPDATE_APPLY_NGINX:-1}"
 HOT_UPDATE_PRUNE_OLD="${HOT_UPDATE_PRUNE_OLD:-0}"
+HOT_UPDATE_SKIP_GITHUB="${HOT_UPDATE_SKIP_GITHUB:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 
 log() {
@@ -48,10 +49,6 @@ if [[ "${DRY_RUN}" != "1" ]]; then
 	fi
 fi
 
-if [[ -z "${HOT_UPDATE_BRANCH}" ]]; then
-	die "HOT_UPDATE_BRANCH is empty and the current checkout is not on a branch"
-fi
-
 if [[ ! -f "${ENV_FILE}" ]]; then
 	die "missing env file: ${ENV_FILE}"
 fi
@@ -74,19 +71,45 @@ if ! git -C "${REPO_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 	die "${REPO_DIR} is not a git checkout"
 fi
 
-remote_ref="refs/remotes/${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}"
-log "checking ${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}"
-git -C "${REPO_DIR}" fetch --prune --tags "${HOT_UPDATE_REMOTE}" \
-	"+refs/heads/${HOT_UPDATE_BRANCH}:${remote_ref}"
+if [[ "${HOT_UPDATE_SKIP_GITHUB}" == "1" ]]; then
+	local_rev="$(git -C "${REPO_DIR}" rev-parse HEAD)"
+	short_rev="${local_rev:0:12}"
+	deploy_id="${short_rev}-local-$(date -u +%Y%m%d%H%M%S)"
+	image_tag="${HOT_UPDATE_IMAGE_REPO}:${deploy_id}"
+	container_name="${HOT_UPDATE_CONTAINER_PREFIX}-${deploy_id}"
+	release_dir="${REPO_DIR}"
+	log "skipping GitHub fetch; using local checkout at ${local_rev}"
+else
+	if [[ -z "${HOT_UPDATE_BRANCH}" ]]; then
+		HOT_UPDATE_BRANCH="$(git -C "${REPO_DIR}" branch --show-current 2>/dev/null || true)"
+	fi
 
-remote_rev="$(git -C "${REPO_DIR}" rev-parse "${remote_ref}")"
-short_rev="${remote_rev:0:12}"
-image_tag="${HOT_UPDATE_IMAGE_REPO}:${short_rev}"
-container_name="${HOT_UPDATE_CONTAINER_PREFIX}-${short_rev}"
-release_dir="${HOT_UPDATE_RELEASE_ROOT}/${short_rev}"
+	if [[ -z "${HOT_UPDATE_BRANCH}" ]]; then
+		HOT_UPDATE_BRANCH="$(git -C "${REPO_DIR}" symbolic-ref --short "refs/remotes/${HOT_UPDATE_REMOTE}/HEAD" 2>/dev/null | sed "s#^${HOT_UPDATE_REMOTE}/##" || true)"
+	fi
+
+	if [[ -z "${HOT_UPDATE_BRANCH}" ]]; then
+		HOT_UPDATE_BRANCH="main"
+	fi
+
+	remote_ref="refs/remotes/${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}"
+	log "checking ${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}"
+	git -C "${REPO_DIR}" fetch --prune --tags "${HOT_UPDATE_REMOTE}" \
+		"+refs/heads/${HOT_UPDATE_BRANCH}:${remote_ref}"
+
+	remote_rev="$(git -C "${REPO_DIR}" rev-parse "${remote_ref}")"
+	short_rev="${remote_rev:0:12}"
+	image_tag="${HOT_UPDATE_IMAGE_REPO}:${short_rev}"
+	container_name="${HOT_UPDATE_CONTAINER_PREFIX}-${short_rev}"
+	release_dir="${HOT_UPDATE_RELEASE_ROOT}/${short_rev}"
+fi
 
 if [[ "${DRY_RUN}" == "1" ]]; then
-	log "would build ${image_tag} from ${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}@${remote_rev}"
+	if [[ "${HOT_UPDATE_SKIP_GITHUB}" == "1" ]]; then
+		log "would build ${image_tag} from local checkout at ${REPO_DIR}"
+	else
+		log "would build ${image_tag} from ${HOT_UPDATE_REMOTE}/${HOT_UPDATE_BRANCH}@${remote_rev}"
+	fi
 	log "would run it as ${container_name} on a free localhost port in ${HOT_UPDATE_PORT_START}-${HOT_UPDATE_PORT_END}"
 	log "would health-check it, then reload Nginx to the new upstream"
 	exit 0
@@ -122,11 +145,13 @@ find_free_port() {
 
 app_port="$(find_free_port)" || die "no free localhost port in ${HOT_UPDATE_PORT_START}-${HOT_UPDATE_PORT_END}"
 
-mkdir -p "${HOT_UPDATE_RELEASE_ROOT}"
-if [[ -d "${release_dir}" ]]; then
-	git -C "${REPO_DIR}" worktree remove --force "${release_dir}" >/dev/null 2>&1 || rm -rf "${release_dir}"
+if [[ "${HOT_UPDATE_SKIP_GITHUB}" != "1" ]]; then
+	mkdir -p "${HOT_UPDATE_RELEASE_ROOT}"
+	if [[ -d "${release_dir}" ]]; then
+		git -C "${REPO_DIR}" worktree remove --force "${release_dir}" >/dev/null 2>&1 || rm -rf "${release_dir}"
+	fi
+	git -C "${REPO_DIR}" worktree add --force --detach "${release_dir}" "${remote_rev}"
 fi
-git -C "${REPO_DIR}" worktree add --force --detach "${release_dir}" "${remote_rev}"
 
 cleanup_failed_container() {
 	docker rm -f "${container_name}" >/dev/null 2>&1 || true
@@ -196,4 +221,8 @@ if [[ "${HOT_UPDATE_PRUNE_OLD}" == "1" ]]; then
 	done < <(docker ps -a --format '{{.Names}}' | grep -E "^${HOT_UPDATE_CONTAINER_PREFIX}-" || true)
 fi
 
-log "deployed ${remote_rev} as ${container_name}"
+if [[ "${HOT_UPDATE_SKIP_GITHUB}" == "1" ]]; then
+	log "deployed local checkout ${local_rev} as ${container_name}"
+else
+	log "deployed ${remote_rev} as ${container_name}"
+fi
