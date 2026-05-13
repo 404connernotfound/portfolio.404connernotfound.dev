@@ -88,6 +88,13 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ```
    The installer writes a systemd service and timer. Every 30 minutes it fetches `origin/main`, fast-forwards only when the checkout is clean, runs `docker compose down --remove-orphans`, and starts the rebuilt stack with `scripts/deploy-vps.sh`.
 
+For a no-downtime GitHub update, use the hot updater instead:
+```bash
+DRY_RUN=1 sudo ./scripts/zero-downtime-update-vps.sh
+sudo ./scripts/zero-downtime-update-vps.sh
+```
+It fetches the newest `origin/main`, creates a temporary release checkout, builds a revision-tagged Docker image, runs the static seed and database seed steps, starts the new app container on a free localhost port, health-checks `/healthz`, then reloads Nginx to proxy to the new container. The container currently serving traffic is left running. Set `HOT_UPDATE_PRUNE_OLD=1` when you want old hot-update containers removed after the new one is live.
+
 Before DNS is live, you can still test the stack on the VPS:
 ```bash
 DRY_RUN=1 ./scripts/deploy-vps.sh
@@ -156,6 +163,7 @@ Use `scripts/clean-slate-vps.sh` when the VPS should look like the portfolio ser
 - Clean-slate VPS cleanup: `scripts/clean-slate-vps.sh`
 - Auto-update timer installer: `scripts/install-auto-update.sh`
 - Auto-update worker: `scripts/auto-update-vps.sh`
+- Zero-downtime GitHub updater: `scripts/zero-downtime-update-vps.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
 - Nginx template used by automation: `nginx/portfolio.conf.template`
 - Procfile: `Procfile`
