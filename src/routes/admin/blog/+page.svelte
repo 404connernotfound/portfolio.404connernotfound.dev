@@ -201,7 +201,7 @@
 					<textarea
 						id="postExcerpt"
 						name="excerpt"
-						maxlength="300"
+						maxlength="1200"
 						rows="6"
 						class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 						aria-invalid={Boolean(fieldError('createPost', 'excerpt'))}
@@ -521,7 +521,7 @@
 								<textarea
 									id={`post-excerpt-${post.id}`}
 									name="excerpt"
-									maxlength="300"
+									maxlength="1200"
 									rows="6"
 									class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updatePost', 'excerpt', post.id))}
