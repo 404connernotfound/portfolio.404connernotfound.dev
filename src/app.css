@@ -175,25 +175,34 @@ a {
 	@apply space-y-4 text-base leading-7 text-ink-200;
 }
 
+.blog-markdown {
+	@apply mt-2 space-y-6 text-[1.03rem] leading-8 text-ink-100;
+}
+
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3,
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 {
-	@apply font-semibold leading-tight text-white;
+	@apply pt-3 font-semibold leading-tight text-white;
 }
 
 .markdown-content h1 {
-	@apply text-3xl;
+	@apply text-3xl tracking-normal;
 }
 
 .markdown-content h2 {
-	@apply text-2xl;
+	@apply text-2xl tracking-normal;
 }
 
 .markdown-content h3 {
 	@apply text-xl;
+}
+
+.blog-markdown h1,
+.blog-markdown h2 {
+	@apply border-b border-ink-200/20 pb-3;
 }
 
 .markdown-content a {
@@ -218,7 +227,11 @@ a {
 }
 
 .markdown-content blockquote {
-	@apply border-l border-ink-200/50 pl-4 text-ink-100;
+	@apply rounded-r-2xl border-l-4 border-aurora-200/70 bg-white/5 px-5 py-4 text-ink-100;
+}
+
+.markdown-content blockquote p {
+	@apply m-0;
 }
 
 .markdown-content code {
@@ -226,7 +239,7 @@ a {
 }
 
 .markdown-content pre {
-	@apply overflow-x-auto rounded-2xl border border-ink-200/20 bg-ink-900/80 p-4;
+	@apply overflow-x-auto rounded-2xl border border-ink-200/20 bg-ink-900/90 p-4 shadow-soft;
 }
 
 .markdown-content pre code {
@@ -234,18 +247,20 @@ a {
 }
 
 .markdown-content img {
-	@apply rounded-2xl border border-ink-200/20;
+	@apply rounded-2xl border border-ink-200/20 shadow-soft;
 	max-width: 100%;
 	height: auto;
 }
 
 .markdown-content table {
-	@apply w-full border-collapse text-sm;
+	@apply block w-full overflow-x-auto rounded-2xl border border-ink-200/20 text-sm;
+	border-collapse: separate;
+	border-spacing: 0;
 }
 
 .markdown-content th,
 .markdown-content td {
-	@apply border border-ink-200/20 px-3 py-2 text-left;
+	@apply border-b border-ink-200/20 px-3 py-2 text-left;
 }
 
 .markdown-content thead th {

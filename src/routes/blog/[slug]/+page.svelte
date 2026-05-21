@@ -2,37 +2,45 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import { formatTitle } from '$lib/utils/seo';
+	import { calculateReadTime } from '$lib/utils/content';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	const description =
 		data.post.excerpt ?? (data.post.content ? data.post.content.slice(0, 160) : 'Blog entry.');
+	const readTime = calculateReadTime(data.post.content ?? data.post.excerpt ?? '');
 </script>
 
 <SeoHead title={formatTitle(data.post.title)} description={description} type="article" />
 
 <section class="section-pad">
-	<div class="space-y-4">
+	<article class="mx-auto max-w-3xl space-y-6">
 		<a class="link-underline" href="/blog">Back to blog</a>
-		<h1 class="text-4xl font-semibold text-white sm:text-5xl">{data.post.title}</h1>
-		<div class="flex flex-wrap gap-4 text-xs uppercase tracking-[0.2em] text-ink-200">
+		<header class="space-y-4">
+			<h1 class="text-4xl font-semibold leading-tight text-white sm:text-5xl">{data.post.title}</h1>
+			{#if data.post.excerpt}
+				<p class="text-lg leading-8 text-ink-100">{data.post.excerpt}</p>
+			{/if}
+		</header>
+		<div class="flex flex-wrap gap-4 border-y border-ink-200/20 py-4 text-xs uppercase tracking-[0.2em] text-ink-200">
 			{#if data.post.publishedAt}
 				<span>{data.post.publishedAt}</span>
 			{/if}
+			<span>{readTime}</span>
 			{#if data.post.tags}
 				<span>{data.post.tags}</span>
 			{/if}
 		</div>
 		{#if data.post.content}
-			<MarkdownContent source={data.post.content} className="max-w-3xl" />
+			<MarkdownContent source={data.post.content} className="blog-markdown" />
 		{:else if data.post.excerpt}
-			<MarkdownContent source={data.post.excerpt} className="max-w-3xl" />
+			<MarkdownContent source={data.post.excerpt} className="blog-markdown" />
 		{:else}
 			<div class="text-base text-ink-200">No content yet.</div>
 		{/if}
 		{#if data.post.references.length}
-			<section class="mt-10 max-w-3xl rounded-2xl border border-ink-200/30 bg-white/5 p-5" aria-labelledby="post-references-heading">
+			<section class="mt-10 rounded-2xl border border-ink-200/30 bg-white/5 p-5" aria-labelledby="post-references-heading">
 				<h2 id="post-references-heading" class="text-xl font-semibold text-white">References</h2>
 				<ol class="mt-4 list-decimal space-y-4 pl-5 text-sm text-ink-200">
 					{#each data.post.references as reference}
@@ -53,5 +61,5 @@
 				</ol>
 			</section>
 		{/if}
-	</div>
+	</article>
 </section>

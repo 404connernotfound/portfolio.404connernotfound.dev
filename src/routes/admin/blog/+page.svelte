@@ -3,7 +3,7 @@
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import AdminNav from '$lib/components/AdminNav.svelte';
 	import { formatTitle } from '$lib/utils/seo';
-	import type { BlogReference } from '$lib/utils/content';
+	import { calculateReadTime, type BlogReference } from '$lib/utils/content';
 	import type { PageData, ActionData } from './$types';
 
 	export let data: PageData;
@@ -37,6 +37,12 @@
 		...references,
 		...emptyReferenceRows,
 	];
+	const readTimeLabel = (content: string | null | undefined) => calculateReadTime(content);
+
+	let newPostContent = '';
+	let editContentById: Record<number, string> = Object.fromEntries(
+		data.posts.map((post) => [post.id, post.content ?? '']),
+	);
 </script>
 
 <SeoHead title={formatTitle('Admin | Blog')} description="Manage blog posts and intro copy." />
@@ -196,8 +202,8 @@
 						id="postExcerpt"
 						name="excerpt"
 						maxlength="300"
-						rows="3"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+						rows="6"
+						class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 						aria-invalid={Boolean(fieldError('createPost', 'excerpt'))}
 					></textarea>
 					{#if fieldError('createPost', 'excerpt')}
@@ -215,14 +221,28 @@
 						id="postContent"
 						name="content"
 						maxlength="20000"
-						rows="24"
-						class="mt-2 min-h-[32rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
+						rows="34"
+						class="mt-2 min-h-[46rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 						aria-invalid={Boolean(fieldError('createPost', 'content'))}
+						bind:value={newPostContent}
 					></textarea>
 					{#if fieldError('createPost', 'content')}
 						<p class="mt-2 text-xs text-red-200">{fieldError('createPost', 'content')}</p>
 					{/if}
 				</div>
+				<section
+					class="grid gap-3 rounded-2xl border border-ink-200/30 bg-ink-950/50 p-4 sm:grid-cols-[12rem_1fr]"
+					aria-label="Read time estimate"
+				>
+					<div>
+						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-300">Read time</p>
+						<p class="mt-2 text-2xl font-semibold text-white">{readTimeLabel(newPostContent)}</p>
+					</div>
+					<p class="text-sm leading-6 text-ink-200">
+						Estimated from the Markdown body at roughly 220 words per minute. This updates while
+						you draft and gives the public post its reading-length cue.
+					</p>
+				</section>
 				<fieldset class="rounded-2xl border border-ink-200/30 bg-white/5 p-4">
 					<legend class="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200">
 						References
@@ -502,8 +522,8 @@
 									id={`post-excerpt-${post.id}`}
 									name="excerpt"
 									maxlength="300"
-									rows="3"
-									class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+									rows="6"
+									class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updatePost', 'excerpt', post.id))}
 									>{post.excerpt ?? ''}</textarea
 								>
@@ -524,17 +544,34 @@
 									id={`post-content-${post.id}`}
 									name="content"
 									maxlength="20000"
-									rows="20"
-									class="mt-2 min-h-[28rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
+									rows="34"
+									class="mt-2 min-h-[46rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updatePost', 'content', post.id))}
-									>{post.content ?? ''}</textarea
-								>
+									bind:value={editContentById[post.id]}
+								></textarea>
 								{#if fieldError('updatePost', 'content', post.id)}
 									<p class="mt-2 text-xs text-red-200">
 										{fieldError('updatePost', 'content', post.id)}
 									</p>
 								{/if}
 							</div>
+							<section
+								class="grid gap-3 rounded-2xl border border-ink-200/30 bg-ink-950/50 p-4 sm:grid-cols-[12rem_1fr]"
+								aria-label={`Read time estimate for ${post.title}`}
+							>
+								<div>
+									<p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-300">
+										Read time
+									</p>
+									<p class="mt-2 text-2xl font-semibold text-white">
+										{readTimeLabel(editContentById[post.id])}
+									</p>
+								</div>
+								<p class="text-sm leading-6 text-ink-200">
+									Estimated from the Markdown body at roughly 220 words per minute. It updates as
+									you revise this post.
+								</p>
+							</section>
 							<fieldset class="rounded-2xl border border-ink-200/30 bg-white/5 p-4">
 								<legend class="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-200">
 									References

@@ -86,6 +86,21 @@ export const serializeReferences = (references: BlogReference[]) =>
 
 export const resolveWorkCoverImage = (item: WorkCoverSource) => item.imagePath ?? item.imageUrl;
 
+const READ_TIME_WORDS_PER_MINUTE = 220;
+
+export const calculateReadTime = (value: string | null | undefined): string => {
+	const words = (value ?? '')
+		.replace(/```[\s\S]*?```/g, ' ')
+		.replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+		.replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+		.replace(/[#>*_`~\-|[\]()]/g, ' ')
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean);
+	const minutes = Math.max(1, Math.ceil(words.length / READ_TIME_WORDS_PER_MINUTE));
+	return `${minutes} min read`;
+};
+
 const PLACEHOLDER_PREFIX = '';
 const PLACEHOLDER_SUFFIX = '';
 const PLACEHOLDER_PATTERN = /(\d+)/g;

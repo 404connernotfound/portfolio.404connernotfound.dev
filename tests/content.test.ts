@@ -7,7 +7,9 @@ process.env.DB_AUTO_SEED = 'true';
 process.env.NODE_ENV = 'test';
 delete process.env.DATABASE_URL;
 
-const { renderMarkdown, resolveWorkCoverImage } = await import('../src/lib/utils/content');
+const { calculateReadTime, renderMarkdown, resolveWorkCoverImage } = await import(
+	'../src/lib/utils/content'
+);
 const { parseBlogReferencesForm, parseExternalImageUrl } =
 	await import('../src/lib/server/contentValidation');
 const db = await import('../src/lib/server/db');
@@ -79,6 +81,9 @@ const assertExtendedMarkdownFeatures = () => {
 
 	const ruleHtml = renderMarkdown('Above\n\n---\n\nBelow');
 	assert.match(ruleHtml, /<hr \/>/);
+
+	const quoteHtml = renderMarkdown('> This note matters.\n> Keep it visible.');
+	assert.match(quoteHtml, /<blockquote><p>This note matters\.\nKeep it visible\.<\/p><\/blockquote>/);
 
 	const codeHtml = renderMarkdown('```ts\nconst x: number = 1;\n```');
 	assert.match(codeHtml, /<pre><code class="language-ts">const x: number = 1;<\/code><\/pre>/);
@@ -166,6 +171,19 @@ const assertExternalCoverValidation = () => {
 	assert.equal(invalid.error, 'Cover image URL must be a valid HTTPS or HTTP URL.');
 };
 
+const assertReadTimeEstimate = () => {
+	const markdown = [
+		'# Release notes',
+		'Short opener with **formatting** and [a link](https://example.com).',
+		'',
+		Array.from({ length: 245 }, (_, index) => `word${index}`).join(' '),
+	].join('\n');
+
+	assert.equal(calculateReadTime(markdown), '2 min read');
+	assert.equal(calculateReadTime('Tiny note.'), '1 min read');
+	assert.equal(calculateReadTime(''), '1 min read');
+};
+
 const assertPersistence = () => {
 	const markdown = '# Stored Markdown\n\n- one\n- two';
 	const references = [{ label: 'Source', url: 'https://example.com/source', note: 'Read this' }];
@@ -244,6 +262,7 @@ assertMarkdownRendering();
 assertExtendedMarkdownFeatures();
 await assertReferenceParsing();
 assertExternalCoverValidation();
+assertReadTimeEstimate();
 assertPersistence();
 assertWorkCoverPersistence();
 
