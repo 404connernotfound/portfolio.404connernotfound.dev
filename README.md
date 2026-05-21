@@ -57,10 +57,9 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
 
 2. Start the containers:
    ```bash
-   ./scripts/deploy-vps.sh
+   ./up.sh
    ```
-   This runs `docker compose --env-file deploy/portfolio.env up -d --build --wait`, including a one-shot `migrate` service that seeds PostgreSQL before the app starts.
-   It also runs a one-shot `static-seed` service that copies bundled static uploads, including `static/uploads/resume/resume.pdf`, into the Docker volumes Nginx serves from. Existing uploaded files are not overwritten.
+   This runs `docker compose --env-file deploy/portfolio.env up -d --build --wait`, including the one-shot `static-seed` and `migrate` services. It also checks `/healthz` and the bundled resume PDF after the stack is up.
 
 3. In Cloudflare, create a proxied `A` or `AAAA` record for `portfolio.404connernotfound.dev` pointing to the VPS public IP. Set SSL/TLS mode to `Full (strict)`.
 
@@ -82,58 +81,37 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    curl -I https://portfolio.404connernotfound.dev/
    ```
 
-7. Optional: install the GitHub auto-updater on the VPS:
-   ```bash
-   sudo SERVICE_USER=portfolio SERVICE_GROUP=portfolio ./scripts/install-auto-update.sh
-   ```
-   The installer writes a systemd service and timer. Every 30 minutes it fetches `origin/main`, fast-forwards only when the checkout is clean, runs `docker compose down --remove-orphans`, and starts the rebuilt stack with `scripts/deploy-vps.sh`.
-
-For a no-downtime GitHub update, use the hot updater instead:
+For a normal redeploy:
 ```bash
-DRY_RUN=1 sudo ./scripts/quick-redeploy.sh
-sudo ./scripts/quick-redeploy.sh
+./redeploy.sh
 ```
-It fetches the newest `origin/main`, creates a temporary release checkout, builds a revision-tagged Docker image, runs the static seed and database seed steps, starts the new app container on a free localhost port, health-checks `/healthz`, then reloads Nginx to proxy to the new container. The container currently serving traffic is left running. Set `HOT_UPDATE_PRUNE_OLD=1` when you want old hot-update containers removed after the new one is live.
+`redeploy.sh` fetches `origin/<current-branch>`, fast-forwards the checkout only when GitHub has newer data, then runs `down.sh` followed by `up.sh`. It refuses to pull over local changes or a diverged branch.
 
-To redeploy the current local checkout without fetching GitHub:
+To redeploy without checking GitHub:
 ```bash
-HOT_UPDATE_SKIP_GITHUB=1 DRY_RUN=1 sudo ./scripts/quick-redeploy.sh
-HOT_UPDATE_SKIP_GITHUB=1 sudo ./scripts/quick-redeploy.sh
-```
-This builds directly from the files in the current checkout and uses a timestamped image/container name.
-
-Before DNS is live, you can still test the stack on the VPS:
-```bash
-DRY_RUN=1 ./scripts/deploy-vps.sh
-DRY_RUN=1 ./scripts/setup-cloudflare-nginx.sh > /tmp/portfolio.nginx.conf
-./scripts/deploy-vps.sh
-curl -fsS http://127.0.0.1:3000/healthz
-curl -H 'Host: portfolio.404connernotfound.dev' -I http://127.0.0.1/
+SKIP_GITHUB_CHECK=1 ./redeploy.sh
 ```
 
-For a disposable no-DNS smoke test that cleans up the Docker stack when it exits:
+To stop the stack:
 ```bash
-./scripts/smoke-vps-no-dns.sh
+./down.sh
 ```
-Use `CLEANUP_ON_EXIT=0 ./scripts/smoke-vps-no-dns.sh` when you want to leave the stack running after the smoke test.
+Use `REMOVE_VOLUMES=1 ./down.sh` only when you intentionally want PostgreSQL, Redis, SQLite, upload, and work-asset volumes removed too.
+
+Dry-run checks:
+```bash
+DRY_RUN=1 ./up.sh
+DRY_RUN=1 ./down.sh
+DRY_RUN=1 ./redeploy.sh
+```
 
 Useful maintenance commands:
 ```bash
 docker compose --env-file deploy/portfolio.env ps
 docker compose --env-file deploy/portfolio.env logs -f app
 docker compose --env-file deploy/portfolio.env run --rm app npm run db:migrate:postgres
-DRY_RUN=1 ./scripts/auto-update-vps.sh
-sudo systemctl start portfolio-auto-update.service
-sudo systemctl status portfolio-auto-update.timer
-sudo journalctl -u portfolio-auto-update.service -n 100 --no-pager
-./scripts/cleanup-vps.sh
-REMOVE_VOLUMES=1 ./scripts/cleanup-vps.sh
-DRY_RUN=1 ./scripts/clean-slate-vps.sh
-sudo ./scripts/clean-slate-vps.sh
 sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 ```
-
-Use `scripts/clean-slate-vps.sh` when the VPS should look like the portfolio service was never started. It does not require `deploy/portfolio.env`; if the env file is missing, it uses the example env or a temporary cleanup env. By default it removes the Docker Compose project containers, networks, volumes, local app image, generated `deploy/portfolio.env`, the auto-update systemd units, the legacy `portfolio.service`, and the Nginx site config. TLS cert removal is opt-in with `REMOVE_TLS=1`.
 
 ## Admin
 - Login: `/admin/login`
@@ -167,10 +145,9 @@ Use `scripts/clean-slate-vps.sh` when the VPS should look like the portfolio ser
 ## Deployment Notes
 - Docker Compose stack: `docker-compose.yml`
 - Production env template: `deploy/portfolio.env.example`
-- Clean-slate VPS cleanup: `scripts/clean-slate-vps.sh`
-- Auto-update timer installer: `scripts/install-auto-update.sh`
-- Auto-update worker: `scripts/auto-update-vps.sh`
-- Zero-downtime GitHub updater: `scripts/quick-redeploy.sh`
+- Start stack: `up.sh`
+- Stop stack: `down.sh`
+- GitHub-aware restart: `redeploy.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
 - Nginx template used by automation: `nginx/portfolio.conf.template`
 - Procfile: `Procfile`
