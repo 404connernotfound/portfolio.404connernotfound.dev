@@ -7,13 +7,9 @@ process.env.DB_AUTO_SEED = 'true';
 process.env.NODE_ENV = 'test';
 delete process.env.DATABASE_URL;
 
-const {
-	renderMarkdown,
-	resolveWorkCoverImage
-} = await import('../src/lib/utils/content');
-const { parseBlogReferencesForm, parseExternalImageUrl } = await import(
-	'../src/lib/server/contentValidation'
-);
+const { renderMarkdown, resolveWorkCoverImage } = await import('../src/lib/utils/content');
+const { parseBlogReferencesForm, parseExternalImageUrl } =
+	await import('../src/lib/server/contentValidation');
 const db = await import('../src/lib/server/db');
 
 const assertMarkdownRendering = () => {
@@ -49,11 +45,20 @@ const assertExtendedMarkdownFeatures = () => {
 
 	const taskHtml = renderMarkdown(`- [x] Ship feature
 - [ ] Write docs`);
-	assert.match(taskHtml, /<li class="task-list-item"><input type="checkbox" disabled checked \/> Ship feature<\/li>/);
-	assert.match(taskHtml, /<li class="task-list-item"><input type="checkbox" disabled \/> Write docs<\/li>/);
+	assert.match(
+		taskHtml,
+		/<li class="task-list-item"><input type="checkbox" disabled checked \/> Ship feature<\/li>/,
+	);
+	assert.match(
+		taskHtml,
+		/<li class="task-list-item"><input type="checkbox" disabled \/> Write docs<\/li>/,
+	);
 
 	const imgHtml = renderMarkdown('![alt text](https://cdn.example.com/pic.png "Caption")');
-	assert.match(imgHtml, /<img src="https:\/\/cdn.example.com\/pic.png" alt="alt text" title="Caption"/);
+	assert.match(
+		imgHtml,
+		/<img src="https:\/\/cdn.example.com\/pic.png" alt="alt text" title="Caption"/,
+	);
 	assert.match(imgHtml, /data-image-fallback="1"/);
 
 	const blockedImg = renderMarkdown('![bad](javascript:alert(1))');
@@ -61,10 +66,16 @@ const assertExtendedMarkdownFeatures = () => {
 	assert.doesNotMatch(blockedImg, /src=/);
 
 	const autoHtml = renderMarkdown('Visit <https://example.com/spec> for details.');
-	assert.match(autoHtml, /<a href="https:\/\/example.com\/spec"[^>]*>https:\/\/example.com\/spec<\/a>/);
+	assert.match(
+		autoHtml,
+		/<a href="https:\/\/example.com\/spec"[^>]*>https:\/\/example.com\/spec<\/a>/,
+	);
 
 	const bareHtml = renderMarkdown('See https://example.com/path for info.');
-	assert.match(bareHtml, /<a href="https:\/\/example.com\/path"[^>]*>https:\/\/example.com\/path<\/a>/);
+	assert.match(
+		bareHtml,
+		/<a href="https:\/\/example.com\/path"[^>]*>https:\/\/example.com\/path<\/a>/,
+	);
 
 	const ruleHtml = renderMarkdown('Above\n\n---\n\nBelow');
 	assert.match(ruleHtml, /<hr \/>/);
@@ -77,7 +88,7 @@ const assertExtendedMarkdownFeatures = () => {
 	assert.doesNotMatch(inlineCodeXss, /<img onerror/);
 };
 
-const assertReferenceParsing = () => {
+const assertReferenceParsing = async () => {
 	const form = new FormData();
 	form.append('referenceLabel', 'Spec');
 	form.append('referenceUrl', 'https://example.com/spec');
@@ -86,18 +97,63 @@ const assertReferenceParsing = () => {
 	form.append('referenceUrl', 'https://example.com/changelog');
 	form.append('referenceNote', '');
 
-	const result = parseBlogReferencesForm(form);
+	const result = await parseBlogReferencesForm(form);
 	assert.deepEqual(result.errors, {});
 	assert.deepEqual(result.references, [
 		{ label: 'Spec', url: 'https://example.com/spec', note: 'Primary source' },
-		{ label: 'Changelog', url: 'https://example.com/changelog', note: null }
+		{ label: 'Changelog', url: 'https://example.com/changelog', note: null },
+	]);
+
+	const jsonForm = new FormData();
+	jsonForm.append('referenceLabel', 'Ignored manual row');
+	jsonForm.append('referenceUrl', 'javascript:alert(1)');
+	jsonForm.append('referenceNote', '');
+	jsonForm.set(
+		'referencesJsonFile',
+		new File(
+			[
+				JSON.stringify({
+					references: [
+						{ label: 'JSON spec', url: 'https://example.com/json-spec', note: 'Uploaded' },
+						{ label: 'JSON notes', url: 'https://example.com/json-notes', note: '' },
+					],
+				}),
+			],
+			'references.json',
+			{ type: 'application/json' },
+		),
+	);
+	const jsonResult = await parseBlogReferencesForm(jsonForm);
+	assert.deepEqual(jsonResult.errors, {});
+	assert.deepEqual(jsonResult.references, [
+		{ label: 'JSON spec', url: 'https://example.com/json-spec', note: 'Uploaded' },
+		{ label: 'JSON notes', url: 'https://example.com/json-notes', note: null },
 	]);
 
 	const invalid = new FormData();
 	invalid.append('referenceLabel', 'Bad');
 	invalid.append('referenceUrl', 'javascript:alert(1)');
 	invalid.append('referenceNote', '');
-	assert.equal(parseBlogReferencesForm(invalid).errors.references, 'Each reference URL must be a valid HTTPS or HTTP URL.');
+	assert.equal(
+		(await parseBlogReferencesForm(invalid)).errors.references,
+		'Each reference URL must be a valid HTTPS or HTTP URL.',
+	);
+
+	const invalidJson = new FormData();
+	invalidJson.set(
+		'referencesJsonFile',
+		new File(
+			[JSON.stringify({ references: [{ label: 'Missing note', url: 'https://example.com' }] })],
+			'references.json',
+			{
+				type: 'application/json',
+			},
+		),
+	);
+	assert.equal(
+		(await parseBlogReferencesForm(invalidJson)).errors.references,
+		'References JSON must follow {"references":[{"label":"","url":"","note":""}]}.',
+	);
 };
 
 const assertExternalCoverValidation = () => {
@@ -122,7 +178,7 @@ const assertPersistence = () => {
 		0,
 		'2026-05-12',
 		'markdown-persistence',
-		references
+		references,
 	);
 	const storedPost = db.getPostBySlug('markdown-persistence');
 	assert.equal(storedPost?.content, markdown);
@@ -130,7 +186,7 @@ const assertPersistence = () => {
 
 	const editedReferences = [
 		{ label: 'Updated', url: 'https://example.com/updated', note: null },
-		{ label: 'Second', url: 'https://example.com/second', note: 'More context' }
+		{ label: 'Second', url: 'https://example.com/second', note: 'More context' },
 	];
 	db.updatePost(
 		storedPost?.id ?? -1,
@@ -142,7 +198,7 @@ const assertPersistence = () => {
 		0,
 		'2026-05-12',
 		'markdown-persistence',
-		editedReferences
+		editedReferences,
 	);
 	assert.deepEqual(db.getPostBySlug('markdown-persistence')?.references, editedReferences);
 };
@@ -160,7 +216,7 @@ const assertWorkCoverPersistence = () => {
 		'External cover alt',
 		0,
 		90,
-		'https://cdn.example.com/work.png'
+		'https://cdn.example.com/work.png',
 	);
 	const external = db.getWorkItems().find((item) => item.title === 'External Cover');
 	assert.equal(external?.imageUrl, 'https://cdn.example.com/work.png');
@@ -178,7 +234,7 @@ const assertWorkCoverPersistence = () => {
 		'Uploaded cover alt',
 		0,
 		91,
-		'https://cdn.example.com/fallback.png'
+		'https://cdn.example.com/fallback.png',
 	);
 	const uploaded = db.getWorkItems().find((item) => item.title === 'Upload Cover');
 	assert.equal(resolveWorkCoverImage(uploaded!), '/assets/work/local.png');
@@ -186,7 +242,7 @@ const assertWorkCoverPersistence = () => {
 
 assertMarkdownRendering();
 assertExtendedMarkdownFeatures();
-assertReferenceParsing();
+await assertReferenceParsing();
 assertExternalCoverValidation();
 assertPersistence();
 assertWorkCoverPersistence();

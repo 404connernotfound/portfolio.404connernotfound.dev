@@ -30,11 +30,12 @@
 	const emptyReferenceRows = Array.from({ length: 3 }, () => ({
 		label: '',
 		url: '',
-		note: null
+		note: null,
 	}));
+	const referencesJsonExample = '{"references":[{"label":"","url":"","note":""}]}';
 	const referenceRows = (references: BlogReference[] = []) => [
 		...references,
-		...emptyReferenceRows
+		...emptyReferenceRows,
 	];
 </script>
 
@@ -137,7 +138,12 @@
 					{feedback?.message}
 				</p>
 			{/if}
-			<form class="mt-6 grid gap-4" method="POST" action="?/createPost">
+			<form
+				class="mt-6 grid gap-4"
+				method="POST"
+				action="?/createPost"
+				enctype="multipart/form-data"
+			>
 				<input type="hidden" name="csrfToken" value={data.csrfToken} />
 				<div class="grid gap-4 lg:grid-cols-2">
 					<div>
@@ -227,6 +233,28 @@
 					{#if fieldError('createPost', 'references')}
 						<p class="mt-2 text-xs text-red-200">{fieldError('createPost', 'references')}</p>
 					{/if}
+					<div class="mt-4 rounded-2xl border border-ink-200/20 bg-ink-900/30 p-3">
+						<label
+							class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+							for="post-references-json"
+						>
+							JSON upload
+						</label>
+						<input
+							id="post-references-json"
+							name="referencesJsonFile"
+							type="file"
+							accept="application/json,.json"
+							aria-describedby="post-references-json-format"
+							class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-ink-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-950"
+						/>
+						<code
+							id="post-references-json-format"
+							class="mt-2 block break-all text-xs text-ink-300"
+						>
+							{referencesJsonExample}
+						</code>
+					</div>
 					<div class="mt-4 grid gap-3">
 						{#each referenceRows() as reference, referenceIndex}
 							<div
@@ -410,7 +438,12 @@
 								{feedback?.message}
 							</p>
 						{/if}
-						<form class="mt-5 grid gap-4" method="POST" action="?/updatePost">
+						<form
+							class="mt-5 grid gap-4"
+							method="POST"
+							action="?/updatePost"
+							enctype="multipart/form-data"
+						>
 							<input type="hidden" name="csrfToken" value={data.csrfToken} />
 							<input type="hidden" name="id" value={post.id} />
 							<div class="grid gap-4 lg:grid-cols-2">
@@ -514,6 +547,28 @@
 										{fieldError('updatePost', 'references', post.id)}
 									</p>
 								{/if}
+								<div class="mt-4 rounded-2xl border border-ink-200/20 bg-ink-900/30 p-3">
+									<label
+										class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+										for={`post-references-json-${post.id}`}
+									>
+										JSON upload
+									</label>
+									<input
+										id={`post-references-json-${post.id}`}
+										name="referencesJsonFile"
+										type="file"
+										accept="application/json,.json"
+										aria-describedby={`post-references-json-format-${post.id}`}
+										class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-ink-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink-950"
+									/>
+									<code
+										id={`post-references-json-format-${post.id}`}
+										class="mt-2 block break-all text-xs text-ink-300"
+									>
+										{referencesJsonExample}
+									</code>
+								</div>
 								<div class="mt-4 grid gap-3">
 									{#each referenceRows(post.references) as reference, referenceIndex}
 										<div

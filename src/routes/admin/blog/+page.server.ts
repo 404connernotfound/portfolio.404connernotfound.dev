@@ -92,7 +92,7 @@ export const actions: Actions = {
 		const tags = parseText(data.get('tags'));
 		const publishedAt = parseText(data.get('publishedAt'));
 		const publishing = parsePublishing(data, publishedAt);
-		const referenceResult = parseBlogReferencesForm(data);
+		const referenceResult = await parseBlogReferencesForm(data);
 		const errors: Record<string, string> = {};
 
 		if (!title) errors.title = 'Title is required.';
@@ -149,7 +149,7 @@ export const actions: Actions = {
 		const tags = parseText(data.get('tags'));
 		const publishedAt = parseText(data.get('publishedAt'));
 		const publishing = parsePublishing(data, publishedAt);
-		const referenceResult = parseBlogReferencesForm(data);
+		const referenceResult = await parseBlogReferencesForm(data);
 		const errors: Record<string, string> = {};
 
 		if (id <= 0) errors.id = 'Invalid post.';

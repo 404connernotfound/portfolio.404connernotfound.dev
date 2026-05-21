@@ -1,17 +1,55 @@
-import {
-	normalizeHttpUrl,
-	type BlogReference
-} from '../utils/content';
+import { normalizeHttpUrl, type BlogReference } from '../utils/content';
 
 const MAX_REFERENCES = 20;
 const MAX_REFERENCE_LABEL = 160;
 const MAX_REFERENCE_NOTE = 500;
+const MAX_REFERENCES_JSON_BYTES = 64 * 1024;
 const MAX_EXTERNAL_IMAGE_URL = 2048;
+const REFERENCES_JSON_FIELD = 'referencesJsonFile';
 
 const getRepeatedText = (data: FormData, name: string) =>
 	data.getAll(name).map((value) => (typeof value === 'string' ? value.trim() : ''));
 
-export const parseBlogReferencesForm = (data: FormData) => {
+const referenceFormatError =
+	'References JSON must follow {"references":[{"label":"","url":"","note":""}]}.';
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const validateReference = (label: string, urlValue: string, note: string) => {
+	if (!label || !urlValue) {
+		return {
+			reference: null,
+			error: 'Each reference needs a label and an HTTPS or HTTP URL.',
+		};
+	}
+	if (label.length > MAX_REFERENCE_LABEL) {
+		return {
+			reference: null,
+			error: `Reference labels must be ${MAX_REFERENCE_LABEL} characters or fewer.`,
+		};
+	}
+	const url = normalizeHttpUrl(urlValue);
+	if (!url) {
+		return {
+			reference: null,
+			error: 'Each reference URL must be a valid HTTPS or HTTP URL.',
+		};
+	}
+	if (note.length > MAX_REFERENCE_NOTE) {
+		return {
+			reference: null,
+			error: `Reference notes must be ${MAX_REFERENCE_NOTE} characters or fewer.`,
+		};
+	}
+
+	return {
+		reference: { label, url, note: note || null },
+		error: null,
+	};
+};
+
+const parseReferencesFromRows = (data: FormData) => {
 	const labels = getRepeatedText(data, 'referenceLabel');
 	const urls = getRepeatedText(data, 'referenceUrl');
 	const notes = getRepeatedText(data, 'referenceNote');
@@ -25,28 +63,81 @@ export const parseBlogReferencesForm = (data: FormData) => {
 		const note = notes[index] ?? '';
 
 		if (!label && !urlValue && !note) continue;
-		if (!label) {
-			errors.references = 'Each reference needs a label and an HTTPS or HTTP URL.';
-			continue;
-		}
-		if (label.length > MAX_REFERENCE_LABEL) {
-			errors.references = `Reference labels must be ${MAX_REFERENCE_LABEL} characters or fewer.`;
-			continue;
-		}
-		const url = normalizeHttpUrl(urlValue);
-		if (!url) {
-			errors.references = 'Each reference URL must be a valid HTTPS or HTTP URL.';
-			continue;
-		}
-		if (note.length > MAX_REFERENCE_NOTE) {
-			errors.references = `Reference notes must be ${MAX_REFERENCE_NOTE} characters or fewer.`;
+		const result = validateReference(label, urlValue, note);
+		if (result.error || !result.reference) {
+			errors.references = result.error ?? 'Invalid reference.';
 			continue;
 		}
 
-		references.push({ label, url, note: note || null });
+		references.push(result.reference);
 	}
 
 	return { references, errors };
+};
+
+const parseReferencesJsonFile = async (file: File) => {
+	const references: BlogReference[] = [];
+	const errors: Record<string, string> = {};
+
+	if (file.size === 0) {
+		errors.references = 'References JSON file cannot be empty.';
+		return { references, errors };
+	}
+	if (file.size > MAX_REFERENCES_JSON_BYTES) {
+		errors.references = 'References JSON file must be 64KB or smaller.';
+		return { references, errors };
+	}
+
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(await file.text());
+	} catch {
+		errors.references = 'References JSON file is not valid JSON.';
+		return { references, errors };
+	}
+
+	if (!isRecord(parsed) || !Array.isArray(parsed.references)) {
+		errors.references = referenceFormatError;
+		return { references, errors };
+	}
+	if (parsed.references.length > MAX_REFERENCES) {
+		errors.references = `References JSON can include at most ${MAX_REFERENCES} references.`;
+		return { references, errors };
+	}
+
+	for (const entry of parsed.references) {
+		if (
+			!isRecord(entry) ||
+			typeof entry.label !== 'string' ||
+			typeof entry.url !== 'string' ||
+			typeof entry.note !== 'string'
+		) {
+			errors.references = referenceFormatError;
+			return { references, errors };
+		}
+
+		const result = validateReference(entry.label.trim(), entry.url.trim(), entry.note.trim());
+		if (result.error || !result.reference) {
+			errors.references = result.error ?? 'Invalid reference.';
+			return { references, errors };
+		}
+		references.push(result.reference);
+	}
+
+	return { references, errors };
+};
+
+const getReferencesJsonFile = (data: FormData) => {
+	const value = data.get(REFERENCES_JSON_FIELD);
+	if (!(value instanceof File)) return null;
+	if (value.size === 0 && value.name === '') return null;
+	return value;
+};
+
+export const parseBlogReferencesForm = async (data: FormData) => {
+	const jsonFile = getReferencesJsonFile(data);
+	if (jsonFile) return parseReferencesJsonFile(jsonFile);
+	return parseReferencesFromRows(data);
 };
 
 export const parseExternalImageUrl = (value: FormDataEntryValue | null) => {
