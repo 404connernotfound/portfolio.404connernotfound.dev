@@ -2,6 +2,7 @@ import * as sqliteDb from '$lib/server/db';
 import type {
 	Asset,
 	BlogPost,
+	CrisisItem,
 	FooterLink,
 	PlaygroundLog,
 	PlaygroundOperationalCounts,
@@ -284,6 +285,10 @@ const invalidatePostCaches = async () => {
 
 const invalidateFooterCaches = async () => {
 	await invalidateCached('layout:global');
+};
+
+const invalidateCrisisCaches = async () => {
+	await invalidateCached('page:crisis-counter');
 };
 
 const invalidatePlaygroundCaches = async () => {
@@ -1353,6 +1358,60 @@ export const deleteFooterLink = async (id: number) => {
 	await invalidateFooterCaches();
 };
 
+export const getCrisisItems = async (): Promise<CrisisItem[]> =>
+	withDbFallback(
+		() =>
+			queryPostgres<CrisisItem>(
+				`SELECT id, title, description, category, sort, created_at as "createdAt"
+				 FROM crisis_items
+				 ORDER BY sort ASC, id DESC`,
+			),
+		() => sqliteDb.getCrisisItems(),
+	);
+
+export const createCrisisItem = async (
+	title: string,
+	description: string | null,
+	category: string | null,
+	sort: number,
+) => {
+	await withDbFallback(
+		() =>
+			executePostgres(
+				'INSERT INTO crisis_items (title, description, category, sort, created_at) VALUES ($1, $2, $3, $4, $5)',
+				[title, description, category, sort, nowIso()],
+			),
+		() => sqliteDb.createCrisisItem(title, description, category, sort),
+	);
+	await invalidateCrisisCaches();
+};
+
+export const updateCrisisItem = async (
+	id: number,
+	title: string,
+	description: string | null,
+	category: string | null,
+	sort: number,
+) => {
+	await withDbFallback(
+		() =>
+			executePostgres(
+				'UPDATE crisis_items SET title = $1, description = $2, category = $3, sort = $4 WHERE id = $5',
+				[title, description, category, sort, id],
+			),
+		() => sqliteDb.updateCrisisItem(id, title, description, category, sort),
+	);
+	await invalidateCrisisCaches();
+};
+
+export const deleteCrisisItem = async (id: number) => {
+	await withDbFallback(
+		() => executePostgres('DELETE FROM crisis_items WHERE id = $1', [id]),
+		() => sqliteDb.deleteCrisisItem(id),
+	);
+	await invalidateCrisisCaches();
+};
+
 export const getPlaysets = async (): Promise<Playset[]> =>
 	withDbFallback(
 		() =>
@@ -1782,6 +1841,7 @@ export type {
 	WorkItem,
 	BlogPost,
 	Asset,
+	CrisisItem,
 	Testimonial,
 	TrackingEvent,
 	FooterLink,

@@ -150,6 +150,15 @@ const appSchemaSql = `
 		updated_at TEXT NOT NULL
 	);
 
+	CREATE TABLE IF NOT EXISTS crisis_items (
+		id BIGSERIAL PRIMARY KEY,
+		title TEXT NOT NULL,
+		description TEXT,
+		category TEXT,
+		sort INTEGER NOT NULL DEFAULT 0,
+		created_at TEXT NOT NULL
+	);
+
 	CREATE TABLE IF NOT EXISTS footer_links (
 		id BIGSERIAL PRIMARY KEY,
 		section TEXT NOT NULL,
