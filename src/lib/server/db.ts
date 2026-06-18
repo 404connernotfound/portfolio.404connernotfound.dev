@@ -55,6 +55,15 @@ type StackItem = {
 	sort: number;
 };
 
+type CrisisItem = {
+	id: number;
+	title: string;
+	description: string | null;
+	category: string | null;
+	sort: number;
+	createdAt: string;
+};
+
 type WorkItem = {
 	id: number;
 	title: string;
@@ -386,6 +395,7 @@ const cache = {
 	testimonials: null as CacheEntry<Testimonial[]> | null,
 	footerLinks: null as CacheEntry<FooterLink[]> | null,
 	playsets: null as CacheEntry<Playset[]> | null,
+	crisisItems: null as CacheEntry<CrisisItem[]> | null,
 };
 
 const getCached = <T>(entry: CacheEntry<T> | null) => {
@@ -742,6 +752,19 @@ const ensureAssetsTable = (database: Database.Database) => {
 			mime TEXT NOT NULL,
 			size INTEGER NOT NULL,
 			public INTEGER DEFAULT 1,
+			created_at TEXT NOT NULL
+		);
+	`);
+};
+
+const ensureCrisisItemsTable = (database: Database.Database) => {
+	database.exec(`
+		CREATE TABLE IF NOT EXISTS crisis_items (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			title TEXT NOT NULL,
+			description TEXT,
+			category TEXT,
+			sort INTEGER DEFAULT 0,
 			created_at TEXT NOT NULL
 		);
 	`);
@@ -1419,6 +1442,7 @@ const runMigrations = (database: Database.Database) => {
 				ensurePostsColumns(database);
 			}
 		},
+		{ id: 23, name: 'crisis_items_table', up: ensureCrisisItemsTable },
 	];
 
 	for (const migration of migrations) {
@@ -1498,6 +1522,7 @@ export const seedDatabase = () => {
 		'testimonials',
 		'footerLinks',
 		'playsets',
+		'crisisItems',
 	);
 };
 
@@ -2292,6 +2317,64 @@ export const deleteFooterLink = (id: number) => {
 	clearCache('footerLinks');
 };
 
+export const getCrisisItems = () => {
+	const cached = getCached(cache.crisisItems);
+	if (cached) return cached;
+	const database = getDb();
+	const rows = database
+		.prepare(
+			`SELECT id, title, description, category, sort, created_at as createdAt
+			 FROM crisis_items
+			 ORDER BY sort ASC, id DESC`,
+		)
+		.all() as CrisisItem[];
+
+	setCache('crisisItems', rows);
+	return rows;
+};
+
+export const createCrisisItem = (
+	title: string,
+	description: string | null,
+	category: string | null,
+	sort: number,
+) => {
+	const database = getDb();
+	database
+		.prepare(
+			'INSERT INTO crisis_items (title, description, category, sort, created_at) VALUES (?, ?, ?, ?, ?)',
+		)
+		.run(title, description, category, sort, new Date().toISOString());
+
+	clearCache('crisisItems');
+};
+
+export const updateCrisisItem = (
+	id: number,
+	title: string,
+	description: string | null,
+	category: string | null,
+	sort: number,
+) => {
+	const database = getDb();
+	database
+		.prepare(
+			`UPDATE crisis_items
+			 SET title = ?, description = ?, category = ?, sort = ?
+			 WHERE id = ?`,
+		)
+		.run(title, description, category, sort, id);
+
+	clearCache('crisisItems');
+};
+
+export const deleteCrisisItem = (id: number) => {
+	const database = getDb();
+	database.prepare('DELETE FROM crisis_items WHERE id = ?').run(id);
+
+	clearCache('crisisItems');
+};
+
 const slugifyPlayset = (value: string) =>
 	value
 		.toLowerCase()
@@ -2644,6 +2727,7 @@ export type {
 	WorkItem,
 	BlogPost,
 	Asset,
+	CrisisItem,
 	Testimonial,
 	TrackingEvent,
 	FooterLink,

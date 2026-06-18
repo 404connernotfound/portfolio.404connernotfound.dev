@@ -12,7 +12,8 @@
 		{ label: 'Errors', href: '/admin/errors' },
 		{ label: 'Footer', href: '/admin/footer' },
 		{ label: 'Tracking', href: '/admin/tracking' },
-		{ label: 'Resume', href: '/admin/resume' }
+		{ label: 'Resume', href: '/admin/resume' },
+		{ label: 'Crisis Counter', href: '/admin/crisis-counter' }
 	];
 
 	const isActive = (href: string) => {

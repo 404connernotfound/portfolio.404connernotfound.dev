@@ -56,6 +56,7 @@
 		{ label: 'Errors', href: '/admin/errors', detail: 'Maintenance + error messaging.' },
 		{ label: 'Tracking', href: '/admin/tracking', detail: 'Metrics and event activity.' },
 		{ label: 'Resume', href: '/admin/resume', detail: 'Upload your PDF resume.' },
+		{ label: 'Crisis Counter', href: '/admin/crisis-counter', detail: 'Log early and midlife crises.' },
 	];
 </script>
 
