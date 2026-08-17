@@ -40,8 +40,8 @@
 			<MotionReveal className="space-y-3">
 				<h2 class="text-2xl font-semibold text-white">Information collected</h2>
 				<p class="text-sm text-ink-200">
-					Information may be collected when you contact me, subscribe, or browse the site. The
-					types of data include:
+					Information may be collected when you contact me, subscribe, or browse the site. The types
+					of data include:
 				</p>
 				<ul class="space-y-2 text-sm text-ink-200">
 					<li>Contact details you provide, such as name, email, and message content.</li>
@@ -90,9 +90,7 @@
 				<p class="text-sm text-ink-200">
 					Send requests or questions through the contact form, and I will respond promptly.
 				</p>
-				<a class="nav-pill border-ink-100 bg-ink-900 text-white" href="/contact">
-					Request access
-				</a>
+				<a class="nav-pill cta-primary" href="/contact"> Request access </a>
 			</MotionReveal>
 			<MotionReveal delay={0.16} className="glass space-y-3 p-6">
 				<p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200">Updates</p>

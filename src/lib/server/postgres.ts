@@ -67,6 +67,12 @@ const appSchemaSql = `
 		highlights TEXT,
 		role TEXT,
 		tech TEXT,
+		lifecycle TEXT,
+		owner TEXT,
+		domain TEXT,
+		version TEXT,
+		subsystems TEXT,
+		trace TEXT,
 		link TEXT,
 		image_path TEXT,
 		image_url TEXT,
@@ -90,6 +96,33 @@ const appSchemaSql = `
 	);
 
 	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS image_url TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS lifecycle TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS owner TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS domain TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS version TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS subsystems TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS trace TEXT;
+	UPDATE work_items SET owner = COALESCE(owner, 'Personal')
+		WHERE link LIKE 'https://github.com/ConnerAdamsMaine/%';
+	UPDATE work_items SET owner = COALESCE(owner, 'Winux Foundation')
+		WHERE link LIKE 'https://github.com/Winux-Core/%';
+	UPDATE work_items
+		SET lifecycle = COALESCE(lifecycle, 'EXPERIMENT'),
+			domain = COALESCE(domain, 'ML systems'),
+			subsystems = COALESCE(subsystems, E'Training\nInference\nProblem tracking')
+		WHERE title = 'Unum.rs' AND long_description LIKE '%in-progress%';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Languages / runtimes'),
+			subsystems = COALESCE(subsystems, E'Parser\nRuntime')
+		WHERE title = 'TinyOne';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Networking / hardware'),
+			subsystems = COALESCE(subsystems, E'Access point\nRouter\nModem\nSwitch\nFirewall')
+		WHERE title = 'PiFi2';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Filesystems'),
+			subsystems = COALESCE(subsystems, E'Filesystem index\nCLI lookup\nBackground daemon')
+		WHERE title = 'Winux PTree';
 	ALTER TABLE posts ADD COLUMN IF NOT EXISTS references_json TEXT;
 
 	CREATE TABLE IF NOT EXISTS assets (
@@ -254,7 +287,7 @@ const getPool = () => {
 		pool = new Pool({
 			connectionString,
 			ssl: useSsl ? { rejectUnauthorized: false } : undefined,
-			max: Number.isFinite(maxPoolSize) ? maxPoolSize : 10
+			max: Number.isFinite(maxPoolSize) ? maxPoolSize : 10,
 		});
 	}
 	return pool;
@@ -278,7 +311,7 @@ export const ensureTelemetrySchema = ensurePostgresAppSchema;
 
 export const queryPostgres = async <T extends QueryResultRow = QueryResultRow>(
 	text: string,
-	values: readonly unknown[] = []
+	values: readonly unknown[] = [],
 ) => {
 	const activePool = getPool();
 	if (!activePool) {

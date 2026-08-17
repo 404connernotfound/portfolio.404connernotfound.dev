@@ -1,11 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-	parseStoredReferences,
-	serializeReferences,
-	type BlogReference
-} from '../utils/content';
+import { parseStoredReferences, serializeReferences, type BlogReference } from '../utils/content';
 const runtimeEnv = process.env;
 const isDev = runtimeEnv.NODE_ENV !== 'production';
 
@@ -72,6 +68,12 @@ type WorkItem = {
 	highlights: string | null;
 	role: string | null;
 	tech: string | null;
+	lifecycle: string | null;
+	owner: string | null;
+	domain: string | null;
+	version: string | null;
+	subsystems: string | null;
+	trace: string | null;
 	link: string | null;
 	imagePath: string | null;
 	imageUrl: string | null;
@@ -79,6 +81,11 @@ type WorkItem = {
 	featured: number;
 	sort: number;
 };
+
+type WorkInspection = Pick<
+	WorkItem,
+	'lifecycle' | 'owner' | 'domain' | 'version' | 'subsystems' | 'trace'
+>;
 
 type BlogPost = {
 	id: number;
@@ -319,6 +326,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Turing-complete language implementation\nWritten in Rust with a small runtime surface\nProof of language and systems fundamentals',
 		role: 'Language runtime',
 		tech: 'Rust',
+		lifecycle: null,
+		owner: 'Personal',
+		domain: 'Languages / runtimes',
+		version: null,
+		subsystems: 'Parser\nRuntime',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/TinyOne',
 		imagePath: null,
 		imageUrl: null,
@@ -335,6 +348,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Rust-based ML systems work\nTraining and inference engine architecture\nKnown problems tracked directly in the repository',
 		role: 'ML systems',
 		tech: 'Rust, LLMs',
+		lifecycle: 'EXPERIMENT',
+		owner: 'Personal',
+		domain: 'ML systems',
+		version: null,
+		subsystems: 'Training\nInference\nProblem tracking',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/Unum.rs',
 		imagePath: null,
 		imageUrl: null,
@@ -351,6 +370,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Targets Raspberry Pi hardware\nAP, router, modem, and switch use cases\nSmart switching, QoL, and firewall configuration',
 		role: 'Network appliance',
 		tech: 'Raspberry Pi, networking',
+		lifecycle: null,
+		owner: 'Personal',
+		domain: 'Networking / hardware',
+		version: null,
+		subsystems: 'Access point\nRouter\nModem\nSwitch\nFirewall',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/PiFi2',
 		imagePath: null,
 		imageUrl: null,
@@ -368,6 +393,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Rust filesystem indexing\nCLI integration for index lookups\nBackground daemon for ongoing indexing',
 		role: 'Filesystem tooling',
 		tech: 'Rust, CLI, daemon',
+		lifecycle: null,
+		owner: 'Winux Foundation',
+		domain: 'Filesystems',
+		version: null,
+		subsystems: 'Filesystem index\nCLI lookup\nBackground daemon',
+		trace: null,
 		link: 'https://github.com/Winux-Core/Winux-PTree',
 		imagePath: null,
 		imageUrl: null,
@@ -487,6 +518,12 @@ const createTables = (database: Database.Database) => {
 			highlights TEXT,
 			role TEXT,
 			tech TEXT,
+			lifecycle TEXT,
+			owner TEXT,
+			domain TEXT,
+			version TEXT,
+			subsystems TEXT,
+			trace TEXT,
 			link TEXT,
 			image_path TEXT,
 			image_url TEXT,
@@ -700,6 +737,62 @@ const ensureWorkItemsColumns = (database: Database.Database) => {
 	ensureColumn('image_path', 'TEXT');
 	ensureColumn('image_url', 'TEXT');
 	ensureColumn('image_alt', 'TEXT');
+	ensureColumn('lifecycle', 'TEXT');
+	ensureColumn('owner', 'TEXT');
+	ensureColumn('domain', 'TEXT');
+	ensureColumn('version', 'TEXT');
+	ensureColumn('subsystems', 'TEXT');
+	ensureColumn('trace', 'TEXT');
+};
+
+const seedWorkInspectionMetadata = (database: Database.Database) => {
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET owner = COALESCE(owner, 'Personal')
+			 WHERE link LIKE 'https://github.com/ConnerAdamsMaine/%'`,
+		)
+		.run();
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET owner = COALESCE(owner, 'Winux Foundation')
+			 WHERE link LIKE 'https://github.com/Winux-Core/%'`,
+		)
+		.run();
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET lifecycle = COALESCE(lifecycle, 'EXPERIMENT'),
+				 domain = COALESCE(domain, 'ML systems'),
+				 subsystems = COALESCE(subsystems, 'Training\nInference\nProblem tracking')
+			 WHERE title = 'Unum.rs' AND long_description LIKE '%in-progress%'`,
+		)
+		.run();
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET domain = COALESCE(domain, 'Languages / runtimes'),
+				 subsystems = COALESCE(subsystems, 'Parser\nRuntime')
+			 WHERE title = 'TinyOne'`,
+		)
+		.run();
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET domain = COALESCE(domain, 'Networking / hardware'),
+				 subsystems = COALESCE(subsystems, 'Access point\nRouter\nModem\nSwitch\nFirewall')
+			 WHERE title = 'PiFi2'`,
+		)
+		.run();
+	database
+		.prepare(
+			`UPDATE work_items
+			 SET domain = COALESCE(domain, 'Filesystems'),
+				 subsystems = COALESCE(subsystems, 'Filesystem index\nCLI lookup\nBackground daemon')
+			 WHERE title = 'Winux PTree'`,
+		)
+		.run();
 };
 
 const ensurePostsColumns = (database: Database.Database) => {
@@ -1076,9 +1169,10 @@ const seedWorkItems = (database: Database.Database) => {
 
 	const insert = database.prepare(
 		`INSERT INTO work_items (
-			title, description, long_description, highlights, role, tech, link,
+			title, description, long_description, highlights, role, tech,
+			lifecycle, owner, domain, version, subsystems, trace, link,
 			image_path, image_url, image_alt, featured, sort
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 	);
 
 	for (const row of DEFAULT_WORK_ITEMS) {
@@ -1089,6 +1183,12 @@ const seedWorkItems = (database: Database.Database) => {
 			row.highlights,
 			row.role,
 			row.tech,
+			row.lifecycle,
+			row.owner,
+			row.domain,
+			row.version,
+			row.subsystems,
+			row.trace,
 			row.link,
 			row.imagePath,
 			row.imageUrl,
@@ -1440,9 +1540,17 @@ const runMigrations = (database: Database.Database) => {
 			up: (database) => {
 				ensureWorkItemsColumns(database);
 				ensurePostsColumns(database);
-			}
+			},
 		},
 		{ id: 23, name: 'crisis_items_table', up: ensureCrisisItemsTable },
+		{
+			id: 24,
+			name: 'work_items_inspection_metadata',
+			up: (database) => {
+				ensureWorkItemsColumns(database);
+				seedWorkInspectionMetadata(database);
+			},
+		},
 	];
 
 	for (const migration of migrations) {
@@ -1711,7 +1819,8 @@ export const getWorkItems = () => {
 	const database = getDb();
 	const rows = database
 		.prepare(
-			`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
+			`SELECT id, title, description, long_description as longDescription, highlights, role, tech,
+			 lifecycle, owner, domain, version, subsystems, trace, link,
 			 image_path as imagePath, image_url as imageUrl, image_alt as imageAlt, featured, sort
 			 FROM work_items
 			 ORDER BY sort ASC, id DESC`,
@@ -1730,7 +1839,8 @@ export const getFeaturedWork = () => {
 		? workItems.filter((item) => item.featured === 1)
 		: (getDb()
 				.prepare(
-					`SELECT id, title, description, long_description as longDescription, highlights, role, tech, link,
+					`SELECT id, title, description, long_description as longDescription, highlights, role, tech,
+						 lifecycle, owner, domain, version, subsystems, trace, link,
 						 image_path as imagePath, image_url as imageUrl, image_alt as imageAlt, featured, sort
 						 FROM work_items
 						 WHERE featured = 1
@@ -1755,13 +1865,23 @@ export const createWorkItem = (
 	featured: number,
 	sort: number,
 	imageUrl: string | null = null,
+	inspection: WorkInspection = {
+		lifecycle: null,
+		owner: null,
+		domain: null,
+		version: null,
+		subsystems: null,
+		trace: null,
+	},
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`INSERT INTO work_items (
-				title, description, long_description, highlights, role, tech, link, image_path, image_url, image_alt, featured, sort
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				title, description, long_description, highlights, role, tech,
+				lifecycle, owner, domain, version, subsystems, trace, link,
+				image_path, image_url, image_alt, featured, sort
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.run(
 			title,
@@ -1770,6 +1890,12 @@ export const createWorkItem = (
 			highlights,
 			role,
 			tech,
+			inspection.lifecycle,
+			inspection.owner,
+			inspection.domain,
+			inspection.version,
+			inspection.subsystems,
+			inspection.trace,
 			link,
 			imagePath,
 			imageUrl,
@@ -1795,12 +1921,21 @@ export const updateWorkItem = (
 	featured: number,
 	sort: number,
 	imageUrl: string | null = null,
+	inspection: WorkInspection = {
+		lifecycle: null,
+		owner: null,
+		domain: null,
+		version: null,
+		subsystems: null,
+		trace: null,
+	},
 ) => {
 	const database = getDb();
 	database
 		.prepare(
 			`UPDATE work_items
 			 SET title = ?, description = ?, long_description = ?, highlights = ?, role = ?, tech = ?, link = ?,
+				 lifecycle = ?, owner = ?, domain = ?, version = ?, subsystems = ?, trace = ?,
 				 image_path = ?, image_url = ?, image_alt = ?, featured = ?, sort = ?
 			 WHERE id = ?`,
 		)
@@ -1812,6 +1947,12 @@ export const updateWorkItem = (
 			role,
 			tech,
 			link,
+			inspection.lifecycle,
+			inspection.owner,
+			inspection.domain,
+			inspection.version,
+			inspection.subsystems,
+			inspection.trace,
 			imagePath,
 			imageUrl,
 			imageAlt,
@@ -1834,7 +1975,7 @@ const mapPostRow = (row: BlogPostRow): BlogPost => {
 	const { referencesJson, ...post } = row;
 	return {
 		...post,
-		references: parseStoredReferences(referencesJson)
+		references: parseStoredReferences(referencesJson),
 	};
 };
 
@@ -1956,7 +2097,18 @@ export const createPost = (
 			`INSERT INTO posts (title, slug, excerpt, content, tags, draft, featured, published_at, created_at, references_json)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
-		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, now, referencesJson);
+		.run(
+			title,
+			finalSlug,
+			excerpt,
+			content,
+			tags,
+			draft,
+			featured,
+			publishedAt,
+			now,
+			referencesJson,
+		);
 
 	clearCache('posts');
 };
@@ -1984,7 +2136,18 @@ export const updatePost = (
 			 SET title = ?, slug = ?, excerpt = ?, content = ?, tags = ?, draft = ?, featured = ?, published_at = ?, references_json = ?
 			 WHERE id = ?`,
 		)
-		.run(title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, referencesJson, id);
+		.run(
+			title,
+			finalSlug,
+			excerpt,
+			content,
+			tags,
+			draft,
+			featured,
+			publishedAt,
+			referencesJson,
+			id,
+		);
 
 	clearCache('posts');
 };
@@ -2725,6 +2888,7 @@ export type {
 	SiteSettings,
 	StackItem,
 	WorkItem,
+	WorkInspection,
 	BlogPost,
 	Asset,
 	CrisisItem,

@@ -20,16 +20,16 @@
 	const fallbackCopy = {
 		403: {
 			title: 'Access denied',
-			body: 'You do not have permission to view this page.'
+			body: 'You do not have permission to view this page.',
 		},
 		404: {
 			title: 'Page not found',
-			body: 'We could not find the page you were looking for.'
+			body: 'We could not find the page you were looking for.',
 		},
 		500: {
 			title: 'Something went wrong',
-			body: 'An unexpected error occurred. Please try again shortly.'
-		}
+			body: 'An unexpected error occurred. Please try again shortly.',
+		},
 	};
 
 	const statusKey = status === 403 || status === 404 ? status : 500;
@@ -60,7 +60,7 @@
 		{/if}
 		<div class="mt-6 flex flex-wrap gap-3">
 			<a class="nav-pill" href="/">Back home</a>
-			<a class="nav-pill border-ink-100 bg-ink-900 text-white" href="/contact">Contact</a>
+			<a class="nav-pill cta-primary" href="/contact">Contact</a>
 		</div>
 	</div>
 </section>

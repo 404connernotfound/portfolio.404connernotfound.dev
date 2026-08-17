@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	export let delay = 0;
-	export let y = 24;
+	export let y = 16;
 	export let x = 0;
-	export let scale = 0.96;
-	export let blur = 10;
-	export let duration = 0.6;
+	export let scale = 0.99;
+	export let blur = 0;
+	export let duration = 0.7;
 	export let className = '';
 	export let once = true;
 	export let threshold = 0.18;
@@ -22,6 +23,7 @@
 	$: safeDelay = Math.max(0, delay);
 	$: safeDuration = Math.max(0, duration);
 	$: safeThreshold = clamp(threshold, 0, 1);
+	$: isAdminSurface = $page.url.pathname.startsWith('/admin');
 
 	onMount(() => {
 		const media = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -38,7 +40,7 @@
 
 		media.addEventListener('change', update);
 
-		if (prefersReducedMotion || !container) {
+		if (prefersReducedMotion || isAdminSurface || !container) {
 			return () => media.removeEventListener('change', update);
 		}
 
@@ -64,8 +66,8 @@
 			},
 			{
 				threshold: safeThreshold,
-				rootMargin
-			}
+				rootMargin,
+			},
 		);
 
 		observer.observe(container);
@@ -97,14 +99,14 @@
 		transition-property: transform, opacity, filter;
 		transition-duration: var(--motion-duration, 0.6s);
 		transition-delay: var(--motion-delay, 0s);
-		transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
 	.motion-reveal-enabled:not(.motion-reveal-visible) {
 		opacity: 0;
-		transform: translate3d(var(--motion-x, 0px), var(--motion-y, 24px), 0)
-			scale(var(--motion-scale, 0.96));
-		filter: blur(var(--motion-blur, 10px));
+		transform: translate3d(var(--motion-x, 0px), var(--motion-y, 16px), 0)
+			scale(var(--motion-scale, 0.99));
+		filter: blur(var(--motion-blur, 0px));
 	}
 
 	@media (prefers-reduced-motion: reduce) {

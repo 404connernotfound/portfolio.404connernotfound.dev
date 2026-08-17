@@ -7,9 +7,8 @@ process.env.DB_AUTO_SEED = 'true';
 process.env.NODE_ENV = 'test';
 delete process.env.DATABASE_URL;
 
-const { calculateReadTime, renderMarkdown, resolveWorkCoverImage } = await import(
-	'../src/lib/utils/content'
-);
+const { calculateReadTime, renderMarkdown, resolveWorkCoverImage } =
+	await import('../src/lib/utils/content');
 const { parseBlogReferencesForm, parseExternalImageUrl } =
 	await import('../src/lib/server/contentValidation');
 const db = await import('../src/lib/server/db');
@@ -83,7 +82,10 @@ const assertExtendedMarkdownFeatures = () => {
 	assert.match(ruleHtml, /<hr \/>/);
 
 	const quoteHtml = renderMarkdown('> This note matters.\n> Keep it visible.');
-	assert.match(quoteHtml, /<blockquote><p>This note matters\.\nKeep it visible\.<\/p><\/blockquote>/);
+	assert.match(
+		quoteHtml,
+		/<blockquote><p>This note matters\.\nKeep it visible\.<\/p><\/blockquote>/,
+	);
 
 	const codeHtml = renderMarkdown('```ts\nconst x: number = 1;\n```');
 	assert.match(codeHtml, /<pre><code class="language-ts">const x: number = 1;<\/code><\/pre>/);
@@ -235,10 +237,21 @@ const assertWorkCoverPersistence = () => {
 		0,
 		90,
 		'https://cdn.example.com/work.png',
+		{
+			lifecycle: 'ACTIVE',
+			owner: 'Personal',
+			domain: 'Testing',
+			version: '1.0',
+			subsystems: 'Input\nOutput',
+			trace: 'Input\nValidate\nOutput',
+		},
 	);
 	const external = db.getWorkItems().find((item) => item.title === 'External Cover');
 	assert.equal(external?.imageUrl, 'https://cdn.example.com/work.png');
 	assert.equal(resolveWorkCoverImage(external!), 'https://cdn.example.com/work.png');
+	assert.equal(external?.lifecycle, 'ACTIVE');
+	assert.equal(external?.owner, 'Personal');
+	assert.equal(external?.trace, 'Input\nValidate\nOutput');
 
 	db.createWorkItem(
 		'Upload Cover',

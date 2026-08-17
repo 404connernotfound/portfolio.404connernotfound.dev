@@ -4,44 +4,51 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-				mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
+				sans: [
+					'-apple-system',
+					'BlinkMacSystemFont',
+					'"Segoe UI"',
+					'Helvetica',
+					'Arial',
+					'sans-serif',
+				],
+				mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
 			},
 			colors: {
 				ink: {
-					50: '#f3f4f8',
-					100: '#e3e6f1',
-					200: '#c0c7e0',
-					300: '#9aa3c8',
-					400: '#6f7aa7',
-					500: '#4c547f',
-					600: '#353a5f',
-					700: '#252743',
-					800: '#17192d',
-					900: '#0b0c17'
+					50: '#fafafa',
+					100: '#f4f4f5',
+					200: '#d4d4d8',
+					300: '#a1a1aa',
+					400: '#71717a',
+					500: '#52525b',
+					600: '#3f3f46',
+					700: '#27272a',
+					800: '#18181b',
+					900: '#09090b',
 				},
 				signal: {
-					100: '#ede7ff',
-					300: '#c9b6ff',
-					500: '#a47bff',
-					700: '#7d3bff'
+					100: '#ede9fe',
+					300: '#c4b5fd',
+					500: '#8b5cf6',
+					700: '#6d28d9',
 				},
 				aurora: {
-					200: '#8fb2ff',
-					400: '#5b79ff',
-					600: '#2f47ff'
+					200: '#c4b5fd',
+					400: '#8b5cf6',
+					600: '#6d28d9',
 				},
 				night: {
-					500: '#0a0a14',
-					700: '#06060c',
-					900: '#040407'
-				}
+					500: '#121217',
+					700: '#09090b',
+					900: '#050505',
+				},
 			},
 			boxShadow: {
-				soft: '0 20px 60px -30px rgba(15, 13, 11, 0.7)',
-				glow: '0 0 30px rgba(122, 162, 255, 0.25)'
-			}
-		}
+				soft: '0 24px 70px -42px rgba(0, 0, 0, 0.9)',
+				glow: '0 0 40px rgba(124, 58, 237, 0.18)',
+			},
+		},
 	},
-	plugins: []
+	plugins: [],
 };

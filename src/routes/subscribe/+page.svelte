@@ -12,33 +12,40 @@
 	const perks = [
 		{
 			title: 'Launch notes',
-			body: 'Short debriefs on what worked, what failed, and what to repeat.'
+			body: 'Short debriefs on what worked, what failed, and what to repeat.',
 		},
 		{
 			title: 'Design breakdowns',
-			body: 'Annotated decisions, component choices, and motion studies.'
+			body: 'Annotated decisions, component choices, and motion studies.',
 		},
 		{
 			title: 'Product clarity',
-			body: 'Frameworks for positioning, messaging, and narrative alignment.'
-		}
+			body: 'Frameworks for positioning, messaging, and narrative alignment.',
+		},
 	];
 
-	const topics = ['Storytelling', 'Product pages', 'Design systems', 'Conversion UX', 'Motion studies', 'Freelance ops'];
+	const topics = [
+		'Storytelling',
+		'Product pages',
+		'Design systems',
+		'Conversion UX',
+		'Motion studies',
+		'Freelance ops',
+	];
 
 	const faqs = [
 		{
 			question: 'How often will you email?',
-			answer: 'About twice a month, with occasional extra notes when a launch ships.'
+			answer: 'About twice a month, with occasional extra notes when a launch ships.',
 		},
 		{
 			question: 'Is there a paid tier?',
-			answer: 'No. The list is free and I will never sell your data.'
+			answer: 'No. The list is free and I will never sell your data.',
 		},
 		{
 			question: 'Can I unsubscribe anytime?',
-			answer: 'Yes. Every email includes a one-click unsubscribe link.'
-		}
+			answer: 'Yes. Every email includes a one-click unsubscribe link.',
+		},
 	];
 </script>
 
@@ -61,45 +68,26 @@
 				<li>Early access to new experiments and templates.</li>
 			</ul>
 		</MotionReveal>
-		<MotionReveal delay={0.08} className="glass p-8">
+		<MotionReveal delay={0.08} className="form-shell">
 			<form class="space-y-4" method="POST" on:submit={handleSubmit}>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="name">
-						Name (optional)
-					</label>
-					<input
-						id="name"
-						name="name"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-						type="text"
-						autocomplete="name"
-					/>
+					<label class="form-label" for="name"> Name (optional) </label>
+					<input id="name" name="name" class="form-field" type="text" autocomplete="name" />
 				</div>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="email">
-						Email
-					</label>
+					<label class="form-label" for="email"> Email </label>
 					<input
 						id="email"
 						name="email"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+						class="form-field"
 						type="email"
 						autocomplete="email"
 						required
 					/>
 				</div>
 				<div>
-					<label
-						class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
-						for="interest"
-					>
-						Main interest
-					</label>
-					<select
-						id="interest"
-						name="interest"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-					>
+					<label class="form-label" for="interest"> Main interest </label>
+					<select id="interest" name="interest" class="form-field">
 						<option value="">Select one</option>
 						<option value="launch">Launch strategy</option>
 						<option value="design">Design systems</option>
@@ -113,9 +101,7 @@
 					{:else if form?.success}
 						<p class="text-sm text-aurora-200">Thanks for subscribing. See you in the inbox.</p>
 					{/if}
-					<button class="nav-pill border-ink-100 bg-ink-900 text-white" type="submit">
-						Join the list
-					</button>
+					<button class="nav-pill cta-primary" type="submit"> Join the list </button>
 				</div>
 			</form>
 		</MotionReveal>
@@ -141,7 +127,9 @@
 	<div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
 		<MotionReveal className="space-y-4">
 			<h2 class="text-3xl font-semibold text-white">Topics in rotation</h2>
-			<p class="text-sm text-ink-200">Deep dives on the craft, the strategy, and the launch plan.</p>
+			<p class="text-sm text-ink-200">
+				Deep dives on the craft, the strategy, and the launch plan.
+			</p>
 			<ul class="grid gap-3 text-sm text-ink-200 sm:grid-cols-2">
 				{#each topics as topic}
 					<li class="rounded-2xl border border-ink-200/30 bg-white/5 px-4 py-3">{topic}</li>

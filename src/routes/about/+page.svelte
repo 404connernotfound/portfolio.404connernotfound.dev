@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MotionReveal from '$lib/components/MotionReveal.svelte';
+	import MetadataGrid from '$lib/components/MetadataGrid.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { formatTitle } from '$lib/utils/seo';
 	import type { PageData } from './$types';
@@ -10,43 +10,63 @@
 <SeoHead title={formatTitle('About')} description={data.siteSettings.aboutBody} />
 
 <section class="section-pad">
-	<div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-		<MotionReveal className="space-y-5">
-			<p class="badge">About</p>
-			<h1 class="text-4xl font-semibold text-white sm:text-5xl">{data.siteSettings.aboutHeadline}</h1>
-			<p class="text-lg text-ink-200">{data.siteSettings.aboutBody}</p>
-			<a class="link-underline" href="/contact">Let’s connect</a>
-		</MotionReveal>
-		{#if data.stackItems.length}
-			<MotionReveal delay={0.08} className="glass space-y-4 p-8">
-				<p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200">Current stack</p>
-				<ul class="space-y-3 text-sm text-ink-200">
-					{#each data.stackItems.slice(0, 4) as item}
-						<li>{item.label}{item.detail ? ` — ${item.detail}` : ''}</li>
-					{/each}
-				</ul>
-			</MotionReveal>
-		{/if}
+	<div class="inspection-shell">
+		<div>
+			<p class="system-label">About / Conner Adams</p>
+			<h1 class="inspection-title">{data.siteSettings.aboutHeadline}</h1>
+			<p class="inspection-summary">{data.siteSettings.aboutBody}</p>
+		</div>
+		<aside class="inspection-side">
+			<MetadataGrid
+				items={data.stackItems.slice(0, 4).map((item) => ({
+					label: item.category || 'Interest',
+					value: item.label,
+				}))}
+				label="Current technical interests"
+			/>
+		</aside>
+	</div>
+</section>
+
+<section class="section-pad pt-0">
+	<div class="evidence-grid">
+		<div class="evidence-panel">
+			<p class="system-label">Engineering approach</p>
+			<h2>Make the constraints visible.</h2>
+			<p>
+				I prefer designs whose state, boundaries, and failure modes can be inspected. Correctness
+				comes from making assumptions explicit; performance work starts with the actual execution
+				path; and simplicity means removing machinery that is not earning its place.
+			</p>
+		</div>
+		<div class="evidence-panel">
+			<p class="system-label">Current focus</p>
+			<h2 class="!text-3xl">{data.siteSettings.focusHeadline}</h2>
+			<p>{data.siteSettings.focusBody}</p>
+		</div>
 	</div>
 </section>
 
 {#if data.stackItems.length}
-	<section class="section-pad">
-		<div class="glass grid gap-8 p-10 lg:grid-cols-[1.1fr_0.9fr]">
-			<MotionReveal className="space-y-3">
-				<h2 class="text-3xl font-semibold text-white">{data.siteSettings.stackTitle}</h2>
-				<p class="text-sm text-ink-200">{data.siteSettings.stackIntro}</p>
-			</MotionReveal>
-			<div class="grid gap-4 sm:grid-cols-2">
-				{#each data.stackItems as item, index}
-					<MotionReveal delay={0.04 * index} className="rounded-2xl border border-ink-200/30 bg-white/5 p-5">
-						<p class="text-xs uppercase tracking-[0.2em] text-ink-200">{item.label}</p>
-						{#if item.detail}
-							<p class="mt-2 text-lg font-semibold text-white">{item.detail}</p>
-						{/if}
-					</MotionReveal>
-				{/each}
+	<section class="section-pad pt-0" aria-labelledby="working-set-title">
+		<div class="section-heading-row">
+			<div>
+				<p class="system-label">Maintained working set</p>
+				<h2 id="working-set-title">{data.siteSettings.stackTitle}</h2>
 			</div>
+			<p class="max-w-lg text-sm leading-6 text-ink-400">{data.siteSettings.stackIntro}</p>
 		</div>
+		<ol class="capability-list mt-10">
+			{#each data.stackItems as item, index}
+				<li class="capability-row">
+					<span class="capability-index">{String(index + 1).padStart(2, '0')}</span>
+					<h3>{item.label}</h3>
+					<p>{item.detail || 'Maintained technical interest.'}</p>
+				</li>
+			{/each}
+		</ol>
+		<a class="inspection-link mt-10" href="/contact"
+			>Establish a connection <span aria-hidden="true">→</span></a
+		>
 	</section>
 {/if}

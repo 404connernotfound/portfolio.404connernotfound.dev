@@ -1,49 +1,62 @@
 <script lang="ts">
-	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
+	import { calculateReadTime } from '$lib/utils/content';
 	import { formatTitle } from '$lib/utils/seo';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	const formatDate = (value: string | null) => {
+		if (!value) return 'Date not specified';
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return value;
+		return new Intl.DateTimeFormat('en', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+		}).format(date);
+	};
 </script>
 
-<SeoHead title={formatTitle('Blog')} description={data.siteSettings.blogIntro} />
+<SeoHead title={formatTitle('Notes')} description={data.siteSettings.blogIntro} />
 
 <section class="section-pad">
-	<div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-		<div class="space-y-4">
-			<p class="badge">Blog</p>
-			<h1 class="text-4xl font-semibold text-white sm:text-5xl">{data.siteSettings.blogTitle}</h1>
-			<p class="max-w-2xl text-lg text-ink-200">{data.siteSettings.blogIntro}</p>
+	<div class="inspection-shell">
+		<div>
+			<p class="system-label">Notes / technical documents</p>
+			<h1 class="inspection-title">{data.siteSettings.blogTitle}</h1>
+			<p class="inspection-summary">{data.siteSettings.blogIntro}</p>
 		</div>
-		<a class="nav-pill" href="/contact">Get in touch</a>
+		<aside class="inspection-side">
+			<p class="system-label">Document behavior</p>
+			<p class="mt-3 text-sm leading-6 text-ink-400">
+				Readable HTML, maintained dates and topics, and no decorative motion behind long-form prose.
+			</p>
+		</aside>
 	</div>
 </section>
 
 {#if data.blogPosts.length}
-	<section class="section-pad">
-		<div class="grid gap-6 md:grid-cols-2">
-			{#each data.blogPosts as post, index}
-				<MotionReveal delay={0.08 * index} className="card">
-					{#if post.publishedAt}
-						<p class="text-xs uppercase tracking-[0.2em] text-ink-200">
-							{post.publishedAt}
-						</p>
-					{/if}
-					<h3 class="mt-3 text-2xl font-semibold text-white">{post.title}</h3>
-					{#if post.excerpt}
-						<p class="mt-2 text-sm text-ink-200">{post.excerpt}</p>
-					{/if}
-					{#if post.tags}
-						<p class="mt-4 text-xs uppercase tracking-[0.2em] text-ink-200">{post.tags}</p>
-					{/if}
-					<a class="link-underline mt-4" href={`/blog/${post.slug}`}>Read entry</a>
-				</MotionReveal>
+	<section class="section-pad pt-0">
+		<div class="note-index">
+			{#each data.blogPosts as post}
+				<article class="note-index-item">
+					<div>
+						<p class="note-index-date">{formatDate(post.publishedAt)}</p>
+						<p class="note-index-tags mt-2">{calculateReadTime(post.content || post.excerpt)}</p>
+					</div>
+					<div class="note-index-copy">
+						<h2><a href={`/blog/${post.slug}`}>{post.title}</a></h2>
+						{#if post.excerpt}<p>{post.excerpt}</p>{/if}
+						{#if post.tags}<p class="note-index-tags">{post.tags}</p>{/if}
+					</div>
+					<a class="note-index-link" href={`/blog/${post.slug}`}>Read note →</a>
+				</article>
 			{/each}
 		</div>
 	</section>
 {:else}
 	<section class="section-pad">
-		<div class="glass p-8 text-sm text-ink-200">No posts yet. Check back soon.</div>
+		<div class="glass p-8 text-sm text-ink-200">No notes have been published yet.</div>
 	</section>
 {/if}

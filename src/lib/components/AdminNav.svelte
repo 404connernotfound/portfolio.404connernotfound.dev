@@ -13,7 +13,7 @@
 		{ label: 'Footer', href: '/admin/footer' },
 		{ label: 'Tracking', href: '/admin/tracking' },
 		{ label: 'Resume', href: '/admin/resume' },
-		{ label: 'Crisis Counter', href: '/admin/crisis-counter' }
+		{ label: 'Crisis Counter', href: '/admin/crisis-counter' },
 	];
 
 	const isActive = (href: string) => {
@@ -23,7 +23,7 @@
 	};
 </script>
 
-<nav class="flex flex-wrap gap-3 text-sm font-semibold uppercase tracking-[0.18em] text-ink-200">
+<nav class="admin-nav" aria-label="Administration">
 	{#each links as link}
 		<a
 			class="nav-pill"

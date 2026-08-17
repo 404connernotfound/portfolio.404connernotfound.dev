@@ -14,7 +14,7 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
 	'<': '&lt;',
 	'>': '&gt;',
 	'"': '&quot;',
-	"'": '&#39;'
+	"'": '&#39;',
 };
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => HTML_ESCAPE_MAP[char]);
@@ -86,6 +86,23 @@ export const serializeReferences = (references: BlogReference[]) =>
 
 export const resolveWorkCoverImage = (item: WorkCoverSource) => item.imagePath ?? item.imageUrl;
 
+export const parseLineList = (value: string | null | undefined): string[] =>
+	(value ?? '')
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean);
+
+export const slugify = (value: string): string =>
+	value
+		.toLowerCase()
+		.normalize('NFKD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '') || 'system';
+
+export const workItemPath = (item: { id: number; title: string }): string =>
+	`/work/${item.id}-${slugify(item.title)}`;
+
 const READ_TIME_WORDS_PER_MINUTE = 220;
 
 export const calculateReadTime = (value: string | null | undefined): string => {
@@ -116,9 +133,7 @@ const buildImageTag = (src: string, alt: string, title: string | null) => {
 const buildAnchorTag = (href: string, innerHtml: string, title: string | null) => {
 	const safeHref = escapeHtml(href);
 	const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
-	const external = /^https?:\/\//i.test(href)
-		? ' rel="noreferrer noopener" target="_blank"'
-		: '';
+	const external = /^https?:\/\//i.test(href) ? ' rel="noreferrer noopener" target="_blank"' : '';
 	return `<a href="${safeHref}"${external}${titleAttr}>${innerHtml}</a>`;
 };
 
@@ -144,7 +159,7 @@ const renderInline = (value: string): string => {
 	let output = value;
 
 	output = output.replace(/`([^`\n]+)`/g, (_match, code: string) =>
-		reserve(`<code>${escapeHtml(code)}</code>`)
+		reserve(`<code>${escapeHtml(code)}</code>`),
 	);
 
 	output = output.replace(
@@ -152,7 +167,7 @@ const renderInline = (value: string): string => {
 		(match, alt: string, src: string, title: string | undefined) => {
 			if (!isSafeMarkdownImageSrc(src)) return match;
 			return reserve(buildImageTag(src, alt, title ?? null));
-		}
+		},
 	);
 
 	output = output.replace(
@@ -160,16 +175,13 @@ const renderInline = (value: string): string => {
 		(match, label: string, href: string, title: string | undefined) => {
 			if (!isSafeMarkdownHref(href)) return match;
 			return reserve(buildAnchorTag(href, renderInlineLabel(label), title ?? null));
-		}
+		},
 	);
 
-	output = output.replace(
-		/<((?:https?:\/\/|mailto:)[^\s<>]+)>/g,
-		(match, url: string) => {
-			if (!isSafeMarkdownHref(url)) return match;
-			return reserve(buildAnchorTag(url, escapeHtml(url), null));
-		}
-	);
+	output = output.replace(/<((?:https?:\/\/|mailto:)[^\s<>]+)>/g, (match, url: string) => {
+		if (!isSafeMarkdownHref(url)) return match;
+		return reserve(buildAnchorTag(url, escapeHtml(url), null));
+	});
 
 	output = output.replace(
 		/(^|[\s(])(https?:\/\/[^\s<>()"']+)/g,
@@ -182,7 +194,7 @@ const renderInline = (value: string): string => {
 			}
 			if (!url || !isSafeMarkdownHref(url)) return _match;
 			return `${prefix}${reserve(buildAnchorTag(url, escapeHtml(url), null))}${trailing}`;
-		}
+		},
 	);
 
 	output = escapeHtml(output);
@@ -309,9 +321,7 @@ export const renderMarkdown = (markdown: string | null | undefined): string => {
 
 		if (inCodeFence) {
 			if (/^\s*```\s*$/.test(rawLine)) {
-				const langAttr = codeFenceLang
-					? ` class="language-${escapeHtml(codeFenceLang)}"`
-					: '';
+				const langAttr = codeFenceLang ? ` class="language-${escapeHtml(codeFenceLang)}"` : '';
 				parts.push(`<pre><code${langAttr}>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
 				inCodeFence = false;
 				codeLines = [];
@@ -354,11 +364,7 @@ export const renderMarkdown = (markdown: string | null | undefined): string => {
 			continue;
 		}
 
-		if (
-			trimmed.startsWith('|') &&
-			i + 1 < lines.length &&
-			isTableSeparator(lines[i + 1])
-		) {
+		if (trimmed.startsWith('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
 			flushParagraph();
 			closeAllLists();
 			const headerCells = parseTableRow(trimmed);
@@ -395,7 +401,7 @@ export const renderMarkdown = (markdown: string | null | undefined): string => {
 			if (task) {
 				const checked = task[1].toLowerCase() === 'x';
 				parts.push(
-					`<li class="task-list-item"><input type="checkbox" disabled${checked ? ' checked' : ''} /> ${renderInline(task[2])}</li>`
+					`<li class="task-list-item"><input type="checkbox" disabled${checked ? ' checked' : ''} /> ${renderInline(task[2])}</li>`,
 				);
 			} else {
 				parts.push(`<li>${renderInline(itemContent)}</li>`);

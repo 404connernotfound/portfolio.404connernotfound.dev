@@ -6,10 +6,7 @@
 	export let data: PageData;
 </script>
 
-<SeoHead
-	title={formatTitle('404')}
-	description={data.siteSettings.error404Body}
-/>
+<SeoHead title={formatTitle('404')} description={data.siteSettings.error404Body} />
 
 <section class="section-pad">
 	<div class="glass p-8 sm:p-10">
@@ -20,7 +17,7 @@
 		<p class="mt-3 max-w-2xl text-lg text-ink-200">{data.siteSettings.error404Body}</p>
 		<div class="mt-6 flex flex-wrap gap-3">
 			<a class="nav-pill" href="/">Back home</a>
-			<a class="nav-pill border-ink-100 bg-ink-900 text-white" href="/work">View work</a>
+			<a class="nav-pill cta-primary" href="/work">View work</a>
 		</div>
 	</div>
 </section>

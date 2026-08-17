@@ -22,60 +22,48 @@
 			<p class="badge">Collaborate</p>
 			<h1 class="text-4xl font-semibold text-white sm:text-5xl">Let’s build something sharp</h1>
 			<p class="text-lg text-ink-200">
-				Share your project goals, timelines, and constraints. I will follow up with next
-				steps.
+				Share your project goals, timelines, and constraints. I will follow up with next steps.
 			</p>
-			<div class="grid gap-4 sm:grid-cols-2">
-				<div class="glass p-5">
-					<p class="text-xs uppercase tracking-[0.2em] text-ink-200">Email</p>
-					<p class="mt-2 text-lg font-semibold text-white">
+			<div class="info-grid">
+				<div class="info-item">
+					<p class="info-label">Email</p>
+					<p class="info-value">
 						{data.siteSettings.contactEmail}
 					</p>
 				</div>
-				<div class="glass p-5">
-					<p class="text-xs uppercase tracking-[0.2em] text-ink-200">Availability</p>
-					<p class="mt-2 text-lg font-semibold text-white">Limited slots monthly</p>
+				<div class="info-item">
+					<p class="info-label">Availability</p>
+					<p class="info-value">Limited slots monthly</p>
 				</div>
 			</div>
 		</div>
-		<MotionReveal className="glass p-8">
+		<MotionReveal className="form-shell">
 			<form class="space-y-4" method="POST" action="?/send" on:submit={handleSubmit}>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="name">
-						Name
-					</label>
+					<label class="form-label" for="name"> Name </label>
 					<input
 						id="name"
 						name="name"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+						class="form-field"
 						type="text"
 						autocomplete="name"
 						required
 					/>
 				</div>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="email">
-						Email
-					</label>
+					<label class="form-label" for="email"> Email </label>
 					<input
 						id="email"
 						name="email"
-						class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
+						class="form-field"
 						type="email"
 						autocomplete="email"
 						required
 					/>
 				</div>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="scope">
-						Project brief
-					</label>
-					<textarea
-						id="scope"
-						name="scope"
-						class="mt-2 min-h-[140px] w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-						autocomplete="off"
-						required
+					<label class="form-label" for="scope"> Project brief </label>
+					<textarea id="scope" name="scope" class="form-field" autocomplete="off" required
 					></textarea>
 				</div>
 				<div class="space-y-2">
@@ -84,9 +72,7 @@
 					{:else if form?.success}
 						<p class="text-sm text-aurora-200">Thanks — I’ll be in touch soon.</p>
 					{/if}
-					<button class="nav-pill border-ink-100 bg-ink-900 text-white" type="submit">
-						Send request
-					</button>
+					<button class="nav-pill cta-primary" type="submit"> Send request </button>
 				</div>
 			</form>
 		</MotionReveal>

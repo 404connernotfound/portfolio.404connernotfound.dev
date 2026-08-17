@@ -1,65 +1,88 @@
 <script lang="ts">
-	import SeoHead from '$lib/components/SeoHead.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
-	import { formatTitle } from '$lib/utils/seo';
+	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { calculateReadTime } from '$lib/utils/content';
+	import { formatTitle } from '$lib/utils/seo';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	const description =
-		data.post.excerpt ?? (data.post.content ? data.post.content.slice(0, 160) : 'Blog entry.');
+		data.post.excerpt ?? (data.post.content ? data.post.content.slice(0, 160) : 'Technical note.');
 	const readTime = calculateReadTime(data.post.content ?? data.post.excerpt ?? '');
 </script>
 
-<SeoHead title={formatTitle(data.post.title)} description={description} type="article" />
+<SeoHead title={formatTitle(data.post.title)} {description} type="article" />
 
 <section class="section-pad">
-	<article class="mx-auto max-w-3xl space-y-6">
-		<a class="link-underline" href="/blog">Back to blog</a>
-		<header class="space-y-4">
-			<h1 class="text-4xl font-semibold leading-tight text-white sm:text-5xl">{data.post.title}</h1>
-			{#if data.post.excerpt}
-				<p class="text-lg leading-8 text-ink-100">{data.post.excerpt}</p>
+	<div class="note-article">
+		<aside class="note-rail" aria-label="Note metadata">
+			<a class="source-link" href="/blog">← Notes</a>
+			<dl>
+				<div>
+					<dt>Document</dt>
+					<dd>Note</dd>
+				</div>
+				{#if data.post.publishedAt}
+					<div>
+						<dt>Date</dt>
+						<dd>{data.post.publishedAt}</dd>
+					</div>
+				{/if}
+				<div>
+					<dt>Reading time</dt>
+					<dd>{readTime}</dd>
+				</div>
+				{#if data.post.tags}
+					<div>
+						<dt>Topics</dt>
+						<dd>{data.post.tags}</dd>
+					</div>
+				{/if}
+			</dl>
+		</aside>
+
+		<article class="note-body">
+			<header>
+				<p class="system-label">Technical note</p>
+				<h1>{data.post.title}</h1>
+				{#if data.post.excerpt}<p class="inspection-summary">{data.post.excerpt}</p>{/if}
+			</header>
+
+			<div class="inspection-section mt-10">
+				{#if data.post.content}
+					<MarkdownContent source={data.post.content} className="blog-markdown" />
+				{:else if data.post.excerpt}
+					<MarkdownContent source={data.post.excerpt} className="blog-markdown" />
+				{:else}
+					<div class="text-base text-ink-200">No content yet.</div>
+				{/if}
+			</div>
+
+			{#if data.post.references.length}
+				<section class="inspection-section" aria-labelledby="post-references-heading">
+					<p class="system-label">Source index</p>
+					<h2 id="post-references-heading" class="!text-2xl">References</h2>
+					<ol class="inspection-subsystems">
+						{#each data.post.references as reference, index}
+							<li>
+								<span>{String(index + 1).padStart(2, '0')}</span>
+								<span>
+									<a
+										class="inspection-link"
+										href={reference.url}
+										target="_blank"
+										rel="noreferrer noopener"
+									>
+										{reference.label} <span aria-hidden="true">↗</span>
+									</a>
+									{#if reference.note}<p class="mt-2 text-sm leading-6">{reference.note}</p>{/if}
+								</span>
+							</li>
+						{/each}
+					</ol>
+				</section>
 			{/if}
-		</header>
-		<div class="flex flex-wrap gap-4 border-y border-ink-200/20 py-4 text-xs uppercase tracking-[0.2em] text-ink-200">
-			{#if data.post.publishedAt}
-				<span>{data.post.publishedAt}</span>
-			{/if}
-			<span>{readTime}</span>
-			{#if data.post.tags}
-				<span>{data.post.tags}</span>
-			{/if}
-		</div>
-		{#if data.post.content}
-			<MarkdownContent source={data.post.content} className="blog-markdown" />
-		{:else if data.post.excerpt}
-			<MarkdownContent source={data.post.excerpt} className="blog-markdown" />
-		{:else}
-			<div class="text-base text-ink-200">No content yet.</div>
-		{/if}
-		{#if data.post.references.length}
-			<section class="mt-10 rounded-2xl border border-ink-200/30 bg-white/5 p-5" aria-labelledby="post-references-heading">
-				<h2 id="post-references-heading" class="text-xl font-semibold text-white">References</h2>
-				<ol class="mt-4 list-decimal space-y-4 pl-5 text-sm text-ink-200">
-					{#each data.post.references as reference}
-						<li>
-							<a
-								class="link-underline"
-								href={reference.url}
-								target="_blank"
-								rel="noreferrer noopener"
-							>
-								{reference.label}
-							</a>
-							{#if reference.note}
-								<p class="mt-2 leading-6 text-ink-200">{reference.note}</p>
-							{/if}
-						</li>
-					{/each}
-				</ol>
-			</section>
-		{/if}
-	</article>
+		</article>
+	</div>
 </section>

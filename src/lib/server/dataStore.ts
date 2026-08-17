@@ -14,6 +14,7 @@ import type {
 	Testimonial,
 	TrackingEvent,
 	WorkItem,
+	WorkInspection,
 } from '$lib/server/db';
 import { invalidateCached, invalidateCachedPrefix } from '$lib/server/cache';
 import {
@@ -22,11 +23,7 @@ import {
 	queryPostgres,
 	executePostgres,
 } from '$lib/server/postgres';
-import {
-	parseStoredReferences,
-	serializeReferences,
-	type BlogReference,
-} from '../utils/content';
+import { parseStoredReferences, serializeReferences, type BlogReference } from '../utils/content';
 
 const runtimeEnv = process.env;
 const isDev = runtimeEnv.NODE_ENV !== 'production';
@@ -156,6 +153,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Turing-complete language implementation\nWritten in Rust with a small runtime surface\nProof of language and systems fundamentals',
 		role: 'Language runtime',
 		tech: 'Rust',
+		lifecycle: null,
+		owner: 'Personal',
+		domain: 'Languages / runtimes',
+		version: null,
+		subsystems: 'Parser\nRuntime',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/TinyOne',
 		imagePath: null,
 		imageUrl: null,
@@ -172,6 +175,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Rust-based ML systems work\nTraining and inference engine architecture\nKnown problems tracked directly in the repository',
 		role: 'ML systems',
 		tech: 'Rust, LLMs',
+		lifecycle: 'EXPERIMENT',
+		owner: 'Personal',
+		domain: 'ML systems',
+		version: null,
+		subsystems: 'Training\nInference\nProblem tracking',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/Unum.rs',
 		imagePath: null,
 		imageUrl: null,
@@ -188,6 +197,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Targets Raspberry Pi hardware\nAP, router, modem, and switch use cases\nSmart switching, QoL, and firewall configuration',
 		role: 'Network appliance',
 		tech: 'Raspberry Pi, networking',
+		lifecycle: null,
+		owner: 'Personal',
+		domain: 'Networking / hardware',
+		version: null,
+		subsystems: 'Access point\nRouter\nModem\nSwitch\nFirewall',
+		trace: null,
 		link: 'https://github.com/ConnerAdamsMaine/PiFi2',
 		imagePath: null,
 		imageUrl: null,
@@ -205,6 +220,12 @@ const DEFAULT_WORK_ITEMS: Omit<WorkItem, 'id'>[] = [
 			'Rust filesystem indexing\nCLI integration for index lookups\nBackground daemon for ongoing indexing',
 		role: 'Filesystem tooling',
 		tech: 'Rust, CLI, daemon',
+		lifecycle: null,
+		owner: 'Winux Foundation',
+		domain: 'Filesystems',
+		version: null,
+		subsystems: 'Filesystem index\nCLI lookup\nBackground daemon',
+		trace: null,
 		link: 'https://github.com/Winux-Core/Winux-PTree',
 		imagePath: null,
 		imageUrl: null,
@@ -271,7 +292,11 @@ const invalidateStackCaches = async () => {
 };
 
 const invalidateWorkCaches = async () => {
-	await Promise.all([invalidateCached('page:home'), invalidateCached('page:work')]);
+	await Promise.all([
+		invalidateCached('page:home'),
+		invalidateCached('page:work'),
+		invalidateCachedPrefix('xml:sitemap:'),
+	]);
 };
 
 const invalidatePostCaches = async () => {
@@ -452,9 +477,10 @@ const ensurePostgresPortfolioContent = async () => {
 		for (const rowData of DEFAULT_WORK_ITEMS) {
 			await executePostgres(
 				`INSERT INTO work_items (
-					title, description, long_description, highlights, role, tech, link,
+					title, description, long_description, highlights, role, tech,
+					lifecycle, owner, domain, version, subsystems, trace, link,
 					image_path, image_url, image_alt, featured, sort
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
 				[
 					rowData.title,
 					rowData.description,
@@ -462,6 +488,12 @@ const ensurePostgresPortfolioContent = async () => {
 					rowData.highlights,
 					rowData.role,
 					rowData.tech,
+					rowData.lifecycle,
+					rowData.owner,
+					rowData.domain,
+					rowData.version,
+					rowData.subsystems,
+					rowData.trace,
 					rowData.link,
 					rowData.imagePath,
 					rowData.imageUrl,
@@ -901,7 +933,8 @@ export const getWorkItems = async (): Promise<WorkItem[]> =>
 	withDbFallback(
 		() =>
 			queryPostgres<WorkItem>(
-				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech, link,
+				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech,
+				 lifecycle, owner, domain, version, subsystems, trace, link,
 				 image_path as "imagePath", image_url as "imageUrl", image_alt as "imageAlt", featured, sort
 				 FROM work_items
 				 ORDER BY sort ASC, id DESC`,
@@ -913,7 +946,8 @@ export const getFeaturedWork = async (): Promise<WorkItem[]> =>
 	withDbFallback(
 		() =>
 			queryPostgres<WorkItem>(
-				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech, link,
+				`SELECT id, title, description, long_description as "longDescription", highlights, role, tech,
+				 lifecycle, owner, domain, version, subsystems, trace, link,
 				 image_path as "imagePath", image_url as "imageUrl", image_alt as "imageAlt", featured, sort
 				 FROM work_items
 				 WHERE featured = 1
@@ -935,13 +969,23 @@ export const createWorkItem = async (
 	featured: number,
 	sort: number,
 	imageUrl: string | null = null,
+	inspection: WorkInspection = {
+		lifecycle: null,
+		owner: null,
+		domain: null,
+		version: null,
+		subsystems: null,
+		trace: null,
+	},
 ) => {
 	await withDbFallback(
 		() =>
 			executePostgres(
 				`INSERT INTO work_items (
-					title, description, long_description, highlights, role, tech, link, image_path, image_url, image_alt, featured, sort
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+					title, description, long_description, highlights, role, tech,
+					lifecycle, owner, domain, version, subsystems, trace, link,
+					image_path, image_url, image_alt, featured, sort
+				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
 				[
 					title,
 					description,
@@ -949,6 +993,12 @@ export const createWorkItem = async (
 					highlights,
 					role,
 					tech,
+					inspection.lifecycle,
+					inspection.owner,
+					inspection.domain,
+					inspection.version,
+					inspection.subsystems,
+					inspection.trace,
 					link,
 					imagePath,
 					imageUrl,
@@ -971,6 +1021,7 @@ export const createWorkItem = async (
 				featured,
 				sort,
 				imageUrl,
+				inspection,
 			),
 	);
 	await invalidateWorkCaches();
@@ -990,14 +1041,23 @@ export const updateWorkItem = async (
 	featured: number,
 	sort: number,
 	imageUrl: string | null = null,
+	inspection: WorkInspection = {
+		lifecycle: null,
+		owner: null,
+		domain: null,
+		version: null,
+		subsystems: null,
+		trace: null,
+	},
 ) => {
 	await withDbFallback(
 		() =>
 			executePostgres(
 				`UPDATE work_items
 				 SET title = $1, description = $2, long_description = $3, highlights = $4, role = $5, tech = $6, link = $7,
-					 image_path = $8, image_url = $9, image_alt = $10, featured = $11, sort = $12
-				 WHERE id = $13`,
+					 lifecycle = $8, owner = $9, domain = $10, version = $11, subsystems = $12, trace = $13,
+					 image_path = $14, image_url = $15, image_alt = $16, featured = $17, sort = $18
+				 WHERE id = $19`,
 				[
 					title,
 					description,
@@ -1006,6 +1066,12 @@ export const updateWorkItem = async (
 					role,
 					tech,
 					link,
+					inspection.lifecycle,
+					inspection.owner,
+					inspection.domain,
+					inspection.version,
+					inspection.subsystems,
+					inspection.trace,
 					imagePath,
 					imageUrl,
 					imageAlt,
@@ -1029,6 +1095,7 @@ export const updateWorkItem = async (
 				featured,
 				sort,
 				imageUrl,
+				inspection,
 			),
 	);
 	await invalidateWorkCaches();
@@ -1135,7 +1202,17 @@ export const createPost = async (
 			);
 		},
 		() =>
-			sqliteDb.createPost(title, excerpt, content, tags, draft, featured, publishedAt, slug, references),
+			sqliteDb.createPost(
+				title,
+				excerpt,
+				content,
+				tags,
+				draft,
+				featured,
+				publishedAt,
+				slug,
+				references,
+			),
 	);
 	await invalidatePostCaches();
 };
@@ -1161,7 +1238,18 @@ export const updatePost = async (
 				`UPDATE posts
 				 SET title = $1, slug = $2, excerpt = $3, content = $4, tags = $5, draft = $6, featured = $7, published_at = $8, references_json = $9
 				 WHERE id = $10`,
-				[title, finalSlug, excerpt, content, tags, draft, featured, publishedAt, referencesJson, id],
+				[
+					title,
+					finalSlug,
+					excerpt,
+					content,
+					tags,
+					draft,
+					featured,
+					publishedAt,
+					referencesJson,
+					id,
+				],
 			);
 		},
 		() =>
@@ -1839,6 +1927,7 @@ export type {
 	SiteSettings,
 	StackItem,
 	WorkItem,
+	WorkInspection,
 	BlogPost,
 	Asset,
 	CrisisItem,

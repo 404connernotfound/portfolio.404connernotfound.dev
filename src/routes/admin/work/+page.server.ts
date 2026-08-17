@@ -8,7 +8,7 @@ import {
 	getWorkItems,
 	createWorkItem,
 	updateWorkItem,
-	deleteWorkItem
+	deleteWorkItem,
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
@@ -21,9 +21,24 @@ const MAX_LENGTHS = {
 	highlights: 600,
 	role: 80,
 	tech: 80,
+	lifecycle: 24,
+	owner: 120,
+	domain: 120,
+	version: 80,
+	subsystems: 1200,
+	trace: 1200,
 	link: 2048,
-	imageAlt: 180
+	imageAlt: 180,
 };
+
+const LIFECYCLE_STATES = new Set([
+	'ACTIVE',
+	'MAINTAINED',
+	'EXPERIMENT',
+	'COMPLETE',
+	'RETIRED',
+	'ARCHIVED',
+]);
 
 const WORK_MEDIA_DIR = path.resolve('static/assets/work');
 const ALLOWED_IMAGE_MIME = new Set([
@@ -31,7 +46,7 @@ const ALLOWED_IMAGE_MIME = new Set([
 	'image/png',
 	'image/webp',
 	'image/gif',
-	'image/avif'
+	'image/avif',
 ]);
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -105,7 +120,7 @@ export const load: PageServerLoad = async (event) => {
 	return {
 		siteSettings: await getSiteSettings(),
 		workItems: await getWorkItems(),
-		csrfToken: getCsrfToken(event)
+		csrfToken: getCsrfToken(event),
 	};
 };
 
@@ -116,13 +131,13 @@ export const actions: Actions = {
 		if (!validateCsrfToken(event, data)) {
 			return fail(403, { action: 'updateWorkSection', message: 'Invalid CSRF token.' });
 		}
-			const current = await getSiteSettings();
-			const { id: _id, ...rest } = current;
-			void _id;
-			await updateSiteSettings({
+		const current = await getSiteSettings();
+		const { id: _id, ...rest } = current;
+		void _id;
+		await updateSiteSettings({
 			...rest,
 			workTitle: String(data.get('workTitle') ?? '').trim(),
-			workIntro: String(data.get('workIntro') ?? '').trim()
+			workIntro: String(data.get('workIntro') ?? '').trim(),
 		});
 		return { success: true, message: 'Work section saved.', action: 'updateWorkSection' };
 	},
@@ -139,6 +154,12 @@ export const actions: Actions = {
 		const highlights = parseText(data.get('highlights'));
 		const role = parseText(data.get('role'));
 		const tech = parseText(data.get('tech'));
+		const lifecycle = parseText(data.get('lifecycle'))?.toUpperCase() ?? null;
+		const owner = parseText(data.get('owner'));
+		const domain = parseText(data.get('domain'));
+		const version = parseText(data.get('version'));
+		const subsystems = parseText(data.get('subsystems'));
+		const trace = parseText(data.get('trace'));
 		const linkRaw = parseText(data.get('link'));
 		const imageAlt = parseText(data.get('imageAlt'));
 		const imageFile = parseImageFile(data.get('image'));
@@ -151,14 +172,35 @@ export const actions: Actions = {
 		if (titleError) errors.title = titleError;
 		const descError = ensureMaxLength(description, MAX_LENGTHS.description, 'Description');
 		if (descError) errors.description = descError;
-		const longError = ensureOptionalMaxLength(longDescription, MAX_LENGTHS.longDescription, 'Long description');
+		const longError = ensureOptionalMaxLength(
+			longDescription,
+			MAX_LENGTHS.longDescription,
+			'Long description',
+		);
 		if (longError) errors.longDescription = longError;
-		const highlightError = ensureOptionalMaxLength(highlights, MAX_LENGTHS.highlights, 'Highlights');
+		const highlightError = ensureOptionalMaxLength(
+			highlights,
+			MAX_LENGTHS.highlights,
+			'Highlights',
+		);
 		if (highlightError) errors.highlights = highlightError;
 		const roleError = ensureOptionalMaxLength(role, MAX_LENGTHS.role, 'Role');
 		if (roleError) errors.role = roleError;
 		const techError = ensureOptionalMaxLength(tech, MAX_LENGTHS.tech, 'Tech');
 		if (techError) errors.tech = techError;
+		if (lifecycle && !LIFECYCLE_STATES.has(lifecycle)) {
+			errors.lifecycle = 'Choose a supported lifecycle state.';
+		}
+		for (const [field, value, label] of [
+			['owner', owner, 'Owner'],
+			['domain', domain, 'Domain'],
+			['version', version, 'Version'],
+			['subsystems', subsystems, 'Subsystems'],
+			['trace', trace, 'Trace'],
+		] as const) {
+			const error = ensureOptionalMaxLength(value, MAX_LENGTHS[field], label);
+			if (error) errors[field] = error;
+		}
 		const imageAltError = ensureOptionalMaxLength(imageAlt, MAX_LENGTHS.imageAlt, 'Image alt');
 		if (imageAltError) errors.imageAlt = imageAltError;
 		if (imageUrlResult.error) errors.imageUrl = imageUrlResult.error;
@@ -173,7 +215,11 @@ export const actions: Actions = {
 		}
 
 		if (Object.keys(errors).length > 0) {
-			return fail(400, { action: 'createWork', message: 'Check the highlighted fields.', fieldErrors: errors });
+			return fail(400, {
+				action: 'createWork',
+				message: 'Check the highlighted fields.',
+				fieldErrors: errors,
+			});
 		}
 
 		const imagePath = imageFile ? await saveWorkImage(imageFile) : null;
@@ -190,7 +236,8 @@ export const actions: Actions = {
 			imageAlt,
 			parseCheckbox(data, 'featured'),
 			parseNumber(data.get('sort')),
-			imageUrlResult.imageUrl
+			imageUrlResult.imageUrl,
+			{ lifecycle, owner, domain, version, subsystems, trace },
 		);
 
 		return { success: true, message: 'Work item added.', action: 'createWork' };
@@ -209,6 +256,12 @@ export const actions: Actions = {
 		const highlights = parseText(data.get('highlights'));
 		const role = parseText(data.get('role'));
 		const tech = parseText(data.get('tech'));
+		const lifecycle = parseText(data.get('lifecycle'))?.toUpperCase() ?? null;
+		const owner = parseText(data.get('owner'));
+		const domain = parseText(data.get('domain'));
+		const version = parseText(data.get('version'));
+		const subsystems = parseText(data.get('subsystems'));
+		const trace = parseText(data.get('trace'));
 		const linkRaw = parseText(data.get('link'));
 		const imageAlt = parseText(data.get('imageAlt'));
 		const imageFile = parseImageFile(data.get('image'));
@@ -225,14 +278,35 @@ export const actions: Actions = {
 		if (titleError) errors.title = titleError;
 		const descError = ensureMaxLength(description, MAX_LENGTHS.description, 'Description');
 		if (descError) errors.description = descError;
-		const longError = ensureOptionalMaxLength(longDescription, MAX_LENGTHS.longDescription, 'Long description');
+		const longError = ensureOptionalMaxLength(
+			longDescription,
+			MAX_LENGTHS.longDescription,
+			'Long description',
+		);
 		if (longError) errors.longDescription = longError;
-		const highlightError = ensureOptionalMaxLength(highlights, MAX_LENGTHS.highlights, 'Highlights');
+		const highlightError = ensureOptionalMaxLength(
+			highlights,
+			MAX_LENGTHS.highlights,
+			'Highlights',
+		);
 		if (highlightError) errors.highlights = highlightError;
 		const roleError = ensureOptionalMaxLength(role, MAX_LENGTHS.role, 'Role');
 		if (roleError) errors.role = roleError;
 		const techError = ensureOptionalMaxLength(tech, MAX_LENGTHS.tech, 'Tech');
 		if (techError) errors.tech = techError;
+		if (lifecycle && !LIFECYCLE_STATES.has(lifecycle)) {
+			errors.lifecycle = 'Choose a supported lifecycle state.';
+		}
+		for (const [field, value, label] of [
+			['owner', owner, 'Owner'],
+			['domain', domain, 'Domain'],
+			['version', version, 'Version'],
+			['subsystems', subsystems, 'Subsystems'],
+			['trace', trace, 'Trace'],
+		] as const) {
+			const error = ensureOptionalMaxLength(value, MAX_LENGTHS[field], label);
+			if (error) errors[field] = error;
+		}
 		const imageAltError = ensureOptionalMaxLength(imageAlt, MAX_LENGTHS.imageAlt, 'Image alt');
 		if (imageAltError) errors.imageAlt = imageAltError;
 		if (imageUrlResult.error) errors.imageUrl = imageUrlResult.error;
@@ -251,7 +325,7 @@ export const actions: Actions = {
 				action: 'updateWork',
 				message: 'Check the highlighted fields.',
 				fieldErrors: errors,
-				itemId: id
+				itemId: id,
 			});
 		}
 
@@ -279,7 +353,8 @@ export const actions: Actions = {
 			imageAlt,
 			parseCheckbox(data, 'featured'),
 			parseNumber(data.get('sort')),
-			imageUrlResult.imageUrl
+			imageUrlResult.imageUrl,
+			{ lifecycle, owner, domain, version, subsystems, trace },
 		);
 
 		return { success: true, message: 'Work item updated.', action: 'updateWork', itemId: id };
@@ -300,5 +375,5 @@ export const actions: Actions = {
 			deleteWorkImage(current.imagePath);
 		}
 		return { success: true, message: 'Work item deleted.', action: 'deleteWork', itemId: id };
-	}
+	},
 };
