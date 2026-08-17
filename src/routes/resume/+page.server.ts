@@ -12,7 +12,7 @@ const getResumeMeta = () => {
 	}
 	const stats = fs.statSync(filePath);
 	return {
-		path: `/uploads/resume/${RESUME_FILENAME}`,
+		path: `/uploads/resume/${RESUME_FILENAME}?v=${Math.trunc(stats.mtimeMs)}`,
 		size: stats.size,
 		updatedAt: stats.mtime.toISOString()
 	};

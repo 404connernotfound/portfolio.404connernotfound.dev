@@ -93,6 +93,14 @@ nginx -t
 systemctl enable nginx
 systemctl reload nginx || systemctl restart nginx
 
+if command -v curl >/dev/null 2>&1; then
+	resume_url="https://${DOMAIN}/uploads/resume/resume.pdf?origin-check=$(date +%s)"
+	curl --fail --silent --show-error --head --insecure \
+		--resolve "${DOMAIN}:443:127.0.0.1" \
+		"${resume_url}" >/dev/null
+	echo "Resume PDF is available through Nginx."
+fi
+
 cat <<EOF
 Nginx is configured for ${DOMAIN}.
 

@@ -72,14 +72,17 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ```bash
    sudo ./scripts/setup-cloudflare-nginx.sh
    ```
-   The setup script installs Nginx on apt-based systems if needed, fetches Cloudflare IP ranges into `/etc/nginx/cloudflare-realip.conf`, renders `nginx/portfolio.conf.template`, enables the site, validates with `nginx -t`, and reloads Nginx.
+   The setup script installs Nginx on apt-based systems if needed, fetches Cloudflare IP ranges into `/etc/nginx/cloudflare-realip.conf`, renders `nginx/portfolio.conf.template`, enables the site, validates with `nginx -t`, reloads Nginx, and verifies the resume PDF directly against the local Nginx origin.
 
 6. Verify locally and through Cloudflare:
    ```bash
    curl -fsS http://127.0.0.1:3000/healthz
    curl -fsSI http://127.0.0.1:3000/uploads/resume/resume.pdf
+   curl -kfsSI --resolve portfolio.404connernotfound.dev:443:127.0.0.1 'https://portfolio.404connernotfound.dev/uploads/resume/resume.pdf?origin-check=1'
    curl -I https://portfolio.404connernotfound.dev/
    ```
+
+   The origin check bypasses Cloudflare. If Cloudflare previously cached a `404` for the PDF, purge that URL from the Cloudflare cache or use a cache-busting query string while verifying the fix.
 
 For a normal redeploy:
 ```bash
