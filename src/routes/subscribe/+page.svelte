@@ -11,26 +11,26 @@
 
 	const perks = [
 		{
-			title: 'Launch notes',
-			body: 'Short debriefs on what worked, what failed, and what to repeat.',
+			title: 'Build notes',
+			body: 'Short debriefs on what shipped, what failed, and which decisions held up.',
 		},
 		{
-			title: 'Design breakdowns',
-			body: 'Annotated decisions, component choices, and motion studies.',
+			title: 'Runtime investigations',
+			body: 'Practical looks at low-level behavior, instrumentation, and difficult failure modes.',
 		},
 		{
-			title: 'Product clarity',
-			body: 'Frameworks for positioning, messaging, and narrative alignment.',
+			title: 'Modification field notes',
+			body: 'What application hooks, game mods, and their supporting tools teach in practice.',
 		},
 	];
 
 	const topics = [
-		'Storytelling',
-		'Product pages',
-		'Design systems',
-		'Conversion UX',
-		'Motion studies',
-		'Freelance ops',
+		'Full-stack delivery',
+		'Rust and systems',
+		'Runtime debugging',
+		'Application hooking',
+		'Game modifications',
+		'Engineering tradeoffs',
 	];
 
 	const faqs = [
@@ -51,21 +51,21 @@
 
 <SeoHead
 	title={formatTitle('Subscribe')}
-	description="Subscribe for design notes, launch debriefs, and product storytelling tips."
+	description="Subscribe for engineering notes spanning full-stack delivery, low-level systems, application hooking, and game modification."
 />
 
 <section class="section-pad">
 	<div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
 		<MotionReveal className="space-y-5">
 			<p class="badge">Subscribe</p>
-			<h1 class="text-4xl font-semibold text-white sm:text-5xl">Design notes, no fluff</h1>
+			<h1 class="text-4xl font-semibold text-white sm:text-5xl">Notes from every layer</h1>
 			<p class="text-lg text-ink-200">
-				Get monthly notes on product storytelling, launches, and the systems behind the work.
+				Get concise field notes from the product surface down to the runtime.
 			</p>
 			<ul class="space-y-2 text-sm text-ink-200">
-				<li>Concise updates you can read in under 3 minutes.</li>
-				<li>Practical takeaways from real client work.</li>
-				<li>Early access to new experiments and templates.</li>
+				<li>What shipped, what broke, and why.</li>
+				<li>Practical lessons from systems and modification work.</li>
+				<li>Early looks at new tools, experiments, and projects.</li>
 			</ul>
 		</MotionReveal>
 		<MotionReveal delay={0.08} className="form-shell">
@@ -89,10 +89,10 @@
 					<label class="form-label" for="interest"> Main interest </label>
 					<select id="interest" name="interest" class="form-field">
 						<option value="">Select one</option>
-						<option value="launch">Launch strategy</option>
-						<option value="design">Design systems</option>
-						<option value="growth">Conversion and growth</option>
-						<option value="story">Storytelling and messaging</option>
+						<option value="full-stack">Full-stack development</option>
+						<option value="systems">Low-level systems</option>
+						<option value="hooking">Application hooking</option>
+						<option value="game-mods">Game modifications</option>
 					</select>
 				</div>
 				<div class="space-y-2" role="status" aria-live="polite">
@@ -111,7 +111,9 @@
 <section class="section-pad">
 	<MotionReveal className="space-y-4">
 		<h2 class="text-3xl font-semibold text-white">What you get</h2>
-		<p class="text-sm text-ink-200">A focused newsletter built for designers and product teams.</p>
+		<p class="text-sm text-ink-200">
+			A focused engineering newsletter for builders and technically ambitious teams.
+		</p>
 	</MotionReveal>
 	<div class="mt-8 grid gap-6 md:grid-cols-3">
 		{#each perks as perk, index}
@@ -128,7 +130,7 @@
 		<MotionReveal className="space-y-4">
 			<h2 class="text-3xl font-semibold text-white">Topics in rotation</h2>
 			<p class="text-sm text-ink-200">
-				Deep dives on the craft, the strategy, and the launch plan.
+				The decisions between product behavior, system behavior, and everything underneath.
 			</p>
 			<ul class="grid gap-3 text-sm text-ink-200 sm:grid-cols-2">
 				{#each topics as topic}

@@ -3,7 +3,7 @@
 	import type { WorkItem } from '$lib/server/db';
 
 	export let items: WorkItem[] = [];
-	export let title = 'Living systems';
+	export let title = 'Technical landscape';
 
 	let activeId: number | null = null;
 	$: visibleItems = items.slice(0, 5);
@@ -13,7 +13,7 @@
 <section class="topology" aria-labelledby="topology-title">
 	<header class="topology-header">
 		<div>
-			<p class="system-label">Topology / indexed systems</p>
+			<p class="system-label">Architecture / project relationships</p>
 			<h2 id="topology-title">{title}</h2>
 		</div>
 		<p class="topology-help">Focus a system to inspect its active path.</p>

@@ -5,7 +5,7 @@
 	export let title: string;
 	export let description: string;
 	export let type: 'website' | 'article' = 'website';
-	export let image = '';
+	export let image = '/og.png';
 	export let imageAlt = `${siteName} preview`;
 	export let noindex = false;
 

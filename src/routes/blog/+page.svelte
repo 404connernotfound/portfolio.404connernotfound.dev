@@ -23,14 +23,15 @@
 <section class="section-pad">
 	<div class="inspection-shell">
 		<div>
-			<p class="system-label">Notes / technical documents</p>
+			<p class="system-label">Writing / engineering field notes</p>
 			<h1 class="inspection-title">{data.siteSettings.blogTitle}</h1>
 			<p class="inspection-summary">{data.siteSettings.blogIntro}</p>
 		</div>
 		<aside class="inspection-side">
-			<p class="system-label">Document behavior</p>
+			<p class="system-label">Why I write</p>
 			<p class="mt-3 text-sm leading-6 text-ink-400">
-				Readable HTML, maintained dates and topics, and no decorative motion behind long-form prose.
+				To make the reasoning visible: constraints, tradeoffs, failures, and the decisions that
+				survive contact with real software.
 			</p>
 		</aside>
 	</div>

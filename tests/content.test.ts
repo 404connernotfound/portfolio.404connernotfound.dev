@@ -13,6 +13,27 @@ const { parseBlogReferencesForm, parseExternalImageUrl } =
 	await import('../src/lib/server/contentValidation');
 const db = await import('../src/lib/server/db');
 
+const assertPortfolioPositioning = () => {
+	const settings = db.getSiteSettings();
+	assert.match(settings.heroHeadline, /parts without an API/i);
+	assert.match(settings.heroSubheadline, /full-stack engineering/i);
+	assert.match(settings.heroSubheadline, /application hooking/i);
+	assert.match(settings.aboutBody, /game systems/i);
+	assert.match(settings.focusHeadline, /fewer handoffs/i);
+	assert.match(settings.contactTitle, /crosses layers/i);
+
+	const stackItems = db.getStackItems();
+	assert.deepEqual(
+		stackItems.map((item) => item.label),
+		[
+			'Full-stack applications',
+			'Rust and low-level systems',
+			'Application hooking',
+			'Game modifications',
+		],
+	);
+};
+
 const assertMarkdownRendering = () => {
 	const html = renderMarkdown(`# Heading
 
@@ -271,6 +292,7 @@ const assertWorkCoverPersistence = () => {
 	assert.equal(resolveWorkCoverImage(uploaded!), '/assets/work/local.png');
 };
 
+assertPortfolioPositioning();
 assertMarkdownRendering();
 assertExtendedMarkdownFeatures();
 await assertReferenceParsing();

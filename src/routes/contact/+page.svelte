@@ -16,7 +16,7 @@
 <section class="section-pad">
 	<div class="inspection-shell">
 		<div>
-			<p class="system-label">Connection / direct message</p>
+			<p class="system-label">Start a conversation</p>
 			<h1 class="inspection-title">{data.siteSettings.contactTitle}</h1>
 			<p class="inspection-summary">{data.siteSettings.contactBody}</p>
 		</div>
@@ -24,6 +24,7 @@
 			<MetadataGrid
 				items={[
 					{ label: 'Channel', value: 'Email' },
+					{ label: 'Best fit', value: 'Cross-layer software' },
 					{ label: 'Address', value: data.siteSettings.contactEmail },
 				]}
 				label="Contact channel"
@@ -59,7 +60,7 @@
 					/>
 				</div>
 				<div>
-					<label class="form-label" for="scope">Scope / message</label>
+					<label class="form-label" for="scope">What needs to ship or change?</label>
 					<textarea id="scope" name="scope" class="form-field" autocomplete="off" required
 					></textarea>
 				</div>
@@ -77,13 +78,14 @@
 		</div>
 
 		<aside class="inspection-section self-start">
-			<p class="system-label">Fallback path</p>
-			<h2 class="!text-2xl">Use your own mail client</h2>
+			<p class="system-label">Strong fits</p>
+			<h2 class="!text-2xl">Problems that cross a boundary.</h2>
 			<p class="mb-5 text-sm leading-6 text-ink-400">
-				If the form is unavailable, the maintained contact address remains directly accessible.
+				A product that needs end-to-end ownership. An application that must work beyond its public
+				APIs. A game modification or tool that has to respect real engine and platform constraints.
 			</p>
 			<a class="inspection-link" href={`mailto:${data.siteSettings.contactEmail}`}>
-				Email directly <span aria-hidden="true">→</span>
+				Start by email <span aria-hidden="true">→</span>
 			</a>
 		</aside>
 	</div>

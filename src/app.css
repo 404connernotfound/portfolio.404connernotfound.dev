@@ -11,9 +11,9 @@
 	--ink: #f7f7f8;
 	--ink-soft: #a1a1aa;
 	--ink-faint: #71717a;
-	--signal: #a78bfa;
-	--signal-bright: #c4b5fd;
-	--signal-dark: #7c3aed;
+	--signal: #4967ff;
+	--signal-bright: #a8b5ff;
+	--signal-dark: #294cff;
 	--line: rgba(255, 255, 255, 0.1);
 	--line-strong: rgba(255, 255, 255, 0.18);
 	--space-1: 0.25rem;
@@ -29,7 +29,7 @@
 	--motion-fast: 160ms;
 	--motion-base: 240ms;
 	--ease-system: cubic-bezier(0.22, 1, 0.36, 1);
-	--header-height: 4.75rem;
+	--header-height: 4.25rem;
 	--z-header: 40;
 	--z-overlay: 50;
 }
@@ -51,9 +51,7 @@ body {
 	font-synthesis: none;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	background:
-		radial-gradient(ellipse 55% 34% at 76% -8%, rgba(124, 58, 237, 0.2), transparent 72%),
-		var(--paper);
+	background: var(--paper);
 	color: var(--ink);
 	overflow-x: hidden;
 }
@@ -343,11 +341,7 @@ select.form-field {
 }
 
 .site-backdrop {
-	position: fixed;
-	inset: 0;
-	z-index: 0;
-	pointer-events: none;
-	overflow: hidden;
+	display: none;
 }
 
 .site-backdrop::before {
@@ -380,8 +374,7 @@ select.form-field {
 	top: 0;
 	z-index: 40;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-	background: rgba(5, 5, 5, 0.78);
-	backdrop-filter: blur(18px) saturate(130%);
+	background: rgba(5, 5, 5, 0.96);
 }
 
 .site-nav-shell {
@@ -390,7 +383,7 @@ select.form-field {
 	align-items: center;
 	gap: 2rem;
 	width: min(100%, 90rem);
-	min-height: 4.75rem;
+	min-height: 4.25rem;
 	margin-inline: auto;
 	padding: 0.85rem clamp(1.25rem, 5vw, 4rem);
 	animation: nav-enter 520ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -405,18 +398,12 @@ select.form-field {
 }
 
 .brand-monogram {
-	display: grid;
-	place-items: center;
-	width: 2rem;
-	height: 2rem;
-	border: 1px solid rgba(167, 139, 250, 0.35);
-	border-radius: 0.55rem;
-	background: rgba(124, 58, 237, 0.12);
+	display: inline;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-	font-size: 0.58rem;
+	font-size: 0.68rem;
 	font-weight: 700;
-	letter-spacing: -0.04em;
-	color: var(--signal-bright);
+	letter-spacing: -0.06em;
+	color: var(--signal);
 }
 
 .brand-name {
@@ -474,9 +461,10 @@ select.form-field {
 	align-items: center;
 	gap: 0.45rem;
 	min-height: 2.75rem;
-	border: 1px solid var(--line-strong);
-	border-radius: 0.65rem;
-	padding: 0.6rem 0.8rem;
+	border: 0;
+	border-bottom: 1px solid var(--line-strong);
+	border-radius: 0;
+	padding: 0.6rem 0 0.35rem;
 	font-size: 0.75rem;
 	font-weight: 650;
 	color: #ffffff;
@@ -490,8 +478,8 @@ select.form-field {
 }
 
 .site-external:hover {
-	border-color: rgba(167, 139, 250, 0.5);
-	background: rgba(124, 58, 237, 0.1);
+	border-color: var(--signal);
+	background: transparent;
 }
 
 .site-footer {

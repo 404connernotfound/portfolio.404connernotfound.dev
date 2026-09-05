@@ -59,6 +59,10 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ```bash
    ./up.sh
    ```
+   On Windows with Docker Desktop, use:
+   ```powershell
+   npm run up:windows
+   ```
    This runs `docker compose --env-file deploy/portfolio.env up -d --build --wait`, including the one-shot `static-seed` and `migrate` services. It also checks `/healthz` and the bundled resume PDF after the stack is up.
 
 3. In Cloudflare, create a proxied `A` or `AAAA` record for `portfolio.404connernotfound.dev` pointing to the VPS public IP. Set SSL/TLS mode to `Full (strict)`.
@@ -107,6 +111,12 @@ DRY_RUN=1 ./up.sh
 DRY_RUN=1 ./down.sh
 DRY_RUN=1 ./redeploy.sh
 ```
+Windows PowerShell equivalent for the startup dry run:
+```powershell
+$env:DRY_RUN = '1'
+npm run up:windows
+Remove-Item Env:DRY_RUN
+```
 
 Useful maintenance commands:
 ```bash
@@ -148,7 +158,7 @@ sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 ## Deployment Notes
 - Docker Compose stack: `docker-compose.yml`
 - Production env template: `deploy/portfolio.env.example`
-- Start stack: `up.sh`
+- Start stack: `up.sh` (Linux) or `npm run up:windows` (Windows)
 - Stop stack: `down.sh`
 - GitHub-aware restart: `redeploy.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`

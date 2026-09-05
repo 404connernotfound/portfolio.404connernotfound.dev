@@ -26,16 +26,17 @@
 
 <SeoHead
 	title={formatTitle('Resume')}
-	description="Inspect the current resume document inline or download the PDF."
+	description="Review Conner Adams's experience across full-stack delivery, low-level systems, application modification, and game tooling."
 />
 
 <section class="section-pad">
 	<div class="inspection-shell">
 		<div>
-			<p class="system-label">Document / résumé</p>
-			<h1 class="inspection-title">Current résumé.</h1>
+			<p class="system-label">Experience / résumé</p>
+			<h1 class="inspection-title">Experience behind the range.</h1>
 			<p class="inspection-summary">
-				One document artifact, available for inline inspection or direct download.
+				A closer look at the work behind my product-to-runtime engineering practice, available
+				inline or as a direct download.
 			</p>
 		</div>
 		<aside class="inspection-side">

@@ -12,7 +12,7 @@
 	const readTime = calculateReadTime(data.post.content ?? data.post.excerpt ?? '');
 </script>
 
-<SeoHead title={formatTitle(data.post.title)} {description} type="article" />
+<SeoHead title={formatTitle(data.post.title)} {description} type="article" image="" />
 
 <section class="section-pad">
 	<div class="note-article">

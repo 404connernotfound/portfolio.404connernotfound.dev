@@ -70,12 +70,9 @@ services:
     command: ["npm", "run", "db:seed"]
 
   postgres:
+    <<: *app-env
     image: postgres:16-alpine
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-portfolio}
-      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in deploy/portfolio.env}
     volumes:
       - portfolio_pg_data:/var/lib/postgresql/data
     healthcheck:

@@ -22,7 +22,7 @@
 					label: item.category || 'Interest',
 					value: item.label,
 				}))}
-				label="Current technical interests"
+				label="Engineering coverage"
 			/>
 		</aside>
 	</div>
@@ -31,16 +31,16 @@
 <section class="section-pad pt-0">
 	<div class="evidence-grid">
 		<div class="evidence-panel">
-			<p class="system-label">Engineering approach</p>
-			<h2>Make the constraints visible.</h2>
+			<p class="system-label">Operating model</p>
+			<h2>Own the outcome, not just a layer.</h2>
 			<p>
-				I prefer designs whose state, boundaries, and failure modes can be inspected. Correctness
-				comes from making assumptions explicit; performance work starts with the actual execution
-				path; and simplicity means removing machinery that is not earning its place.
+				I keep product intent connected to technical reality from the first interface decision to
+				the final runtime behavior. That means fewer handoffs, faster diagnosis, and fewer places
+				for critical context to disappear.
 			</p>
 		</div>
 		<div class="evidence-panel">
-			<p class="system-label">Current focus</p>
+			<p class="system-label">Team leverage</p>
 			<h2 class="!text-3xl">{data.siteSettings.focusHeadline}</h2>
 			<p>{data.siteSettings.focusBody}</p>
 		</div>
@@ -51,7 +51,7 @@
 	<section class="section-pad pt-0" aria-labelledby="working-set-title">
 		<div class="section-heading-row">
 			<div>
-				<p class="system-label">Maintained working set</p>
+				<p class="system-label">Capability map</p>
 				<h2 id="working-set-title">{data.siteSettings.stackTitle}</h2>
 			</div>
 			<p class="max-w-lg text-sm leading-6 text-ink-400">{data.siteSettings.stackIntro}</p>
@@ -66,7 +66,7 @@
 			{/each}
 		</ol>
 		<a class="inspection-link mt-10" href="/contact"
-			>Establish a connection <span aria-hidden="true">→</span></a
+			>Bring me a cross-layer problem <span aria-hidden="true">→</span></a
 		>
 	</section>
 {/if}

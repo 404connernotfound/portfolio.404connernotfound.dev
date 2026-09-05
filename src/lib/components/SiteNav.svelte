@@ -3,8 +3,8 @@
 	export let githubUrl: string;
 
 	const links = [
-		{ label: 'Systems', href: '/work' },
-		{ label: 'Notes', href: '/blog' },
+		{ label: 'Work', href: '/work' },
+		{ label: 'Writing', href: '/blog' },
 		{ label: 'About', href: '/about' },
 		{ label: 'Resume', href: '/resume' },
 		{ label: 'Contact', href: '/contact' },
@@ -20,7 +20,7 @@
 <header class="site-header">
 	<div class="site-nav-shell">
 		<a href="/" class="site-brand" aria-label="404connernotfound home">
-			<span class="brand-monogram" aria-hidden="true">404</span>
+			<span class="brand-monogram" aria-hidden="true">404/</span>
 			<span class="brand-name">Conner Adams</span>
 		</a>
 		<nav class="site-links" aria-label="Primary">
@@ -42,7 +42,7 @@
 			rel="noreferrer noopener"
 			aria-label="GitHub (opens in a new tab)"
 		>
-			Source <span aria-hidden="true">↗</span>
+			GitHub <span aria-hidden="true">↗</span>
 		</a>
 	</div>
 </header>

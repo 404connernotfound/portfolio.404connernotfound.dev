@@ -21,14 +21,14 @@
 	title={formatTitle(data.project.title)}
 	description={data.project.description}
 	image={coverImage || ''}
-	imageAlt={data.project.imageAlt || `${data.project.title} system preview`}
+	imageAlt={data.project.imageAlt || `${data.project.title} project preview`}
 />
 
 <section class="section-pad">
-	<a class="source-link" href="/work">← Systems index</a>
+	<a class="source-link" href="/work">← Project index</a>
 	<div class="inspection-shell mt-8">
 		<div>
-			<p class="system-label">Project / system inspection</p>
+			<p class="system-label">Project / engineering inspection</p>
 			<h1 class="inspection-title">{data.project.title}</h1>
 			<p class="inspection-summary">{data.project.description}</p>
 		</div>
@@ -73,7 +73,7 @@
 	<div class="inspection-content">
 		<div>
 			<section class="inspection-section" aria-labelledby="system-overview">
-				<p class="system-label">01 / What the system is</p>
+				<p class="system-label">01 / What was built</p>
 				<h2 id="system-overview">Overview</h2>
 				<MarkdownContent
 					source={data.project.longDescription || data.project.description}
@@ -127,7 +127,7 @@
 					</a>
 				{:else}
 					<p class="text-sm leading-6 text-ink-400">
-						No public source link is maintained for this system.
+						No public source link is maintained for this project.
 					</p>
 				{/if}
 			</section>

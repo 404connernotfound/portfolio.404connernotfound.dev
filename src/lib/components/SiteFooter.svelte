@@ -36,7 +36,7 @@
 		<div>
 			<p class="footer-signature">404 / Conner Adams</p>
 			<p class="mt-3 max-w-sm text-sm leading-6 text-ink-400">
-				{footerBadge || 'Instrumented Systems'} / portfolio index
+				{footerBadge || 'Product to runtime'} / portfolio index
 			</p>
 			{#if footerCtaHref && footerCtaLabel}
 				<a class="inspection-link mt-5" href={footerCtaHref}>
@@ -65,6 +65,6 @@
 
 	<div class="footer-bottom">
 		<span>© {currentYear} Conner Adams</span>
-		<span>System state: static public index</span>
+		<span>Every layer. One engineering context.</span>
 	</div>
 </footer>

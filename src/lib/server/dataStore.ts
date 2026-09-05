@@ -47,37 +47,40 @@ const mapPostRow = (row: BlogPostRow): BlogPost => {
 };
 
 const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
-	heroHeadline:
-		'Conner - low-level systems engineer building embedded and hardware-specific software.',
+	heroHeadline: 'One developer across every layer - including the parts without an API.',
 	heroSubheadline:
-		'I build Rust-heavy systems, filesystem tools, network appliances, language runtimes, and niche programs close to the machine.',
-	heroNoteTitle: 'Best fit',
-	heroNoteBody: 'Embedded systems, hardware-adjacent tooling, and low-level Rust work.',
-	heroHighlightsTitle: 'Proof',
+		'I build complete products and extend existing software through full-stack engineering, low-level systems work, application hooking, and game modification.',
+	heroNoteTitle: 'Where I create leverage',
+	heroNoteBody:
+		'End-to-end product ownership, deep runtime diagnosis, and new capability beyond standard integration points.',
+	heroHighlightsTitle: 'Technical proof',
 	heroHighlightsBody:
-		'TinyOne, Unum.rs, PiFi2, and Winux PTree show language, ML runtime, network appliance, and filesystem indexing work.',
-	aboutHeadline: 'I build low-level systems that turn constraints into working tools.',
+		'TinyOne, Unum.rs, PiFi2, and Winux PTree show the systems judgment behind my broader product-to-runtime engineering practice.',
+	aboutHeadline: 'The advantage is range without losing depth.',
 	aboutBody:
-		'My work sits close to hardware and OS boundaries: Rust programs, embedded-adjacent networking tools, filesystem indexers, language runtimes, and specialized software where correctness and practical constraints matter.',
-	focusHeadline: 'Low-level systems, embedded fit',
+		'I can own a feature from interface and backend through deployment, then keep going when the problem crosses into OS, runtime, or engine behavior. That makes me a strong fit for products that need polished delivery and specialized work in application hooking, modification, or game systems.',
+	focusHeadline: 'Fewer handoffs. Deeper answers. More options.',
 	focusBody:
-		'I am strongest when the problem involves hardware constraints, networking, filesystems, runtimes, or niche tooling that needs careful engineering instead of broad product glue.',
-	stackTitle: 'Systems stack',
-	stackIntro: 'Tools and domains I use for Rust-heavy, hardware-aware programs.',
-	workTitle: 'Selected systems work',
+		'Teams often split product engineering, systems work, and runtime modification across specialists. I bridge those layers so difficult problems move from ambiguity to implementation without critical context being lost at every boundary.',
+	stackTitle: 'One engineering surface, four layers',
+	stackIntro:
+		'Each capability is valuable on its own. Together, they shorten the path from an ambitious idea to software that works.',
+	workTitle: 'Proof at the difficult layers',
 	workIntro:
-		'Rust, networking, language runtime, ML engine, and filesystem indexing projects that show how I build close to the machine.',
-	blogTitle: 'Notes',
-	blogIntro: 'Build logs, motion experiments, and deep dives.',
-	contactTitle: "Let's connect.",
-	contactBody: "Want to collaborate or just say hello? Drop a note and I'll get back to you.",
+		'Language runtime, ML engine, networking, and filesystem projects that demonstrate the systems judgment behind my broader full-stack and modification work.',
+	blogTitle: 'Field notes from across the stack',
+	blogIntro:
+		'Engineering notes on product delivery, runtime behavior, low-level systems, application modification, and the lessons that survive contact with real software.',
+	contactTitle: 'Bring me the problem that crosses layers.',
+	contactBody:
+		'Tell me what needs to ship, what existing application needs to change, or what game behavior you want to extend. I can turn the technical unknowns into a clear path forward.',
 	contactEmail: 'contact@404connernotfound.dev',
 	githubUrl: 'https://github.com/ConnerAdamsMaine',
-	footerBadge: 'Conner',
-	footerHeadline: 'Low-level systems engineer building hardware-specific software.',
+	footerBadge: 'Product to runtime',
+	footerHeadline: 'One developer across the product, platform, and runtime.',
 	footerBody:
-		'Rust-heavy systems, embedded-adjacent tooling, filesystem indexing, and network appliance work by Conner.',
-	footerCtaLabel: 'Say hello',
+		'Full-stack delivery, low-level systems, application hooks, and game modifications connected by one engineering context.',
+	footerCtaLabel: 'Bring me the hard problem',
 	footerCtaHref: '/contact',
 	maintenanceEnabled: 0,
 	maintenanceTitle: 'Maintenance in progress',
@@ -116,29 +119,31 @@ const DEFAULT_FOOTER_LINKS: Omit<FooterLink, 'id'>[] = [
 
 const DEFAULT_STACK_ITEMS: Omit<StackItem, 'id'>[] = [
 	{
-		label: 'Rust systems',
-		detail: 'Language runtimes, filesystem indexers, CLIs, daemons, and low-level tooling.',
-		category: 'Core',
+		label: 'Full-stack applications',
+		detail:
+			'Turn an idea into a working interface, service, data model, and deployment without losing context between layers.',
+		category: 'Product',
 		sort: 10,
 	},
 	{
-		label: 'Embedded fit',
+		label: 'Rust and low-level systems',
 		detail:
-			'Hardware-specific applications, Raspberry Pi networking, and constrained environments.',
-		category: 'Hardware',
+			'Diagnose performance and correctness at OS and runtime boundaries where higher-level tools stop.',
+		category: 'Systems',
 		sort: 20,
 	},
 	{
-		label: 'Networking',
-		detail: 'AP/router/modem/switch workflows, firewall configuration, and appliance behavior.',
-		category: 'Infrastructure',
+		label: 'Application hooking',
+		detail:
+			'Instrument and extend existing applications when public integration points are incomplete or nonexistent.',
+		category: 'Runtime',
 		sort: 30,
 	},
 	{
-		label: 'Filesystems and runtimes',
+		label: 'Game modifications',
 		detail:
-			'Index lookup paths, background services, language implementation, and execution engines.',
-		category: 'Systems',
+			'Build engine-aware mods and supporting tools around real runtime, platform, and performance constraints.',
+		category: 'Games',
 		sort: 40,
 	},
 ];
@@ -320,76 +325,196 @@ const invalidatePlaygroundCaches = async () => {
 	await invalidateCachedPrefix('playground:status:');
 };
 
+const ensurePostgresStackPositioning = async () => {
+	const updates = [
+		{
+			previous: {
+				label: 'Rust systems',
+				detail: 'Language runtimes, filesystem indexers, CLIs, daemons, and low-level tooling.',
+				category: 'Core',
+				sort: 10,
+			},
+			current: DEFAULT_STACK_ITEMS[0],
+		},
+		{
+			previous: {
+				label: 'Embedded fit',
+				detail:
+					'Hardware-specific applications, Raspberry Pi networking, and constrained environments.',
+				category: 'Hardware',
+				sort: 20,
+			},
+			current: DEFAULT_STACK_ITEMS[1],
+		},
+		{
+			previous: {
+				label: 'Networking',
+				detail: 'AP/router/modem/switch workflows, firewall configuration, and appliance behavior.',
+				category: 'Infrastructure',
+				sort: 30,
+			},
+			current: DEFAULT_STACK_ITEMS[2],
+		},
+		{
+			previous: {
+				label: 'Filesystems and runtimes',
+				detail:
+					'Index lookup paths, background services, language implementation, and execution engines.',
+				category: 'Systems',
+				sort: 40,
+			},
+			current: DEFAULT_STACK_ITEMS[3],
+		},
+		{
+			previous: {
+				label: 'Full-stack applications',
+				detail: 'Interfaces, backend services, databases, deployment, and end-to-end product work.',
+				category: 'Product',
+				sort: 10,
+			},
+			current: DEFAULT_STACK_ITEMS[0],
+		},
+		{
+			previous: {
+				label: 'Rust and low-level systems',
+				detail: 'Language runtimes, filesystem indexers, CLIs, daemons, and systems tooling.',
+				category: 'Systems',
+				sort: 20,
+			},
+			current: DEFAULT_STACK_ITEMS[1],
+		},
+		{
+			previous: {
+				label: 'Application hooking',
+				detail:
+					'Runtime instrumentation, intercepted behavior, and targeted application modification.',
+				category: 'Runtime',
+				sort: 30,
+			},
+			current: DEFAULT_STACK_ITEMS[2],
+		},
+		{
+			previous: {
+				label: 'Game modifications',
+				detail:
+					'Game-specific tooling and modifications shaped around engine and platform constraints.',
+				category: 'Games',
+				sort: 40,
+			},
+			current: DEFAULT_STACK_ITEMS[3],
+		},
+	];
+
+	for (const { previous, current } of updates) {
+		if (!current) continue;
+		await executePostgres(
+			`UPDATE stack_items
+			 SET label = $1, detail = $2, category = $3, sort = $4
+			 WHERE label = $5 AND detail = $6 AND category = $7 AND sort = $8`,
+			[
+				current.label,
+				current.detail,
+				current.category,
+				current.sort,
+				previous.label,
+				previous.detail,
+				previous.category,
+				previous.sort,
+			],
+		);
+	}
+};
+
 const ensurePostgresPortfolioContent = async () => {
 	await executePostgres(
 		`UPDATE site_settings SET
 			hero_headline = CASE
-				WHEN hero_headline IN ($1, '') THEN $2
+				WHEN hero_headline IN ($1, 'Conner - low-level systems engineer building embedded and hardware-specific software.', 'Conner Adams - full-stack developer specializing in low-level systems, application modification, and game mods.', '') THEN $2
 				ELSE hero_headline
 			END,
 			hero_subheadline = CASE
-				WHEN hero_subheadline IN ($3, '') THEN $4
+				WHEN hero_subheadline IN ($3, 'I build Rust-heavy systems, filesystem tools, network appliances, language runtimes, and niche programs close to the machine.', 'Full-stack development with a low-level edge: web and desktop applications, runtime instrumentation, application hooking, and game modifications.', '') THEN $4
 				ELSE hero_subheadline
 			END,
 			hero_note_title = CASE
-				WHEN hero_note_title IN ($5, '') THEN $6
+				WHEN hero_note_title IN ($5, 'Best fit', '') THEN $6
 				ELSE hero_note_title
 			END,
 			hero_note_body = CASE
-				WHEN hero_note_body IN ($7, '') THEN $8
+				WHEN hero_note_body IN ($7, 'Embedded systems, hardware-adjacent tooling, and low-level Rust work.', 'End-to-end applications, runtime instrumentation, application hooks, and game mods.', '') THEN $8
 				ELSE hero_note_body
 			END,
 			hero_highlights_title = CASE
-				WHEN hero_highlights_title IN ($9, '') THEN $10
+				WHEN hero_highlights_title IN ($9, 'Proof', '') THEN $10
 				ELSE hero_highlights_title
 			END,
 			hero_highlights_body = CASE
-				WHEN hero_highlights_body IN ($11, '') THEN $12
+				WHEN hero_highlights_body IN ($11, 'TinyOne, Unum.rs, PiFi2, and Winux PTree show language, ML runtime, network appliance, and filesystem indexing work.', 'TinyOne, Unum.rs, PiFi2, and Winux PTree show the systems foundation I bring to full-stack development and game modification work.', '') THEN $12
 				ELSE hero_highlights_body
 			END,
 			about_headline = CASE
-				WHEN about_headline IN ($13, '') THEN $14
+				WHEN about_headline IN ($13, 'I build low-level systems that turn constraints into working tools.', 'I build complete software - and know when to reach below the abstraction.', '') THEN $14
 				ELSE about_headline
 			END,
 			about_body = CASE
-				WHEN about_body IN ($15, '') THEN $16
+				WHEN about_body IN ($15, 'My work sits close to hardware and OS boundaries: Rust programs, embedded-adjacent networking tools, filesystem indexers, language runtimes, and specialized software where correctness and practical constraints matter.', 'I am a full-stack developer who works from user-facing interfaces and backend services down to OS boundaries. I specialize in low-level development, application hooking and modification, and game mods where runtime behavior and practical constraints matter.', '') THEN $16
 				ELSE about_body
 			END,
 			focus_headline = CASE
-				WHEN focus_headline IN ($17, '') THEN $18
+				WHEN focus_headline IN ($17, 'Low-level systems, embedded fit', 'Full-stack reach. Low-level depth.', '') THEN $18
 				ELSE focus_headline
 			END,
 			focus_body = CASE
-				WHEN focus_body IN ($19, '') THEN $20
+				WHEN focus_body IN ($19, 'I am strongest when the problem involves hardware constraints, networking, filesystems, runtimes, or niche tooling that needs careful engineering instead of broad product glue.', 'I work end to end: interfaces, services, data, and deployment when the product needs them; runtimes, hooks, and targeted modifications when the interesting problem lives underneath.', '') THEN $20
 				ELSE focus_body
 			END,
 			stack_title = CASE
-				WHEN stack_title IN ($21, '') THEN $22
+				WHEN stack_title IN ($21, 'Systems stack', 'Full-stack and systems toolkit', '') THEN $22
 				ELSE stack_title
 			END,
 			stack_intro = CASE
-				WHEN stack_intro IN ($23, '') THEN $24
+				WHEN stack_intro IN ($23, 'Tools and domains I use for Rust-heavy, hardware-aware programs.', 'The layers I work across, from product surfaces to runtime behavior.', '') THEN $24
 				ELSE stack_intro
 			END,
 			work_title = CASE
-				WHEN work_title IN ($25, '') THEN $26
+				WHEN work_title IN ($25, 'Selected systems work', 'Selected development work', '') THEN $26
 				ELSE work_title
 			END,
 			work_intro = CASE
-				WHEN work_intro IN ($27, '') THEN $28
+				WHEN work_intro IN ($27, 'Rust, networking, language runtime, ML engine, and filesystem indexing projects that show how I build close to the machine.', 'Language runtime, ML engine, networking, and filesystem projects that show the low-level foundation behind my broader full-stack and modification work.', '') THEN $28
 				ELSE work_intro
 			END,
+			blog_title = CASE
+				WHEN blog_title IN ('Notes', '') THEN $36
+				ELSE blog_title
+			END,
+			blog_intro = CASE
+				WHEN blog_intro IN ('Build logs, motion experiments, and deep dives.', '') THEN $37
+				ELSE blog_intro
+			END,
+			contact_title = CASE
+				WHEN contact_title IN ('Let''s connect.', '') THEN $38
+				ELSE contact_title
+			END,
+			contact_body = CASE
+				WHEN contact_body IN ('Want to collaborate or just say hello? Drop a note and I''ll get back to you.', '') THEN $39
+				ELSE contact_body
+			END,
 			footer_badge = CASE
-				WHEN footer_badge IN ($29, '') THEN $30
+				WHEN footer_badge IN ($29, 'Conner', 'Full-stack / low-level / game mods', '') THEN $30
 				ELSE footer_badge
 			END,
 			footer_headline = CASE
-				WHEN footer_headline IN ($31, '') THEN $32
+				WHEN footer_headline IN ($31, 'Low-level systems engineer building hardware-specific software.', 'Full-stack developer specializing in low-level systems and game modifications.', '') THEN $32
 				ELSE footer_headline
 			END,
 			footer_body = CASE
-				WHEN footer_body IN ($33, '') THEN $34
+				WHEN footer_body IN ($33, 'Rust-heavy systems, embedded-adjacent tooling, filesystem indexing, and network appliance work by Conner.', 'Web and desktop applications, runtime hooks, low-level tooling, and game modification work by Conner Adams.', '') THEN $34
 				ELSE footer_body
+			END,
+			footer_cta_label = CASE
+				WHEN footer_cta_label IN ('Say hello', '') THEN $40
+				ELSE footer_cta_label
 			END,
 			updated_at = $35
 		WHERE id = 1`,
@@ -429,6 +554,11 @@ const ensurePostgresPortfolioContent = async () => {
 			'Personal portfolio, experiments, and shipping logs. Content updates as the archive grows.',
 			DEFAULT_SITE_SETTINGS.footerBody,
 			nowIso(),
+			DEFAULT_SITE_SETTINGS.blogTitle,
+			DEFAULT_SITE_SETTINGS.blogIntro,
+			DEFAULT_SITE_SETTINGS.contactTitle,
+			DEFAULT_SITE_SETTINGS.contactBody,
+			DEFAULT_SITE_SETTINGS.footerCtaLabel,
 		],
 	);
 
@@ -469,6 +599,7 @@ const ensurePostgresPortfolioContent = async () => {
 			);
 		}
 	}
+	await ensurePostgresStackPositioning();
 
 	const workCount = await queryPostgres<{ count: number }>(
 		'SELECT COUNT(*)::int as count FROM work_items',

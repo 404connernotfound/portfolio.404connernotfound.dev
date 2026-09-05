@@ -13,16 +13,19 @@
 
 <SeoHead
 	title={formatTitle('Collaborate')}
-	description="Start a collaboration, share a brief, or ask about availability."
+	description="Bring a product, application modification, or game tooling problem that crosses technical layers."
 />
 
 <section class="section-pad">
 	<div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
 		<div class="space-y-5">
 			<p class="badge">Collaborate</p>
-			<h1 class="text-4xl font-semibold text-white sm:text-5xl">Let’s build something sharp</h1>
+			<h1 class="text-4xl font-semibold text-white sm:text-5xl">
+				Bring me the problem that crosses layers.
+			</h1>
 			<p class="text-lg text-ink-200">
-				Share your project goals, timelines, and constraints. I will follow up with next steps.
+				Tell me what needs to ship, what existing software needs to change, and which constraints
+				cannot move. I will turn that into a concrete technical path.
 			</p>
 			<div class="info-grid">
 				<div class="info-item">
@@ -32,8 +35,8 @@
 					</p>
 				</div>
 				<div class="info-item">
-					<p class="info-label">Availability</p>
-					<p class="info-value">Limited slots monthly</p>
+					<p class="info-label">Best fit</p>
+					<p class="info-value">Product-to-runtime work</p>
 				</div>
 			</div>
 		</div>
@@ -62,7 +65,7 @@
 					/>
 				</div>
 				<div>
-					<label class="form-label" for="scope"> Project brief </label>
+					<label class="form-label" for="scope"> What needs to ship or change? </label>
 					<textarea id="scope" name="scope" class="form-field" autocomplete="off" required
 					></textarea>
 				</div>
