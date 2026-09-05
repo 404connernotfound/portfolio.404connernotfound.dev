@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-portfolio.404connernotfound.dev}"
+DOMAIN="${DOMAIN:-404connernotfound.dev}"
 CERT_SOURCE="${1:-${CF_ORIGIN_CERT:-}}"
 KEY_SOURCE="${2:-${CF_ORIGIN_KEY:-}}"
 CERT_DIR="${CERT_DIR:-/etc/ssl/cloudflare/${DOMAIN}}"

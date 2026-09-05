@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-portfolio.404connernotfound.dev}"
+DOMAIN="${DOMAIN:-404connernotfound.dev}"
 APP_UPSTREAM="${APP_UPSTREAM:-127.0.0.1:3000}"
 UPLOADS_ROOT="${UPLOADS_ROOT:-/var/lib/docker/volumes/portfolio_portfolio_uploads/_data}"
 WORK_ASSETS_ROOT="${WORK_ASSETS_ROOT:-/var/lib/docker/volumes/portfolio_portfolio_work_assets/_data}"
