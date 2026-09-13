@@ -3,7 +3,7 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { formatTitle } from '$lib/utils/seo';
 
-	const lastUpdated = 'February 6, 2026';
+	const lastUpdated = 'September 12, 2026';
 </script>
 
 <SeoHead
@@ -18,7 +18,7 @@
 			<h1 class="text-4xl font-semibold text-white sm:text-5xl">Privacy Policy</h1>
 			<p class="text-lg text-ink-200">
 				This policy explains how information is collected, used, and protected when you visit this
-				site, subscribe to updates, or get in touch.
+				site, subscribe, request a consultation, leave a review, or get in touch.
 			</p>
 			<p class="text-xs uppercase tracking-[0.2em] text-ink-300">Last updated: {lastUpdated}</p>
 		</MotionReveal>
@@ -46,6 +46,14 @@
 				<ul class="space-y-2 text-sm text-ink-200">
 					<li>Contact details you provide, such as name, email, and message content.</li>
 					<li>Subscription details, like email address and optional name.</li>
+					<li>
+						Consultation details, including the time, project category, company, and brief you
+						submit.
+					</li>
+					<li>
+						Review details, including your name, rating, written feedback, and optional project
+						context.
+					</li>
 					<li>Basic usage data such as pages viewed, browser type, and device details.</li>
 				</ul>
 			</MotionReveal>
@@ -54,6 +62,8 @@
 				<p class="text-sm text-ink-200">Data is used to:</p>
 				<ul class="space-y-2 text-sm text-ink-200">
 					<li>Respond to inquiries and project requests.</li>
+					<li>Manage consultation availability and prevent duplicate bookings.</li>
+					<li>Moderate submitted reviews before approved feedback is published.</li>
 					<li>Send updates you opt into.</li>
 					<li>Improve site performance and content quality.</li>
 					<li>Protect against abuse, spam, and security issues.</li>

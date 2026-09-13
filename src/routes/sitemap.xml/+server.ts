@@ -21,6 +21,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			'/blog',
 			'/resume',
 			'/contact',
+			'/book',
+			'/reviews',
 			'/privacy-policy',
 			'/cookie-policy',
 		];

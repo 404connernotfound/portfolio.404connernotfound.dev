@@ -1,12 +1,17 @@
 import type { Actions, PageServerLoad } from './$types';
 import { requireAdminCached, clearAdminSession } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
-import { getPosts, getWorkItems } from '$lib/server/dataStore';
+import { getAppointments, getPosts, getTestimonials, getWorkItems } from '$lib/server/dataStore';
 import { fail, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async (event) => {
 	await requireAdminCached(event);
-	const [posts, workItems] = await Promise.all([getPosts(), getWorkItems()]);
+	const [posts, workItems, appointments, reviews] = await Promise.all([
+		getPosts(),
+		getWorkItems(),
+		getAppointments(),
+		getTestimonials(),
+	]);
 
 	return {
 		stats: {
@@ -14,6 +19,9 @@ export const load: PageServerLoad = async (event) => {
 			publishedPosts: posts.filter((post) => post.draft === 0).length,
 			draftPosts: posts.filter((post) => post.draft === 1).length,
 			workItems: workItems.length,
+			pendingAppointments: appointments.filter((appointment) => appointment.status === 'pending')
+				.length,
+			pendingReviews: reviews.filter((review) => review.approved === 0).length,
 		},
 		csrfToken: getCsrfToken(event),
 	};

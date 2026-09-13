@@ -20,6 +20,18 @@
 			detail: 'Proof projects in rotation',
 			href: '/admin/work',
 		},
+		{
+			label: 'Appointments',
+			value: data.stats.pendingAppointments,
+			detail: 'Consultation requests to review',
+			href: '/admin/appointments',
+		},
+		{
+			label: 'Reviews',
+			value: data.stats.pendingReviews,
+			detail: 'Submissions awaiting moderation',
+			href: '/admin/reviews',
+		},
 	];
 
 	const primaryActions = [
@@ -52,11 +64,21 @@
 		{ label: 'Work', href: '/admin/work', detail: 'Projects and featured work.' },
 		{ label: 'Blog', href: '/admin/blog', detail: 'Posts, drafts, and blog intro.' },
 		{ label: 'Contact', href: '/admin/contact', detail: 'Contact copy and email.' },
+		{
+			label: 'Appointments',
+			href: '/admin/appointments',
+			detail: 'Consultation requests and scheduling status.',
+		},
+		{ label: 'Reviews', href: '/admin/reviews', detail: 'Approve or reject client feedback.' },
 		{ label: 'Footer', href: '/admin/footer', detail: 'Footer navigation links.' },
 		{ label: 'Errors', href: '/admin/errors', detail: 'Maintenance + error messaging.' },
 		{ label: 'Tracking', href: '/admin/tracking', detail: 'Metrics and event activity.' },
 		{ label: 'Resume', href: '/admin/resume', detail: 'Upload your PDF resume.' },
-		{ label: 'Crisis Counter', href: '/admin/crisis-counter', detail: 'Log early and midlife crises.' },
+		{
+			label: 'Crisis Counter',
+			href: '/admin/crisis-counter',
+			detail: 'Log early and midlife crises.',
+		},
 	];
 </script>
 

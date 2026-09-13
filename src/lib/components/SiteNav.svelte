@@ -7,7 +7,9 @@
 		{ label: 'Writing', href: '/blog' },
 		{ label: 'About', href: '/about' },
 		{ label: 'Resume', href: '/resume' },
+		{ label: 'Reviews', href: '/reviews' },
 		{ label: 'Contact', href: '/contact' },
+		{ label: 'Book', href: '/book' },
 	];
 
 	const isActive = (href: string) => {

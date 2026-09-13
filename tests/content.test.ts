@@ -12,14 +12,15 @@ const { calculateReadTime, renderMarkdown, resolveWorkCoverImage } =
 const { parseBlogReferencesForm, parseExternalImageUrl } =
 	await import('../src/lib/server/contentValidation');
 const db = await import('../src/lib/server/db');
+const dataStore = await import('../src/lib/server/dataStore');
 
 const assertPortfolioPositioning = () => {
 	const settings = db.getSiteSettings();
-	assert.match(settings.heroHeadline, /parts without an API/i);
-	assert.match(settings.heroSubheadline, /full-stack engineering/i);
-	assert.match(settings.heroSubheadline, /application hooking/i);
+	assert.match(settings.heroHeadline, /carried all the way to useful/i);
+	assert.match(settings.heroSubheadline, /ambiguous, cross-layer/i);
+	assert.match(settings.heroSubheadline, /coordination tax/i);
 	assert.match(settings.aboutBody, /game systems/i);
-	assert.match(settings.focusHeadline, /fewer handoffs/i);
+	assert.match(settings.focusHeadline, /expensive part/i);
 	assert.match(settings.contactTitle, /crosses layers/i);
 
 	const stackItems = db.getStackItems();
@@ -292,6 +293,22 @@ const assertWorkCoverPersistence = () => {
 	assert.equal(resolveWorkCoverImage(uploaded!), '/assets/work/local.png');
 };
 
+const assertScopedSiteSettingsRestore = async () => {
+	const current = await dataStore.getSiteSettings();
+	const { id: _id, ...settings } = current;
+	void _id;
+	await dataStore.updateSiteSettings({
+		...settings,
+		heroHeadline: 'Hello Trooper, I control every piece of text on this page live.',
+		contactEmail: 'keep-this-address@example.com',
+	});
+
+	await dataStore.restoreSiteSettingsDefaults('hero');
+	const restored = await dataStore.getSiteSettings();
+	assert.match(restored.heroHeadline, /carried all the way to useful/i);
+	assert.equal(restored.contactEmail, 'keep-this-address@example.com');
+};
+
 assertPortfolioPositioning();
 assertMarkdownRendering();
 assertExtendedMarkdownFeatures();
@@ -300,5 +317,6 @@ assertExternalCoverValidation();
 assertReadTimeEstimate();
 assertPersistence();
 assertWorkCoverPersistence();
+await assertScopedSiteSettingsRestore();
 
 console.log('content tests passed');

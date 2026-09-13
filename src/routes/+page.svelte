@@ -25,41 +25,79 @@
 
 <SeoHead
 	title={formatTitle('Home')}
-	description={data.siteSettings.heroSubheadline || data.siteSettings.heroHeadline}
+	description="Independent software engineering for difficult cross-layer problems—clear decisions, accountable delivery, and systems your team can own."
 />
 
 <div class="editorial-home">
 	<section class="editorial-hero" aria-labelledby="home-title">
 		<div class="hero-context" aria-label="Introduction">
 			<span>Conner Adams</span>
-			<span>Product-to-runtime developer</span>
-			<span>Full-stack · low-level · modification</span>
+			<span>Independent software engineer</span>
+			<span>For difficult, cross-layer work</span>
 		</div>
 
 		<h1 id="home-title">
-			<span>I own the whole stack.</span>
-			<span class="hero-title-soft">Including the parts without an API.</span>
+			<span>{data.siteSettings.heroHeadline}</span>
 		</h1>
 
 		<div class="hero-bottom">
 			<p>{data.siteSettings.heroSubheadline}</p>
 			<div class="hero-links">
-				<a class="home-primary-link" href="/work">See the work <span aria-hidden="true">↗</span></a>
-				<a class="home-text-link" href="/resume">Résumé</a>
+				<a class="home-primary-link" href="/book"
+					>Discuss your project <span aria-hidden="true">↗</span></a
+				>
+				<a class="home-text-link" href="/work">See the evidence</a>
 			</div>
 		</div>
 
-		<a class="hero-cue" href="#selected-work">
-			<span>Selected work</span>
+		<a class="hero-cue" href="#value">
+			<span>What your investment buys</span>
 			<span aria-hidden="true">↓</span>
 		</a>
+	</section>
+
+	<section class="value-chapter" id="value" aria-labelledby="value-title">
+		<header>
+			<p>Why the range matters</p>
+			<h2 id="value-title">The return isn’t more code. It’s less uncertainty.</h2>
+			<p>
+				The right engineering partner should shorten the path to a sound decision, reduce rework,
+				and leave you with software your team can actually own.
+			</p>
+		</header>
+		<ol class="value-ledger">
+			<li>
+				<span>01</span>
+				<strong>Get to the right decision sooner</strong>
+				<p>
+					I turn unclear constraints into a concrete technical path before they become expensive
+					implementation mistakes.
+				</p>
+			</li>
+			<li>
+				<span>02</span>
+				<strong>Keep one accountable owner</strong>
+				<p>
+					Interface, backend, infrastructure, and runtime decisions stay connected instead of
+					getting lost between handoffs.
+				</p>
+			</li>
+			<li>
+				<span>03</span>
+				<strong>Leave with a system—not a dependency</strong>
+				<p>
+					You get working software, explicit tradeoffs, and a handoff built for the people who will
+					maintain what ships.
+				</p>
+			</li>
+		</ol>
 	</section>
 
 	{#if activeProject}
 		<section class="work-chapter" id="selected-work" aria-labelledby="selected-work-title">
 			<header class="chapter-heading">
-				<p>Technical proof</p>
-				<h2 id="selected-work-title">Proof at the difficult layers.</h2>
+				<p>Selected evidence</p>
+				<h2 id="selected-work-title">Judgment you can inspect.</h2>
 				<a href="/work">View every project <span aria-hidden="true">↗</span></a>
 			</header>
 
@@ -116,8 +154,8 @@
 	{#if data.stackItems.length}
 		<section class="working-set" aria-labelledby="working-set-title">
 			<div class="working-set-heading">
-				<p>What I bring</p>
-				<h2 id="working-set-title">One developer across every layer.</h2>
+				<p>Less coordination overhead</p>
+				<h2 id="working-set-title">What one hire can cover.</h2>
 			</div>
 			<ul>
 				{#each data.stackItems.slice(0, 8) as item}
@@ -132,19 +170,66 @@
 
 	<section class="focus-chapter" aria-labelledby="focus-title">
 		<div class="focus-inner">
-			<p class="focus-kicker">Why it matters</p>
+			<p class="focus-kicker">The cost of complexity</p>
 			<h2 id="focus-title">{data.siteSettings.focusHeadline}</h2>
 			<div class="focus-copy">
 				<p>{data.siteSettings.focusBody}</p>
-				<a href="/about">See how I create leverage <span aria-hidden="true">↗</span></a>
+				<a href="/about">See how I protect the work <span aria-hidden="true">↗</span></a>
 			</div>
 		</div>
 	</section>
 
+	<section class="human-chapter" aria-labelledby="human-title">
+		<div class="human-heading">
+			<p>What working together feels like</p>
+			<h2 id="human-title">Senior attention stays on the work.</h2>
+		</div>
+		<div class="human-copy">
+			<p>
+				You won’t explain the problem to one person and watch it disappear into a delivery chain.
+				You’ll work directly with me from the first messy sketch through the decisions,
+				implementation, and handoff—with plain language whenever plain language will do.
+			</p>
+			<div class="human-signals" aria-label="How I work">
+				<span>Clear scope before the build</span>
+				<span>Decisions you can audit</span>
+				<span>A handoff your team can own</span>
+			</div>
+			<a href="/book">Talk through a project <span aria-hidden="true">↗</span></a>
+		</div>
+	</section>
+
+	{#if data.testimonials.length}
+		<section class="reviews-chapter" aria-labelledby="reviews-title">
+			<header>
+				<div>
+					<p>Client signal</p>
+					<h2 id="reviews-title">What the work felt like.</h2>
+				</div>
+				<a href="/reviews">Leave a review <span aria-hidden="true">↗</span></a>
+			</header>
+			<div class="review-rail">
+				{#each data.testimonials as review}
+					<article>
+						<div class="review-rating" aria-label={`${review.rating} out of 5 stars`}>
+							{'★'.repeat(review.rating)}
+						</div>
+						<blockquote>“{review.quote}”</blockquote>
+						<footer>
+							<strong>{review.name}</strong>
+							{#if review.company || review.project}<span>{review.company || review.project}</span
+								>{/if}
+						</footer>
+					</article>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
 	<section class="notes-chapter" aria-labelledby="notes-title">
 		<div>
-			<p class="notes-kicker">Field notes</p>
-			<h2 id="notes-title">What I learn beyond the happy path.</h2>
+			<p class="notes-kicker">Evaluate the thinking</p>
+			<h2 id="notes-title">See how I reason before you hire me.</h2>
 		</div>
 		{#if data.latestNote}
 			<a class="latest-note" href={`/blog/${data.latestNote.slug}`}>
@@ -162,9 +247,9 @@
 		{/if}
 	</section>
 
-	<section class="home-contact" aria-label="Contact">
-		<p>Bring me the problem between layers.</p>
-		<a href="/contact">Start a conversation <span aria-hidden="true">↗</span></a>
+	<section class="home-contact" aria-label="Book a consultation">
+		<p>If the problem is costly to leave unresolved, let’s make it concrete.</p>
+		<a href="/book">Scope the work <span aria-hidden="true">↗</span></a>
 	</section>
 </div>
 
@@ -176,8 +261,11 @@
 	}
 
 	.editorial-hero,
+	.value-chapter,
 	.work-chapter,
 	.working-set,
+	.human-chapter,
+	.reviews-chapter,
 	.notes-chapter,
 	.home-contact {
 		width: min(100%, 100rem);
@@ -209,21 +297,18 @@
 	}
 
 	.editorial-hero h1 {
+		max-width: 13ch;
 		margin: auto 0;
-		padding-block: clamp(4rem, 10vw, 9rem);
-		font-size: clamp(4rem, 10.3vw, 10.5rem);
+		padding-block: clamp(4rem, 8vw, 7.5rem);
+		font-size: clamp(3.8rem, 8.4vw, 8.6rem);
 		font-weight: 590;
-		line-height: 1.04;
-		letter-spacing: -0.02em;
+		line-height: 0.96;
+		letter-spacing: -0.055em;
 		text-wrap: balance;
 	}
 
 	.editorial-hero h1 span {
 		display: block;
-	}
-
-	.hero-title-soft {
-		color: #77777f;
 	}
 
 	.hero-bottom {
@@ -289,6 +374,89 @@
 		font-size: 0.7rem;
 		font-weight: 650;
 		color: var(--ink-faint);
+	}
+
+	.value-chapter {
+		padding-top: clamp(5rem, 9vw, 9rem);
+		padding-bottom: clamp(6rem, 11vw, 11rem);
+	}
+
+	.value-chapter > header {
+		display: grid;
+		grid-template-columns: 0.3fr minmax(0, 0.9fr) minmax(18rem, 0.48fr);
+		gap: clamp(2rem, 5vw, 5rem);
+		align-items: end;
+		border-top: 1px solid var(--line-strong);
+		padding-top: 1rem;
+	}
+
+	.value-chapter > header > p:first-child {
+		align-self: start;
+		margin: 0;
+		font:
+			680 0.68rem ui-monospace,
+			monospace;
+		color: var(--signal-bright);
+	}
+
+	.value-chapter h2 {
+		margin: 0;
+		font-size: clamp(2.8rem, 5.4vw, 5.6rem);
+		font-weight: 570;
+		line-height: 0.94;
+		letter-spacing: -0.07em;
+	}
+
+	.value-chapter > header > p:last-child {
+		margin: 0;
+		font-size: clamp(0.98rem, 1.25vw, 1.12rem);
+		line-height: 1.65;
+		color: var(--ink-soft);
+	}
+
+	.value-ledger {
+		margin: clamp(3.5rem, 7vw, 7rem) 0 0;
+		padding: 0;
+		border-top: 1px solid var(--line-strong);
+		list-style: none;
+	}
+
+	.value-ledger li {
+		display: grid;
+		grid-template-columns: 3rem minmax(13rem, 0.65fr) minmax(0, 1fr);
+		gap: clamp(1.5rem, 4vw, 4rem);
+		align-items: baseline;
+		border-bottom: 1px solid var(--line);
+		padding: 1.5rem 0;
+		transition:
+			padding-left 220ms var(--ease-system),
+			border-color 180ms ease;
+	}
+
+	.value-ledger li:hover {
+		border-color: rgba(73, 103, 255, 0.6);
+		padding-left: 0.7rem;
+	}
+
+	.value-ledger li > span {
+		font:
+			650 0.62rem ui-monospace,
+			monospace;
+		color: var(--signal-bright);
+	}
+
+	.value-ledger strong {
+		font-size: clamp(1.15rem, 1.8vw, 1.6rem);
+		font-weight: 590;
+		letter-spacing: -0.025em;
+	}
+
+	.value-ledger p {
+		max-width: 44rem;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.65;
+		color: var(--ink-soft);
 	}
 
 	.work-chapter {
@@ -552,6 +720,136 @@
 		color: #3f3f43;
 	}
 
+	.human-chapter {
+		display: grid;
+		grid-template-columns: minmax(0, 0.72fr) minmax(22rem, 0.52fr);
+		gap: clamp(3rem, 9vw, 9rem);
+		padding-top: clamp(7rem, 12vw, 12rem);
+		padding-bottom: clamp(7rem, 12vw, 12rem);
+	}
+
+	.human-heading > p,
+	.reviews-chapter header p {
+		margin: 0;
+		font-size: 0.7rem;
+		font-weight: 680;
+		color: var(--ink-faint);
+	}
+
+	.human-heading h2,
+	.reviews-chapter h2 {
+		max-width: 11ch;
+		margin: 1rem 0 0;
+		font-size: clamp(3rem, 6.5vw, 6.6rem);
+		font-weight: 570;
+		line-height: 0.92;
+		letter-spacing: -0.07em;
+	}
+
+	.human-copy {
+		align-self: end;
+	}
+
+	.human-copy > p {
+		margin: 0;
+		font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+		line-height: 1.7;
+		color: var(--ink-soft);
+	}
+
+	.human-signals {
+		display: grid;
+		margin: 2rem 0;
+		border-top: 1px solid var(--line);
+	}
+
+	.human-signals span {
+		border-bottom: 1px solid var(--line);
+		padding: 0.85rem 0;
+		font:
+			650 0.68rem ui-monospace,
+			monospace;
+		color: var(--ink-faint);
+	}
+
+	.human-copy a,
+	.reviews-chapter header a {
+		display: inline-flex;
+		gap: 1rem;
+		border-bottom: 1px solid currentColor;
+		padding-bottom: 0.2rem;
+		font-size: 0.82rem;
+		font-weight: 680;
+	}
+
+	.reviews-chapter {
+		padding-bottom: clamp(7rem, 12vw, 12rem);
+	}
+
+	.reviews-chapter > header {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 2rem;
+		margin-bottom: clamp(2rem, 5vw, 4rem);
+	}
+
+	.review-rail {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(20rem, 31rem);
+		gap: 0.8rem;
+		overflow-x: auto;
+		padding-bottom: 1rem;
+		scroll-snap-type: x proximity;
+	}
+
+	.review-rail article {
+		display: flex;
+		flex-direction: column;
+		min-height: 24rem;
+		border: 1px solid var(--line);
+		border-radius: 1rem;
+		background: rgba(255, 255, 255, 0.025);
+		padding: 1.5rem;
+		scroll-snap-align: start;
+		transition:
+			transform 260ms var(--ease-system),
+			border-color 180ms ease;
+	}
+
+	.review-rail article:hover {
+		transform: translateY(-4px);
+		border-color: rgba(73, 103, 255, 0.65);
+	}
+
+	.review-rating {
+		font-size: 0.78rem;
+		letter-spacing: 0.18em;
+		color: #ffd76a;
+	}
+
+	.review-rail blockquote {
+		margin: auto 0;
+		font-size: clamp(1.45rem, 2.3vw, 2.2rem);
+		font-weight: 520;
+		line-height: 1.2;
+		letter-spacing: -0.035em;
+	}
+
+	.review-rail footer {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		border-top: 1px solid var(--line);
+		padding-top: 1rem;
+		font-size: 0.72rem;
+	}
+
+	.review-rail footer span {
+		color: var(--ink-faint);
+	}
+
 	.notes-chapter {
 		display: grid;
 		grid-template-columns: minmax(0, 0.8fr) minmax(22rem, 0.55fr);
@@ -626,7 +924,7 @@
 	}
 
 	.home-contact p {
-		max-width: 10ch;
+		max-width: 15ch;
 		margin: 0;
 		font-size: clamp(2.6rem, 6vw, 6rem);
 		font-weight: 580;
@@ -674,7 +972,9 @@
 		}
 
 		.chapter-heading,
+		.value-chapter > header,
 		.working-set,
+		.human-chapter,
 		.notes-chapter {
 			grid-template-columns: 1fr;
 		}
@@ -701,6 +1001,10 @@
 
 		.latest-note {
 			min-height: 19rem;
+		}
+
+		.value-chapter > header > p:first-child {
+			grid-row: auto;
 		}
 	}
 
@@ -754,6 +1058,15 @@
 			gap: 0.35rem;
 		}
 
+		.value-ledger li {
+			grid-template-columns: 2rem minmax(0, 1fr);
+			gap: 0.75rem 1rem;
+		}
+
+		.value-ledger p {
+			grid-column: 2;
+		}
+
 		.focus-inner h2 {
 			font-size: clamp(3.7rem, 17vw, 6rem);
 		}
@@ -761,6 +1074,14 @@
 		.home-contact {
 			align-items: flex-start;
 			flex-direction: column;
+		}
+
+		.reviews-chapter > header {
+			align-items: start;
+			flex-direction: column;
+		}
+		.review-rail {
+			grid-auto-columns: minmax(17rem, 88vw);
 		}
 
 		.home-contact a {
@@ -775,6 +1096,14 @@
 		.latest-note,
 		.project-stage-copy {
 			animation: none;
+			transition: none;
+		}
+
+		.review-rail article {
+			transition: none;
+		}
+
+		.value-ledger li {
 			transition: none;
 		}
 	}

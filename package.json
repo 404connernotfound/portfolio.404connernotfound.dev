@@ -15,11 +15,13 @@
 		"up": "bash ./up.sh",
 		"up:windows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./up.ps1",
 		"down": "bash ./down.sh",
+		"down:windows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./down.ps1",
 		"redeploy": "bash ./redeploy.sh",
 		"deploy:check": "npm run check && npm run lint && npm run build",
 		"deploy:up": "bash ./up.sh",
 		"deploy:up:windows": "npm run up:windows",
 		"deploy:down": "bash ./down.sh",
+		"deploy:down:windows": "npm run down:windows",
 		"deploy:redeploy": "bash ./redeploy.sh",
 		"nginx:setup": "bash scripts/setup-cloudflare-nginx.sh",
 		"prepare": "svelte-kit sync || echo ''",
@@ -31,7 +33,7 @@
 		"format:write": "prettier --write .",
 		"db:seed": "tsx scripts/seed-db.ts",
 		"db:migrate:postgres": "tsx scripts/migrate-sqlite-to-postgres.ts",
-		"test": "tsx tests/content.test.ts"
+		"test": "tsx tests/content.test.ts && tsx tests/booking-review.test.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.5.2",

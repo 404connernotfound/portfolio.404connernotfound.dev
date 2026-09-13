@@ -31,7 +31,10 @@
 		<form class="mt-6 grid gap-4" method="POST" action="?/updateSite">
 			<input type="hidden" name="csrfToken" value={data.csrfToken} />
 			<div>
-				<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroHeadline">
+				<label
+					class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+					for="heroHeadline"
+				>
 					Hero headline
 				</label>
 				<textarea
@@ -39,10 +42,14 @@
 					name="heroHeadline"
 					rows="2"
 					class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-				>{data.siteSettings.heroHeadline}</textarea>
+					>{data.siteSettings.heroHeadline}</textarea
+				>
 			</div>
 			<div>
-				<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroSubheadline">
+				<label
+					class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+					for="heroSubheadline"
+				>
 					Hero subheadline
 				</label>
 				<textarea
@@ -50,11 +57,15 @@
 					name="heroSubheadline"
 					rows="2"
 					class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-				>{data.siteSettings.heroSubheadline}</textarea>
+					>{data.siteSettings.heroSubheadline}</textarea
+				>
 			</div>
 			<div class="grid gap-4 md:grid-cols-2">
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroNoteTitle">
+					<label
+						class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+						for="heroNoteTitle"
+					>
 						Hero note title
 					</label>
 					<input
@@ -65,7 +76,10 @@
 					/>
 				</div>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroNoteBody">
+					<label
+						class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+						for="heroNoteBody"
+					>
 						Hero note body
 					</label>
 					<input
@@ -78,7 +92,10 @@
 			</div>
 			<div class="grid gap-4 md:grid-cols-2">
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroHighlightsTitle">
+					<label
+						class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+						for="heroHighlightsTitle"
+					>
 						Hero highlights title
 					</label>
 					<input
@@ -89,7 +106,10 @@
 					/>
 				</div>
 				<div>
-					<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="heroHighlightsBody">
+					<label
+						class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+						for="heroHighlightsBody"
+					>
 						Hero highlights body
 					</label>
 					<input
@@ -101,7 +121,10 @@
 				</div>
 			</div>
 			<div>
-				<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="focusHeadline">
+				<label
+					class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+					for="focusHeadline"
+				>
 					Focus headline
 				</label>
 				<textarea
@@ -109,10 +132,14 @@
 					name="focusHeadline"
 					rows="2"
 					class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-				>{data.siteSettings.focusHeadline}</textarea>
+					>{data.siteSettings.focusHeadline}</textarea
+				>
 			</div>
 			<div>
-				<label class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200" for="focusBody">
+				<label
+					class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-200"
+					for="focusBody"
+				>
 					Focus body
 				</label>
 				<textarea
@@ -120,7 +147,8 @@
 					name="focusBody"
 					rows="2"
 					class="mt-2 w-full rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm text-white"
-				>{data.siteSettings.focusBody}</textarea>
+					>{data.siteSettings.focusBody}</textarea
+				>
 			</div>
 			<div class="flex justify-end">
 				<button class="nav-pill border-ink-100 bg-ink-900 text-white" type="submit">
@@ -128,5 +156,26 @@
 				</button>
 			</div>
 		</form>
+		<div class="mt-8 border-t border-ink-200/20 pt-6">
+			<h3 class="text-lg font-semibold text-white">Restore portfolio copy</h3>
+			<p class="mt-2 max-w-2xl text-sm text-ink-200">
+				Reset a section to the conversion-focused copy shipped with the site. Other sections and
+				contact details will not change.
+			</p>
+			<div class="mt-4 flex flex-wrap gap-3">
+				<form method="POST" action="?/restoreHeroDefaults">
+					<input type="hidden" name="csrfToken" value={data.csrfToken} />
+					<button class="nav-pill border-ink-200/40 bg-white/5 text-white" type="submit">
+						Restore hero defaults
+					</button>
+				</form>
+				<form method="POST" action="?/restoreFocusDefaults">
+					<input type="hidden" name="csrfToken" value={data.csrfToken} />
+					<button class="nav-pill border-ink-200/40 bg-white/5 text-white" type="submit">
+						Restore focus defaults
+					</button>
+				</form>
+			</div>
+		</div>
 	</MotionReveal>
 </section>

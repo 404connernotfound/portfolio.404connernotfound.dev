@@ -145,8 +145,27 @@ const appSchemaSql = `
 		project TEXT,
 		result TEXT,
 		email TEXT,
+		rating INTEGER NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+		fingerprint TEXT,
 		approved INTEGER NOT NULL DEFAULT 0,
 		created_at TEXT NOT NULL
+	);
+	ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS rating INTEGER NOT NULL DEFAULT 5;
+	ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS fingerprint TEXT;
+
+	CREATE TABLE IF NOT EXISTS appointments (
+		id BIGSERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		email TEXT NOT NULL,
+		company TEXT,
+		project_type TEXT NOT NULL,
+		description TEXT NOT NULL,
+		starts_at TEXT NOT NULL,
+		visitor_timezone TEXT NOT NULL,
+		status TEXT NOT NULL DEFAULT 'pending',
+		ip_hash TEXT NOT NULL,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS tracking_events (
@@ -277,6 +296,12 @@ const appSchemaSql = `
 		ON newsletter_subscriptions(updated_at DESC);
 	CREATE INDEX IF NOT EXISTS idx_tracking_events_created
 		ON tracking_events(created_at DESC);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_active_start
+		ON appointments(starts_at) WHERE status IN ('pending', 'confirmed');
+	CREATE INDEX IF NOT EXISTS idx_appointments_status_start
+		ON appointments(status, starts_at);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_testimonials_fingerprint
+		ON testimonials(fingerprint) WHERE fingerprint IS NOT NULL;
 `;
 
 export const isPostgresConfigured = () => Boolean(connectionString);

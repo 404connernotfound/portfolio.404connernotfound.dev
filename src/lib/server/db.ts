@@ -125,8 +125,27 @@ type Testimonial = {
 	project: string | null;
 	result: string | null;
 	email: string | null;
+	rating: number;
+	fingerprint: string | null;
 	approved: number;
 	createdAt: string;
+};
+
+type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled';
+
+type Appointment = {
+	id: number;
+	name: string;
+	email: string;
+	company: string | null;
+	projectType: string;
+	description: string;
+	startsAt: string;
+	visitorTimezone: string;
+	status: AppointmentStatus;
+	ipHash: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
 type TrackingEvent = {
@@ -220,9 +239,9 @@ type PlaygroundOperationalCounts = {
 
 const DEFAULT_DB_PATH = 'data/portfolio.sqlite';
 const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
-	heroHeadline: 'One developer across every layer - including the parts without an API.',
+	heroHeadline: 'Complex software, carried all the way to useful.',
 	heroSubheadline:
-		'I build complete products and extend existing software through full-stack engineering, low-level systems work, application hooking, and game modification.',
+		'I help teams turn ambiguous, cross-layer software problems into reliable products without paying the coordination tax of splitting one problem across five specialists.',
 	heroNoteTitle: 'Where I create leverage',
 	heroNoteBody:
 		'End-to-end product ownership, deep runtime diagnosis, and new capability beyond standard integration points.',
@@ -232,9 +251,9 @@ const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
 	aboutHeadline: 'The advantage is range without losing depth.',
 	aboutBody:
 		'I can own a feature from interface and backend through deployment, then keep going when the problem crosses into OS, runtime, or engine behavior. That makes me a strong fit for products that need polished delivery and specialized work in application hooking, modification, or game systems.',
-	focusHeadline: 'Fewer handoffs. Deeper answers. More options.',
+	focusHeadline: 'The expensive part is rarely writing the code.',
 	focusBody:
-		'Teams often split product engineering, systems work, and runtime modification across specialists. I bridge those layers so difficult problems move from ambiguity to implementation without critical context being lost at every boundary.',
+		'It is the false start, the hidden constraint, and the handoff where context disappears. I work across those boundaries so your investment produces clarity as well as working software.',
 	stackTitle: 'One engineering surface, four layers',
 	stackIntro:
 		'Each capability is valuable on its own. Together, they shorten the path from an ambitious idea to software that works.',
@@ -571,8 +590,25 @@ const createTables = (database: Database.Database) => {
 			project TEXT,
 			result TEXT,
 			email TEXT,
+			rating INTEGER NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+			fingerprint TEXT,
 			approved INTEGER DEFAULT 0,
 			created_at TEXT NOT NULL
+		);
+
+		CREATE TABLE IF NOT EXISTS appointments (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			email TEXT NOT NULL,
+			company TEXT,
+			project_type TEXT NOT NULL,
+			description TEXT NOT NULL,
+			starts_at TEXT NOT NULL,
+			visitor_timezone TEXT NOT NULL,
+			status TEXT NOT NULL DEFAULT 'pending',
+			ip_hash TEXT NOT NULL,
+			created_at TEXT NOT NULL,
+			updated_at TEXT NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS tracking_events (
@@ -692,6 +728,12 @@ const createTables = (database: Database.Database) => {
 			ON inbound_messages(channel, created_at DESC);
 		CREATE INDEX IF NOT EXISTS idx_newsletter_subscriptions_updated
 			ON newsletter_subscriptions(updated_at DESC);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_active_start
+			ON appointments(starts_at) WHERE status IN ('pending', 'confirmed');
+		CREATE INDEX IF NOT EXISTS idx_appointments_status_start
+			ON appointments(status, starts_at);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_testimonials_fingerprint
+			ON testimonials(fingerprint) WHERE fingerprint IS NOT NULL;
 	`);
 };
 
@@ -837,6 +879,42 @@ const ensureTestimonialsTable = (database: Database.Database) => {
 			approved INTEGER DEFAULT 0,
 			created_at TEXT NOT NULL
 		);
+	`);
+};
+
+const ensureConsultationTables = (database: Database.Database) => {
+	ensureTestimonialsTable(database);
+	const testimonialColumns = (
+		database.prepare('PRAGMA table_info(testimonials)').all() as { name: string }[]
+	).map((column) => column.name);
+	if (!testimonialColumns.includes('rating')) {
+		database.exec('ALTER TABLE testimonials ADD COLUMN rating INTEGER NOT NULL DEFAULT 5');
+	}
+	if (!testimonialColumns.includes('fingerprint')) {
+		database.exec('ALTER TABLE testimonials ADD COLUMN fingerprint TEXT');
+	}
+
+	database.exec(`
+		CREATE TABLE IF NOT EXISTS appointments (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			email TEXT NOT NULL,
+			company TEXT,
+			project_type TEXT NOT NULL,
+			description TEXT NOT NULL,
+			starts_at TEXT NOT NULL,
+			visitor_timezone TEXT NOT NULL,
+			status TEXT NOT NULL DEFAULT 'pending',
+			ip_hash TEXT NOT NULL,
+			created_at TEXT NOT NULL,
+			updated_at TEXT NOT NULL
+		);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_active_start
+			ON appointments(starts_at) WHERE status IN ('pending', 'confirmed');
+		CREATE INDEX IF NOT EXISTS idx_appointments_status_start
+			ON appointments(status, starts_at);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_testimonials_fingerprint
+			ON testimonials(fingerprint) WHERE fingerprint IS NOT NULL;
 	`);
 };
 
@@ -1693,6 +1771,7 @@ const runMigrations = (database: Database.Database) => {
 				ensureStackPositioning(database);
 			},
 		},
+		{ id: 27, name: 'consultations_and_review_moderation', up: ensureConsultationTables },
 	];
 
 	for (const migration of migrations) {
@@ -2507,7 +2586,7 @@ export const getTestimonials = () => {
 	const database = getDb();
 	const rows = database
 		.prepare(
-			`SELECT id, name, role, company, quote, project, result, email, approved, created_at as createdAt
+			`SELECT id, name, role, company, quote, project, result, email, rating, fingerprint, approved, created_at as createdAt
 			 FROM testimonials
 			 ORDER BY created_at DESC, id DESC`,
 		)
@@ -2529,17 +2608,20 @@ export const createTestimonial = (
 	project: string | null,
 	result: string | null,
 	email: string | null,
+	rating: number,
+	fingerprint: string,
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
-	database
+	const insertResult = database
 		.prepare(
-			`INSERT INTO testimonials (name, role, company, quote, project, result, email, approved, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+			`INSERT OR IGNORE INTO testimonials (name, role, company, quote, project, result, email, rating, fingerprint, approved, created_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
 		)
-		.run(name, role, company, quote, project, result, email, now);
+		.run(name, role, company, quote, project, result, email, rating, fingerprint, now);
 
 	clearCache('testimonials');
+	return insertResult.changes === 1;
 };
 
 export const updateTestimonialApproval = (id: number, approved: number) => {
@@ -2560,6 +2642,77 @@ export const deleteTestimonial = (id: number) => {
 	database.prepare('DELETE FROM testimonials WHERE id = ?').run(id);
 
 	clearCache('testimonials');
+};
+
+export const getAppointments = () => {
+	const database = getDb();
+	return database
+		.prepare(
+			`SELECT id, name, email, company, project_type as projectType, description,
+				starts_at as startsAt, visitor_timezone as visitorTimezone, status,
+				ip_hash as ipHash, created_at as createdAt, updated_at as updatedAt
+			 FROM appointments
+			 ORDER BY starts_at ASC, id ASC`,
+		)
+		.all() as Appointment[];
+};
+
+export const getBookedAppointmentStarts = (from: string, to: string) => {
+	const database = getDb();
+	return database
+		.prepare(
+			`SELECT starts_at as startsAt
+			 FROM appointments
+			 WHERE status IN ('pending', 'confirmed') AND starts_at >= ? AND starts_at <= ?`,
+		)
+		.all(from, to) as { startsAt: string }[];
+};
+
+export const createAppointment = (
+	input: Omit<Appointment, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
+) => {
+	const database = getDb();
+	const now = new Date().toISOString();
+	const insertResult = database
+		.prepare(
+			`INSERT OR IGNORE INTO appointments
+				(name, email, company, project_type, description, starts_at, visitor_timezone, status, ip_hash, created_at, updated_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
+		)
+		.run(
+			input.name,
+			input.email,
+			input.company,
+			input.projectType,
+			input.description,
+			input.startsAt,
+			input.visitorTimezone,
+			input.ipHash,
+			now,
+			now,
+		);
+	return insertResult.changes === 1;
+};
+
+export const updateAppointmentStatus = (id: number, status: AppointmentStatus) => {
+	const database = getDb();
+	const result = database
+		.prepare(
+			`UPDATE appointments
+			 SET status = ?, updated_at = ?
+			 WHERE id = ?
+				AND (
+					? = 'cancelled'
+					OR NOT EXISTS (
+						SELECT 1 FROM appointments AS conflicting
+						WHERE conflicting.starts_at = appointments.starts_at
+							AND conflicting.id != appointments.id
+							AND conflicting.status IN ('pending', 'confirmed')
+					)
+				)`,
+		)
+		.run(status, new Date().toISOString(), id, status);
+	return result.changes === 1;
 };
 
 export const getFooterLinks = () => {
@@ -3035,6 +3188,8 @@ export type {
 	Asset,
 	CrisisItem,
 	Testimonial,
+	Appointment,
+	AppointmentStatus,
 	TrackingEvent,
 	FooterLink,
 	Playset,

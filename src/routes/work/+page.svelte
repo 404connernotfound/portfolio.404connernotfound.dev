@@ -9,23 +9,30 @@
 	export let data: PageData;
 </script>
 
-<SeoHead title={formatTitle('Work')} description={data.siteSettings.workIntro} />
+<SeoHead
+	title={formatTitle('Work')}
+	description="Inspect the technical decisions, constraints, and working systems behind Conner Adams' software projects."
+/>
 
 <section class="section-pad">
 	<div class="inspection-shell">
 		<div>
-			<p class="system-label">Project index</p>
-			<h1 class="inspection-title">{data.siteSettings.workTitle}</h1>
-			<p class="inspection-summary">{data.siteSettings.workIntro}</p>
+			<p class="system-label">Evidence / Project index</p>
+			<h1 class="inspection-title">Work that makes the judgment visible.</h1>
+			<p class="inspection-summary">
+				These are not screenshots arranged to look impressive. They are inspectable examples of how
+				I frame constraints, make technical decisions, and turn difficult systems into working
+				software.
+			</p>
 		</div>
 		<aside class="inspection-side">
 			<MetadataGrid
 				items={[
-					{ label: 'Range', value: 'Languages to infrastructure' },
-					{ label: 'Method', value: 'Inspectable decisions' },
-					{ label: 'Standard', value: 'Working software' },
+					{ label: 'Look for', value: 'Decisions, not decoration' },
+					{ label: 'Evidence', value: 'Constraints made explicit' },
+					{ label: 'Standard', value: 'Software that works' },
 				]}
-				label="What the work proves"
+				label="How to read the work"
 			/>
 		</aside>
 	</div>

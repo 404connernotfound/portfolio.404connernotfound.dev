@@ -9,6 +9,8 @@
 		{ label: 'Work', href: '/admin/work' },
 		{ label: 'Blog', href: '/admin/blog' },
 		{ label: 'Contact', href: '/admin/contact' },
+		{ label: 'Appointments', href: '/admin/appointments' },
+		{ label: 'Reviews', href: '/admin/reviews' },
 		{ label: 'Errors', href: '/admin/errors' },
 		{ label: 'Footer', href: '/admin/footer' },
 		{ label: 'Tracking', href: '/admin/tracking' },

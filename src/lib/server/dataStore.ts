@@ -1,6 +1,8 @@
 import * as sqliteDb from '$lib/server/db';
 import type {
 	Asset,
+	Appointment,
+	AppointmentStatus,
 	BlogPost,
 	CrisisItem,
 	FooterLink,
@@ -47,9 +49,9 @@ const mapPostRow = (row: BlogPostRow): BlogPost => {
 };
 
 const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
-	heroHeadline: 'One developer across every layer - including the parts without an API.',
+	heroHeadline: 'Complex software, carried all the way to useful.',
 	heroSubheadline:
-		'I build complete products and extend existing software through full-stack engineering, low-level systems work, application hooking, and game modification.',
+		'I help teams turn ambiguous, cross-layer software problems into reliable products without paying the coordination tax of splitting one problem across five specialists.',
 	heroNoteTitle: 'Where I create leverage',
 	heroNoteBody:
 		'End-to-end product ownership, deep runtime diagnosis, and new capability beyond standard integration points.',
@@ -59,9 +61,9 @@ const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'id'> = {
 	aboutHeadline: 'The advantage is range without losing depth.',
 	aboutBody:
 		'I can own a feature from interface and backend through deployment, then keep going when the problem crosses into OS, runtime, or engine behavior. That makes me a strong fit for products that need polished delivery and specialized work in application hooking, modification, or game systems.',
-	focusHeadline: 'Fewer handoffs. Deeper answers. More options.',
+	focusHeadline: 'The expensive part is rarely writing the code.',
 	focusBody:
-		'Teams often split product engineering, systems work, and runtime modification across specialists. I bridge those layers so difficult problems move from ambiguity to implementation without critical context being lost at every boundary.',
+		'It is the false start, the hidden constraint, and the handoff where context disappears. I work across those boundaries so your investment produces clarity as well as working software.',
 	stackTitle: 'One engineering surface, four layers',
 	stackIntro:
 		'Each capability is valuable on its own. Together, they shorten the path from an ambitious idea to software that works.',
@@ -985,6 +987,33 @@ export const updateSiteSettings = async (payload: Omit<SiteSettings, 'id'>) => {
 	await invalidateSiteCaches();
 };
 
+export type SiteSettingsDefaultSection = 'hero' | 'focus';
+
+export const restoreSiteSettingsDefaults = async (section: SiteSettingsDefaultSection) => {
+	const current = await getSiteSettings();
+	const { id: _id, ...settings } = current;
+	void _id;
+
+	if (section === 'hero') {
+		await updateSiteSettings({
+			...settings,
+			heroHeadline: DEFAULT_SITE_SETTINGS.heroHeadline,
+			heroSubheadline: DEFAULT_SITE_SETTINGS.heroSubheadline,
+			heroNoteTitle: DEFAULT_SITE_SETTINGS.heroNoteTitle,
+			heroNoteBody: DEFAULT_SITE_SETTINGS.heroNoteBody,
+			heroHighlightsTitle: DEFAULT_SITE_SETTINGS.heroHighlightsTitle,
+			heroHighlightsBody: DEFAULT_SITE_SETTINGS.heroHighlightsBody,
+		});
+		return;
+	}
+
+	await updateSiteSettings({
+		...settings,
+		focusHeadline: DEFAULT_SITE_SETTINGS.focusHeadline,
+		focusBody: DEFAULT_SITE_SETTINGS.focusBody,
+	});
+};
+
 export const getStackItems = async (): Promise<StackItem[]> =>
 	withDbFallback(
 		() =>
@@ -1466,7 +1495,7 @@ export const getTestimonials = async (): Promise<Testimonial[]> =>
 	withDbFallback(
 		() =>
 			queryPostgres<Testimonial>(
-				`SELECT id, name, role, company, quote, project, result, email, approved, created_at as "createdAt"
+				`SELECT id, name, role, company, quote, project, result, email, rating, fingerprint, approved, created_at as "createdAt"
 				 FROM testimonials
 				 ORDER BY created_at DESC, id DESC`,
 			),
@@ -1477,7 +1506,7 @@ export const getApprovedTestimonials = async (): Promise<Testimonial[]> =>
 	withDbFallback(
 		() =>
 			queryPostgres<Testimonial>(
-				`SELECT id, name, role, company, quote, project, result, email, approved, created_at as "createdAt"
+				`SELECT id, name, role, company, quote, project, result, email, rating, fingerprint, approved, created_at as "createdAt"
 				 FROM testimonials
 				 WHERE approved = 1
 				 ORDER BY created_at DESC, id DESC`,
@@ -1493,16 +1522,32 @@ export const createTestimonial = async (
 	project: string | null,
 	result: string | null,
 	email: string | null,
+	rating: number,
+	fingerprint: string,
 ) => {
-	await withDbFallback(
+	const created = await withDbFallback(
 		() =>
-			executePostgres(
-				`INSERT INTO testimonials (name, role, company, quote, project, result, email, approved, created_at)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, 0, $8)`,
-				[name, role, company, quote, project, result, email, nowIso()],
+			queryPostgres<{ id: number }>(
+				`INSERT INTO testimonials (name, role, company, quote, project, result, email, rating, fingerprint, approved, created_at)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0, $10)
+				 ON CONFLICT (fingerprint) WHERE fingerprint IS NOT NULL DO NOTHING
+				 RETURNING id`,
+				[name, role, company, quote, project, result, email, rating, fingerprint, nowIso()],
+			).then((rows) => rows.length === 1),
+		() =>
+			sqliteDb.createTestimonial(
+				name,
+				role,
+				company,
+				quote,
+				project,
+				result,
+				email,
+				rating,
+				fingerprint,
 			),
-		() => sqliteDb.createTestimonial(name, role, company, quote, project, result, email),
 	);
+	return created;
 };
 
 export const updateTestimonialApproval = async (id: number, approved: number) => {
@@ -1510,6 +1555,7 @@ export const updateTestimonialApproval = async (id: number, approved: number) =>
 		() => executePostgres('UPDATE testimonials SET approved = $1 WHERE id = $2', [approved, id]),
 		() => sqliteDb.updateTestimonialApproval(id, approved),
 	);
+	await invalidateCached('page:home');
 };
 
 export const deleteTestimonial = async (id: number) => {
@@ -1517,7 +1563,81 @@ export const deleteTestimonial = async (id: number) => {
 		() => executePostgres('DELETE FROM testimonials WHERE id = $1', [id]),
 		() => sqliteDb.deleteTestimonial(id),
 	);
+	await invalidateCached('page:home');
 };
+
+export const getAppointments = async (): Promise<Appointment[]> =>
+	withDbFallback(
+		() =>
+			queryPostgres<Appointment>(
+				`SELECT id, name, email, company, project_type as "projectType", description,
+					starts_at as "startsAt", visitor_timezone as "visitorTimezone", status,
+					ip_hash as "ipHash", created_at as "createdAt", updated_at as "updatedAt"
+				 FROM appointments
+				 ORDER BY starts_at ASC, id ASC`,
+			),
+		() => sqliteDb.getAppointments(),
+	);
+
+export const getBookedAppointmentStarts = async (from: string, to: string) =>
+	withDbFallback(
+		() =>
+			queryPostgres<{ startsAt: string }>(
+				`SELECT starts_at as "startsAt"
+				 FROM appointments
+				 WHERE status IN ('pending', 'confirmed') AND starts_at >= $1 AND starts_at <= $2`,
+				[from, to],
+			),
+		() => sqliteDb.getBookedAppointmentStarts(from, to),
+	);
+
+export const createAppointment = async (
+	input: Omit<Appointment, 'id' | 'status' | 'createdAt' | 'updatedAt'>,
+) =>
+	withDbFallback(
+		() =>
+			queryPostgres<{ id: number }>(
+				`INSERT INTO appointments
+					(name, email, company, project_type, description, starts_at, visitor_timezone, status, ip_hash, created_at, updated_at)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9, $9)
+				 ON CONFLICT (starts_at) WHERE status IN ('pending', 'confirmed') DO NOTHING
+				 RETURNING id`,
+				[
+					input.name,
+					input.email,
+					input.company,
+					input.projectType,
+					input.description,
+					input.startsAt,
+					input.visitorTimezone,
+					input.ipHash,
+					nowIso(),
+				],
+			).then((rows) => rows.length === 1),
+		() => sqliteDb.createAppointment(input),
+	);
+
+export const updateAppointmentStatus = async (id: number, status: AppointmentStatus) =>
+	withDbFallback(
+		() =>
+			queryPostgres<{ id: number }>(
+				`UPDATE appointments
+				 SET status = $1, updated_at = $2
+				 WHERE id = $3
+					AND (
+						$1 = 'cancelled'
+						OR NOT EXISTS (
+							SELECT 1 FROM appointments AS conflicting
+							WHERE conflicting.starts_at = appointments.starts_at
+								AND conflicting.id != appointments.id
+								AND conflicting.status IN ('pending', 'confirmed')
+						)
+					)
+				 RETURNING id`,
+				[status, nowIso(), id],
+			).then((rows) => rows.length === 1),
+		() => sqliteDb.updateAppointmentStatus(id, status),
+	);
 
 export const getFooterLinks = async (): Promise<FooterLink[]> =>
 	withDbFallback(
@@ -2063,6 +2183,8 @@ export type {
 	Asset,
 	CrisisItem,
 	Testimonial,
+	Appointment,
+	AppointmentStatus,
 	TrackingEvent,
 	FooterLink,
 	Playset,

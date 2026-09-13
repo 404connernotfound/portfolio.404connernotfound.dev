@@ -1,6 +1,10 @@
 import Database from 'better-sqlite3';
 import path from 'node:path';
-import { ensurePostgresAppSchema, executePostgres, isPostgresConfigured } from '../src/lib/server/postgres.ts';
+import {
+	ensurePostgresAppSchema,
+	executePostgres,
+	isPostgresConfigured,
+} from '../src/lib/server/postgres.ts';
 
 type TableSpec = {
 	name: string;
@@ -49,11 +53,15 @@ const specs: TableSpec[] = [
 			'error_404_body',
 			'error_500_title',
 			'error_500_body',
-			'updated_at'
+			'updated_at',
 		],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
-	{ name: 'stack_items', columns: ['id', 'label', 'detail', 'category', 'sort'], conflictColumns: ['id'] },
+	{
+		name: 'stack_items',
+		columns: ['id', 'label', 'detail', 'category', 'sort'],
+		conflictColumns: ['id'],
+	},
 	{
 		name: 'work_items',
 		columns: [
@@ -69,9 +77,9 @@ const specs: TableSpec[] = [
 			'image_url',
 			'image_alt',
 			'featured',
-			'sort'
+			'sort',
 		],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'posts',
@@ -86,39 +94,80 @@ const specs: TableSpec[] = [
 			'featured',
 			'published_at',
 			'created_at',
-			'references_json'
+			'references_json',
 		],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'assets',
 		columns: ['id', 'label', 'filename', 'path', 'mime', 'size', 'public', 'created_at'],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'testimonials',
-		columns: ['id', 'name', 'role', 'company', 'quote', 'project', 'result', 'email', 'approved', 'created_at'],
-		conflictColumns: ['id']
+		columns: [
+			'id',
+			'name',
+			'role',
+			'company',
+			'quote',
+			'project',
+			'result',
+			'email',
+			'rating',
+			'fingerprint',
+			'approved',
+			'created_at',
+		],
+		conflictColumns: ['id'],
+	},
+	{
+		name: 'appointments',
+		columns: [
+			'id',
+			'name',
+			'email',
+			'company',
+			'project_type',
+			'description',
+			'starts_at',
+			'visitor_timezone',
+			'status',
+			'ip_hash',
+			'created_at',
+			'updated_at',
+		],
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'tracking_events',
-		columns: ['id', 'type', 'name', 'path', 'referrer', 'user_agent', 'ip', 'payload', 'created_at'],
-		conflictColumns: ['id']
+		columns: [
+			'id',
+			'type',
+			'name',
+			'path',
+			'referrer',
+			'user_agent',
+			'ip',
+			'payload',
+			'created_at',
+		],
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'inbound_messages',
 		columns: ['id', 'channel', 'name', 'email', 'scope', 'ip', 'user_agent', 'created_at'],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'newsletter_subscriptions',
 		columns: ['id', 'email', 'name', 'interest', 'ip', 'user_agent', 'created_at', 'updated_at'],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'footer_links',
 		columns: ['id', 'section', 'label', 'href', 'external', 'sort'],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'playsets',
@@ -142,9 +191,9 @@ const specs: TableSpec[] = [
 			'max_sessions',
 			'idle_timeout_seconds',
 			'created_at',
-			'updated_at'
+			'updated_at',
 		],
-		conflictColumns: ['id']
+		conflictColumns: ['id'],
 	},
 	{
 		name: 'playground_sessions',
@@ -160,20 +209,28 @@ const specs: TableSpec[] = [
 			'user_agent',
 			'created_at',
 			'updated_at',
-			'ended_at'
+			'ended_at',
 		],
-		conflictColumns: ['session_id']
+		conflictColumns: ['session_id'],
 	},
 	{
 		name: 'playground_socket_connections',
-		columns: ['id', 'ws_id', 'session_id', 'connected_at', 'disconnected_at', 'close_code', 'close_reason'],
-		conflictColumns: ['ws_id']
+		columns: [
+			'id',
+			'ws_id',
+			'session_id',
+			'connected_at',
+			'disconnected_at',
+			'close_code',
+			'close_reason',
+		],
+		conflictColumns: ['ws_id'],
 	},
 	{
 		name: 'playground_logs',
 		columns: ['id', 'session_id', 'ws_id', 'level', 'event', 'message', 'payload', 'created_at'],
-		conflictColumns: ['id']
-	}
+		conflictColumns: ['id'],
+	},
 ];
 
 const sequenceTables = [
@@ -182,6 +239,7 @@ const sequenceTables = [
 	'posts',
 	'assets',
 	'testimonials',
+	'appointments',
 	'tracking_events',
 	'inbound_messages',
 	'newsletter_subscriptions',
@@ -189,7 +247,7 @@ const sequenceTables = [
 	'playsets',
 	'playground_sessions',
 	'playground_socket_connections',
-	'playground_logs'
+	'playground_logs',
 ];
 
 const buildUpsertSql = (spec: TableSpec) => {
@@ -247,7 +305,7 @@ const syncSequence = async (table: string) => {
 			COALESCE((SELECT MAX(id) FROM ${table}), 1),
 			EXISTS (SELECT 1 FROM ${table})
 		)`,
-		[table]
+		[table],
 	);
 };
 

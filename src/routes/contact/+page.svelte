@@ -20,7 +20,7 @@
 			<h1 class="inspection-title">{data.siteSettings.contactTitle}</h1>
 			<p class="inspection-summary">{data.siteSettings.contactBody}</p>
 		</div>
-		<aside class="inspection-side">
+		<aside class="inspection-side contact-details">
 			<MetadataGrid
 				items={[
 					{ label: 'Channel', value: 'Email' },
@@ -90,3 +90,22 @@
 		</aside>
 	</div>
 </section>
+
+<style>
+	.contact-details :global(.metadata-grid) {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.contact-details :global(.metadata-cell:last-child) {
+		grid-column: 1 / -1;
+		border-top: 1px solid var(--line);
+		border-left: 0;
+		padding-left: 0;
+	}
+
+	.contact-details :global(.metadata-cell:last-child dd) {
+		font-size: clamp(0.72rem, 1.1vw, 0.86rem);
+		white-space: nowrap;
+		overflow-wrap: normal;
+	}
+</style>

@@ -103,6 +103,10 @@ To stop the stack:
 ```bash
 ./down.sh
 ```
+On Windows with Docker Desktop, use:
+```powershell
+npm run down:windows
+```
 Use `REMOVE_VOLUMES=1 ./down.sh` only when you intentionally want PostgreSQL, Redis, SQLite, upload, and work-asset volumes removed too.
 
 Dry-run checks:
@@ -111,10 +115,11 @@ DRY_RUN=1 ./up.sh
 DRY_RUN=1 ./down.sh
 DRY_RUN=1 ./redeploy.sh
 ```
-Windows PowerShell equivalent for the startup dry run:
+Windows PowerShell equivalents:
 ```powershell
 $env:DRY_RUN = '1'
 npm run up:windows
+npm run down:windows
 Remove-Item Env:DRY_RUN
 ```
 
@@ -159,7 +164,7 @@ sudo RELOAD_NGINX=1 ./scripts/refresh-cloudflare-real-ip.sh
 - Docker Compose stack: `docker-compose.yml`
 - Production env template: `deploy/portfolio.env.example`
 - Start stack: `up.sh` (Linux) or `npm run up:windows` (Windows)
-- Stop stack: `down.sh`
+- Stop stack: `down.sh` (Linux) or `npm run down:windows` (Windows)
 - GitHub-aware restart: `redeploy.sh`
 - Rendered sample Nginx config: `nginx/portfolio.conf`
 - Nginx template used by automation: `nginx/portfolio.conf.template`
