@@ -1,3 +1,5 @@
+import { protectInlineMath, readMath } from './math';
+
 export type BlogReference = {
 	label: string;
 	url: string;
@@ -137,19 +139,8 @@ const buildAnchorTag = (href: string, innerHtml: string, title: string | null) =
 	return `<a href="${safeHref}"${external}${titleAttr}>${innerHtml}</a>`;
 };
 
-const renderInlineLabel = (value: string): string => {
-	let output = escapeHtml(value);
-	output = output.replace(/`([^`\n]+)`/g, (_match, code: string) => `<code>${code}</code>`);
-	output = output.replace(/~~([^~\n]+?)~~/g, '<del>$1</del>');
-	output = output.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
-	output = output.replace(/__([^_\n]+?)__/g, '<strong>$1</strong>');
-	output = output.replace(/(^|[^*])\*([^*\s][^*\n]*?)\*/g, '$1<em>$2</em>');
-	output = output.replace(/(^|[^_\w])_([^_\s][^_\n]*?)_(?=$|[^_\w])/g, '$1<em>$2</em>');
-	return output;
-};
-
-const renderInline = (value: string): string => {
-	const tokens: string[] = [];
+const renderInline = (value: string, allowLinks = true, inheritedTokens: string[] = []): string => {
+	const tokens: string[] = [...inheritedTokens];
 	const reserve = (html: string) => {
 		const id = `${PLACEHOLDER_PREFIX}${tokens.length}${PLACEHOLDER_SUFFIX}`;
 		tokens.push(html);
@@ -162,40 +153,46 @@ const renderInline = (value: string): string => {
 		reserve(`<code>${escapeHtml(code)}</code>`),
 	);
 
-	output = output.replace(
-		/!\[([^\]]*)\]\(\s*([^)\s]+)(?:\s+"([^"]*)")?\s*\)/g,
-		(match, alt: string, src: string, title: string | undefined) => {
-			if (!isSafeMarkdownImageSrc(src)) return match;
-			return reserve(buildImageTag(src, alt, title ?? null));
-		},
-	);
+	if (allowLinks)
+		output = output.replace(
+			/!\[([^\]]*)\]\(\s*([^)\s]+)(?:\s+"([^"]*)")?\s*\)/g,
+			(match, alt: string, src: string, title: string | undefined) => {
+				if (!isSafeMarkdownImageSrc(src)) return match;
+				return reserve(buildImageTag(src, alt, title ?? null));
+			},
+		);
 
-	output = output.replace(
-		/\[([^\]]+)\]\(\s*([^)\s]+)(?:\s+"([^"]*)")?\s*\)/g,
-		(match, label: string, href: string, title: string | undefined) => {
-			if (!isSafeMarkdownHref(href)) return match;
-			return reserve(buildAnchorTag(href, renderInlineLabel(label), title ?? null));
-		},
-	);
+	if (allowLinks)
+		output = output.replace(
+			/\[([^\]]+)\]\(\s*([^)\s]+)(?:\s+"([^"]*)")?\s*\)/g,
+			(match, label: string, href: string, title: string | undefined) => {
+				if (!isSafeMarkdownHref(href)) return match;
+				return reserve(buildAnchorTag(href, renderInline(label, false, tokens), title ?? null));
+			},
+		);
 
-	output = output.replace(/<((?:https?:\/\/|mailto:)[^\s<>]+)>/g, (match, url: string) => {
-		if (!isSafeMarkdownHref(url)) return match;
-		return reserve(buildAnchorTag(url, escapeHtml(url), null));
-	});
+	output = protectInlineMath(output, reserve);
 
-	output = output.replace(
-		/(^|[\s(])(https?:\/\/[^\s<>()"']+)/g,
-		(_match, prefix: string, raw: string) => {
-			let url = raw;
-			let trailing = '';
-			while (/[.,;:!?]$/.test(url)) {
-				trailing = url.slice(-1) + trailing;
-				url = url.slice(0, -1);
-			}
-			if (!url || !isSafeMarkdownHref(url)) return _match;
-			return `${prefix}${reserve(buildAnchorTag(url, escapeHtml(url), null))}${trailing}`;
-		},
-	);
+	if (allowLinks)
+		output = output.replace(/<((?:https?:\/\/|mailto:)[^\s<>]+)>/g, (match, url: string) => {
+			if (!isSafeMarkdownHref(url)) return match;
+			return reserve(buildAnchorTag(url, escapeHtml(url), null));
+		});
+
+	if (allowLinks)
+		output = output.replace(
+			/(^|[\s(])(https?:\/\/[^\s<>()"']+)/g,
+			(_match, prefix: string, raw: string) => {
+				let url = raw;
+				let trailing = '';
+				while (/[.,;:!?]$/.test(url)) {
+					trailing = url.slice(-1) + trailing;
+					url = url.slice(0, -1);
+				}
+				if (!url || !isSafeMarkdownHref(url)) return _match;
+				return `${prefix}${reserve(buildAnchorTag(url, escapeHtml(url), null))}${trailing}`;
+			},
+		);
 
 	output = escapeHtml(output);
 
@@ -270,7 +267,7 @@ const isHorizontalRule = (line: string): boolean => {
 };
 
 export const renderMarkdown = (markdown: string | null | undefined): string => {
-	const source = (markdown ?? '').replace(/\r\n?/g, '\n');
+	const source = (markdown ?? '').replace(/\r\n?/g, '\n').replace(/[]/g, '');
 	if (!source.trim()) return '';
 
 	const lines = source.split('\n');
@@ -340,6 +337,20 @@ export const renderMarkdown = (markdown: string | null | undefined): string => {
 			codeFenceLang = fenceOpen[1] || '';
 			codeLines = [];
 			continue;
+		}
+
+		if (trimmed.startsWith('$$') || trimmed.startsWith('\\[')) {
+			const remaining = lines.slice(i).join('\n').trimStart();
+			const math = readMath(remaining);
+			if (math?.display) {
+				flushParagraph();
+				closeAllLists();
+				parts.push(math.html);
+				i += remaining.slice(0, math.length).split('\n').length - 1;
+				const trailing = remaining.slice(math.length).split('\n')[0];
+				if (trailing.trim()) paragraph.push(trailing.trim());
+				continue;
+			}
 		}
 
 		if (!trimmed) {

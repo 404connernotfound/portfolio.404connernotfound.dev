@@ -1,6 +1,6 @@
 # 404connernotfound Portfolio
 
-SvelteKit + Tailwind portfolio site with an admin UI, PostgreSQL-first storage, Redis-backed caching/rate limiting, and a Docker/Nginx deployment path for `portfolio.404connernotfound.dev`.
+SvelteKit + Tailwind portfolio site with an admin UI, PostgreSQL-first storage, Redis-backed caching/rate limiting, and a Docker/Nginx deployment path for `404connernotfound.dev`.
 
 ## Requirements
 - Node `24.13.0` for local development (see `.nvmrc`)
@@ -18,7 +18,7 @@ SvelteKit + Tailwind portfolio site with an admin UI, PostgreSQL-first storage, 
 ## Environment Variables
 - `DATABASE_URL`: PostgreSQL connection string used for full app storage (content/admin/telemetry)
 - `HOST` / `PORT`: SvelteKit adapter-node bind host and port
-- `ORIGIN`: Public origin, `https://portfolio.404connernotfound.dev` in production
+- `ORIGIN`: Public origin, `https://404connernotfound.dev` in production
 - `PROTOCOL_HEADER` / `HOST_HEADER` / `PORT_HEADER`: Trusted reverse-proxy headers for SvelteKit URL generation
 - `ADDRESS_HEADER`: Trusted header used by `event.getClientAddress()`; production Nginx sets `X-Real-IP`
 - `PG_SSL`: Enable SSL for PostgreSQL (`true` / `false`)
@@ -65,9 +65,9 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ```
    This runs `docker compose --env-file deploy/portfolio.env up -d --build --wait`, including the one-shot `static-seed` and `migrate` services. It also checks `/healthz` and the bundled resume PDF after the stack is up.
 
-3. In Cloudflare, create a proxied `A` or `AAAA` record for `portfolio.404connernotfound.dev` pointing to the VPS public IP. Set SSL/TLS mode to `Full (strict)`.
+3. In Cloudflare, create a proxied `A` or `AAAA` record for `404connernotfound.dev` pointing to the VPS public IP. Set SSL/TLS mode to `Full (strict)`.
 
-4. Create a Cloudflare Origin CA certificate for `portfolio.404connernotfound.dev`, then install it on the VPS:
+4. Create a Cloudflare Origin CA certificate for `404connernotfound.dev`, then install it on the VPS:
    ```bash
    sudo ./scripts/install-cloudflare-origin-cert.sh /path/origin.pem /path/origin.key
    ```
@@ -78,12 +78,14 @@ The production path is Docker Compose for the app/PostgreSQL/Redis, with host Ng
    ```
    The setup script installs Nginx on apt-based systems if needed, fetches Cloudflare IP ranges into `/etc/nginx/cloudflare-realip.conf`, renders `nginx/portfolio.conf.template`, enables the site, validates with `nginx -t`, reloads Nginx, and verifies the resume PDF directly against the local Nginx origin.
 
+   Nginx proxies `/uploads/` to the Docker app, which reads uploaded files from its mounted volume. Set `ORIGIN=https://404connernotfound.dev` in `deploy/portfolio.env` so admin form submissions match the public site origin; recreate the app container after changing this value.
+
 6. Verify locally and through Cloudflare:
    ```bash
    curl -fsS http://127.0.0.1:3000/healthz
    curl -fsSI http://127.0.0.1:3000/uploads/resume/resume.pdf
-   curl -kfsSI --resolve portfolio.404connernotfound.dev:443:127.0.0.1 'https://portfolio.404connernotfound.dev/uploads/resume/resume.pdf?origin-check=1'
-   curl -I https://portfolio.404connernotfound.dev/
+   curl -kfsSI --resolve 404connernotfound.dev:443:127.0.0.1 'https://404connernotfound.dev/uploads/resume/resume.pdf?origin-check=1'
+   curl -I https://404connernotfound.dev/
    ```
 
    The origin check bypasses Cloudflare. If Cloudflare previously cached a `404` for the PDF, purge that URL from the Cloudflare cache or use a cache-busting query string while verifying the fix.

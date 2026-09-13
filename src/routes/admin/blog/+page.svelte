@@ -1,4 +1,6 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import MarkdownPreview from '$lib/components/MarkdownPreview.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import AdminNav from '$lib/components/AdminNav.svelte';
@@ -39,6 +41,10 @@
 	];
 	const readTimeLabel = (content: string | null | undefined) => calculateReadTime(content);
 
+	let newPostExcerpt = '';
+	let editExcerptById: Record<number, string> = Object.fromEntries(
+		data.posts.map((post) => [post.id, post.excerpt ?? '']),
+	);
 	let newPostContent = '';
 	let editContentById: Record<number, string> = Object.fromEntries(
 		data.posts.map((post) => [post.id, post.content ?? '']),
@@ -201,11 +207,13 @@
 					<textarea
 						id="postExcerpt"
 						name="excerpt"
-						maxlength="1200"
+						maxlength="12500"
 						rows="6"
 						class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 						aria-invalid={Boolean(fieldError('createPost', 'excerpt'))}
+						bind:value={newPostExcerpt}
 					></textarea>
+					<MarkdownPreview source={newPostExcerpt} label="Excerpt" />
 					{#if fieldError('createPost', 'excerpt')}
 						<p class="mt-2 text-xs text-red-200">{fieldError('createPost', 'excerpt')}</p>
 					{/if}
@@ -220,12 +228,13 @@
 					<textarea
 						id="postContent"
 						name="content"
-						maxlength="20000"
+						maxlength="99999"
 						rows="34"
 						class="mt-2 min-h-[46rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 						aria-invalid={Boolean(fieldError('createPost', 'content'))}
 						bind:value={newPostContent}
 					></textarea>
+					<MarkdownPreview source={newPostContent} label="Markdown body" />
 					{#if fieldError('createPost', 'content')}
 						<p class="mt-2 text-xs text-red-200">{fieldError('createPost', 'content')}</p>
 					{/if}
@@ -239,8 +248,8 @@
 						<p class="mt-2 text-2xl font-semibold text-white">{readTimeLabel(newPostContent)}</p>
 					</div>
 					<p class="text-sm leading-6 text-ink-200">
-						Estimated from the Markdown body at roughly 220 words per minute. This updates while
-						you draft and gives the public post its reading-length cue.
+						Estimated from the Markdown body at roughly 220 words per minute. This updates while you
+						draft and gives the public post its reading-length cue.
 					</p>
 				</section>
 				<fieldset class="rounded-2xl border border-ink-200/30 bg-white/5 p-4">
@@ -428,7 +437,7 @@
 							</div>
 							<h3 class="text-2xl font-semibold text-white">{post.title}</h3>
 							{#if post.excerpt}
-								<p class="max-w-3xl text-sm text-ink-200">{post.excerpt}</p>
+								<MarkdownContent source={post.excerpt} className="max-w-3xl text-sm text-ink-200" />
 							{/if}
 							<p class="text-xs uppercase tracking-[0.2em] text-ink-300">/{post.slug}</p>
 						</div>
@@ -521,12 +530,13 @@
 								<textarea
 									id={`post-excerpt-${post.id}`}
 									name="excerpt"
-									maxlength="1200"
+									maxlength="12500"
 									rows="6"
 									class="mt-2 min-h-[12rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updatePost', 'excerpt', post.id))}
-									>{post.excerpt ?? ''}</textarea
-								>
+									bind:value={editExcerptById[post.id]}
+								></textarea>
+								<MarkdownPreview source={editExcerptById[post.id]} label="Excerpt" />
 								{#if fieldError('updatePost', 'excerpt', post.id)}
 									<p class="mt-2 text-xs text-red-200">
 										{fieldError('updatePost', 'excerpt', post.id)}
@@ -543,12 +553,13 @@
 								<textarea
 									id={`post-content-${post.id}`}
 									name="content"
-									maxlength="20000"
+									maxlength="99999"
 									rows="34"
 									class="mt-2 min-h-[46rem] w-full resize-y rounded-2xl border border-ink-200/40 bg-white/5 px-4 py-3 font-mono text-sm leading-7 text-white"
 									aria-invalid={Boolean(fieldError('updatePost', 'content', post.id))}
 									bind:value={editContentById[post.id]}
 								></textarea>
+								<MarkdownPreview source={editContentById[post.id]} label="Markdown body" />
 								{#if fieldError('updatePost', 'content', post.id)}
 									<p class="mt-2 text-xs text-red-200">
 										{fieldError('updatePost', 'content', post.id)}

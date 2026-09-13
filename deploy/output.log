@@ -1,10 +1,10 @@
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose build
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose build
 [+] build 0/1
  - Image portfolio-website:latest Building                                                                          0.1s
 failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
 
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose build
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose build
 #1 [internal] load local bake definitions
 #1 reading from stdin 1.69kB done
 #1 DONE 0.0s
@@ -772,37 +772,37 @@ C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker 
 [+] build 1/1
  ✔ Image portfolio-website:latest Built                                                                            67.3s
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose up
-env file C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev\deploy\portfolio.env not found: GetFileAttributesEx C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev\deploy\portfolio.env: The system cannot find the file specified.
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose up
+env file C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev\deploy\portfolio.env not found: GetFileAttributesEx C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev\deploy\portfolio.env: The system cannot find the file specified.
 
 What's next:
     Debug this Compose error with Gordon → docker ai "help me fix this compose error"
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose up
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose up
 error while interpolating services.postgres.environment.POSTGRES_PASSWORD: required variable POSTGRES_PASSWORD is missing a value: POSTGRES_PASSWORD must be set in deploy/portfolio.env
 
 What's next:
     Debug this Compose error with Gordon → docker ai "help me fix this compose error"
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose up
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose up
 error while interpolating services.postgres.environment.POSTGRES_PASSWORD: required variable POSTGRES_PASSWORD is missing a value: POSTGRES_PASSWORD must be set in deploy/portfolio.env
 
 What's next:
     Debug this Compose error with Gordon → docker ai "help me fix this compose error"
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose up
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose up
 error while interpolating services.postgres.environment.POSTGRES_PASSWORD: required variable POSTGRES_PASSWORD is missing a value: POSTGRES_PASSWORD must be set in deploy/portfolio.env
 
 What's next:
     Debug this Compose error with Gordon → docker ai "help me fix this compose error"
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose build
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose build
 error while interpolating services.postgres.environment.POSTGRES_PASSWORD: required variable POSTGRES_PASSWORD is missing a value: POSTGRES_PASSWORD must be set in deploy/portfolio.env
 
 What's next:
     Debug this Compose error with Gordon → docker ai "help me fix this compose error"
 
-C:\Users\conne\Desktop\404connernotfound\portfolio.404connernotfound.dev>docker compose build
+C:\Users\conne\Desktop\404connernotfound\404connernotfound.dev>docker compose build
 error while interpolating services.postgres.environment.POSTGRES_PASSWORD: required variable POSTGRES_PASSWORD is missing a value: POSTGRES_PASSWORD must be set in deploy/portfolio.env
 
 What's next:

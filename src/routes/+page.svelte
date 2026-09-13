@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import SafeImage from '$lib/components/SafeImage.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { resolveWorkCoverImage, workItemPath } from '$lib/utils/content';
@@ -235,7 +236,7 @@
 			<a class="latest-note" href={`/blog/${data.latestNote.slug}`}>
 				<span>{data.latestNote.publishedAt || data.latestNote.createdAt}</span>
 				<strong>{data.latestNote.title}</strong>
-				<p>{data.latestNote.excerpt || 'Read the latest technical note.'}</p>
+				<MarkdownContent source={data.latestNote.excerpt || 'Read the latest technical note.'} />
 				<span class="latest-note-arrow" aria-hidden="true">↗</span>
 			</a>
 		{:else}

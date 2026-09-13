@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { calculateReadTime } from '$lib/utils/content';
 	import { formatTitle } from '$lib/utils/seo';
@@ -48,7 +49,7 @@
 					</div>
 					<div class="note-index-copy">
 						<h2><a href={`/blog/${post.slug}`}>{post.title}</a></h2>
-						{#if post.excerpt}<p>{post.excerpt}</p>{/if}
+						{#if post.excerpt}<MarkdownContent source={post.excerpt} />{/if}
 						{#if post.tags}<p class="note-index-tags">{post.tags}</p>{/if}
 					</div>
 					<a class="note-index-link" href={`/blog/${post.slug}`}>Read note →</a>

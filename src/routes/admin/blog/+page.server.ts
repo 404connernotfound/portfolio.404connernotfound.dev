@@ -14,8 +14,8 @@ import { parseBlogReferencesForm } from '$lib/server/contentValidation';
 
 const MAX_LENGTHS = {
 	title: 120,
-	excerpt: 1200,
-	content: 20000,
+	excerpt: 12500,
+	content: 99999,
 	tags: 200,
 	slug: 120,
 };

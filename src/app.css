@@ -972,6 +972,19 @@ select.form-field {
 
 .markdown-content {
 	color: var(--ink-soft);
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.markdown-content .katex-display {
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-block: 0.25rem;
+}
+
+.markdown-content .katex {
+	overflow-wrap: normal;
 }
 
 .markdown-content > * + * {
