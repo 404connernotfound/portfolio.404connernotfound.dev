@@ -6,8 +6,8 @@ test('proxy headers overwrite client claims and application port stays local', (
 	const nginx = readFileSync('nginx/portfolio.conf.template', 'utf8');
 	const compose = readFileSync('docker-compose.yml', 'utf8');
 	const environment = readFileSync('deploy/portfolio.env.example', 'utf8');
-	assert.equal((nginx.match(/proxy_set_header X-Real-IP \$remote_addr;/g) ?? []).length, 2);
-	assert.equal((nginx.match(/proxy_set_header X-Forwarded-For \$remote_addr;/g) ?? []).length, 2);
+	assert.equal((nginx.match(/proxy_set_header X-Real-IP \$remote_addr;/g) ?? []).length, 3);
+	assert.equal((nginx.match(/proxy_set_header X-Forwarded-For \$remote_addr;/g) ?? []).length, 3);
 	assert.doesNotMatch(nginx, /proxy_add_x_forwarded_for|proxy_set_header X-Real-IP \$http_/);
 	assert.match(compose, /127\.0\.0\.1:\$\{HOST_APP_PORT:-3000\}:3000/);
 	assert.match(environment, /^ADDRESS_HEADER=X-Real-IP$/m);

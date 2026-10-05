@@ -7,7 +7,7 @@ export default defineConfig({
 		host: true,
 		port: Number(process.env.PORT) || 5173,
 		allowedHosts: [
-			'portfolio.404connernotfound.dev'
+			'404connernotfound.dev'
 		]
 	},
 	preview: {

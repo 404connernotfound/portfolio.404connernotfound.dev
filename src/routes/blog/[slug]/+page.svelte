@@ -46,7 +46,10 @@
 			<header>
 				<p class="system-label">Technical note</p>
 				<h1>{data.post.title}</h1>
-				{#if data.post.excerpt}<p class="inspection-summary">{data.post.excerpt}</p>{/if}
+				{#if data.post.excerpt}<MarkdownContent
+						source={data.post.excerpt}
+						className="inspection-summary"
+					/>{/if}
 			</header>
 
 			<div class="inspection-section mt-10">
