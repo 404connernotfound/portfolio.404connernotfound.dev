@@ -1,12 +1,20 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import MotionReveal from '$lib/components/MotionReveal.svelte';
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import { formatTitle } from '$lib/utils/seo';
-	import { trackEvent } from '$lib/utils/tracking';
+	import { trackEvent } from '$lib/telemetry/client';
 	import type { PageData, ActionData } from './$types';
 
 	export let data: PageData;
 	export let form: ActionData | undefined;
+	let trackedForm: ActionData | undefined;
+	let telemetryMounted = false;
+	onMount(() => { telemetryMounted = true; });
+	$: if (telemetryMounted && form && form !== trackedForm) {
+		trackedForm = form;
+		trackEvent({ type: 'form_outcome', name: form.success ? 'collaborate_success' : 'collaborate_failure' });
+	}
 
 	const handleSubmit = () => trackEvent({ type: 'form_submit', name: 'collaborate' });
 </script>

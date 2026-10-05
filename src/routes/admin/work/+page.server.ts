@@ -13,6 +13,8 @@ import {
 import { requireAdminCached } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import { parseExternalImageUrl } from '$lib/server/contentValidation';
+import { parseWorkImageUpload, UploadError, resolveWorkImagePath } from '$lib/server/uploads';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 
 const MAX_LENGTHS = {
 	title: 120,
@@ -41,15 +43,6 @@ const LIFECYCLE_STATES = new Set([
 ]);
 
 const WORK_MEDIA_DIR = path.resolve('static/assets/work');
-const ALLOWED_IMAGE_MIME = new Set([
-	'image/jpeg',
-	'image/png',
-	'image/webp',
-	'image/gif',
-	'image/avif',
-]);
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-
 const parseNumber = (value: FormDataEntryValue | null, fallback = 0) => {
 	if (typeof value !== 'string') return fallback;
 	const parsed = Number(value);
@@ -81,40 +74,23 @@ const ensureMaxLength = (value: string, max: number, label: string) =>
 const ensureOptionalMaxLength = (value: string | null, max: number, label: string) =>
 	value ? ensureMaxLength(value, max, label) : null;
 
-const sanitizeFilename = (value: string) =>
-	value
-		.toLowerCase()
-		.replace(/\s+/g, '-')
-		.replace(/[^a-z0-9._-]/g, '')
-		.replace(/^-+|-+$/g, '') || 'work-image';
-
 const parseImageFile = (value: FormDataEntryValue | null) => {
 	if (!(value instanceof File)) return null;
 	if (!value.name || value.size <= 0) return null;
 	return value;
 };
 
-const saveWorkImage = async (file: File) => {
-	const original = path.basename(file.name);
-	const safeName = sanitizeFilename(original);
-	const filename = `${Date.now()}-${safeName}`;
+const saveWorkImage = (upload: Awaited<ReturnType<typeof parseWorkImageUpload>>) => {
 	fs.mkdirSync(WORK_MEDIA_DIR, { recursive: true });
-	const buffer = Buffer.from(await file.arrayBuffer());
-	const fullPath = path.join(WORK_MEDIA_DIR, filename);
-	fs.writeFileSync(fullPath, buffer);
-	return `/assets/work/${filename}`;
+	fs.writeFileSync(path.join(WORK_MEDIA_DIR, upload.filename), upload.bytes, { flag: 'wx' });
+	return `/assets/work/${upload.filename}`;
 };
 
 const deleteWorkImage = (publicPath: string | null) => {
 	if (!publicPath) return;
-	const staticRoot = path.resolve('static');
-	const resolved = path.resolve(staticRoot, publicPath.replace(/^\/+/, ''));
-	if (!resolved.startsWith(WORK_MEDIA_DIR)) return;
-	if (fs.existsSync(resolved)) {
-		fs.unlinkSync(resolved);
-	}
+	const resolved = resolveWorkImagePath(WORK_MEDIA_DIR, publicPath);
+	if (resolved && fs.existsSync(resolved)) fs.unlinkSync(resolved);
 };
-
 export const load: PageServerLoad = async (event) => {
 	await requireAdminCached(event);
 	return {
@@ -139,6 +115,7 @@ export const actions: Actions = {
 			workTitle: String(data.get('workTitle') ?? '').trim(),
 			workIntro: String(data.get('workIntro') ?? '').trim(),
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'work_section' });
 		return { success: true, message: 'Work section saved.', action: 'updateWorkSection' };
 	},
 	createWork: async (event) => {
@@ -207,11 +184,14 @@ export const actions: Actions = {
 		if (linkRaw && !isSafeUrl(linkRaw)) {
 			errors.link = 'Link must be http(s), mailto, or a relative path.';
 		}
-		if (imageFile && !ALLOWED_IMAGE_MIME.has(imageFile.type)) {
-			errors.image = 'Image must be JPEG, PNG, WEBP, GIF, or AVIF.';
-		}
-		if (imageFile && imageFile.size > MAX_IMAGE_BYTES) {
-			errors.image = 'Image must be 8MB or smaller.';
+		let imageUpload: Awaited<ReturnType<typeof parseWorkImageUpload>> | null = null;
+		if (imageFile) {
+			try {
+				imageUpload = await parseWorkImageUpload(imageFile);
+			} catch (error) {
+				if (!(error instanceof UploadError)) throw error;
+				errors.image = error.message;
+			}
 		}
 
 		if (Object.keys(errors).length > 0) {
@@ -222,7 +202,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const imagePath = imageFile ? await saveWorkImage(imageFile) : null;
+		const imagePath = imageUpload ? saveWorkImage(imageUpload) : null;
 
 		await createWorkItem(
 			title,
@@ -240,6 +220,7 @@ export const actions: Actions = {
 			{ lifecycle, owner, domain, version, subsystems, trace },
 		);
 
+		await recordAdminActivity(event, { action: 'create', resource: 'work' });
 		return { success: true, message: 'Work item added.', action: 'createWork' };
 	},
 	updateWork: async (event) => {
@@ -313,11 +294,14 @@ export const actions: Actions = {
 		if (linkRaw && !isSafeUrl(linkRaw)) {
 			errors.link = 'Link must be http(s), mailto, or a relative path.';
 		}
-		if (imageFile && !ALLOWED_IMAGE_MIME.has(imageFile.type)) {
-			errors.image = 'Image must be JPEG, PNG, WEBP, GIF, or AVIF.';
-		}
-		if (imageFile && imageFile.size > MAX_IMAGE_BYTES) {
-			errors.image = 'Image must be 8MB or smaller.';
+		let imageUpload: Awaited<ReturnType<typeof parseWorkImageUpload>> | null = null;
+		if (imageFile) {
+			try {
+				imageUpload = await parseWorkImageUpload(imageFile);
+			} catch (error) {
+				if (!(error instanceof UploadError)) throw error;
+				errors.image = error.message;
+			}
 		}
 
 		if (Object.keys(errors).length > 0) {
@@ -334,12 +318,8 @@ export const actions: Actions = {
 			imagePath = null;
 		}
 		if (imageFile) {
-			imagePath = await saveWorkImage(imageFile);
+			imagePath = imageUpload ? saveWorkImage(imageUpload) : imagePath;
 		}
-		if ((removeImage || imageFile) && current?.imagePath) {
-			deleteWorkImage(current.imagePath);
-		}
-
 		await updateWorkItem(
 			id,
 			title,
@@ -357,6 +337,11 @@ export const actions: Actions = {
 			{ lifecycle, owner, domain, version, subsystems, trace },
 		);
 
+		await recordAdminActivity(event, { action: 'update', resource: 'work', resourceId: id });
+		// Retain the old asset until its replacement is committed to storage.
+		if ((removeImage || imageFile) && current?.imagePath) {
+			deleteWorkImage(current.imagePath);
+		}
 		return { success: true, message: 'Work item updated.', action: 'updateWork', itemId: id };
 	},
 	deleteWork: async (event) => {
@@ -374,6 +359,7 @@ export const actions: Actions = {
 		if (current?.imagePath) {
 			deleteWorkImage(current.imagePath);
 		}
+		await recordAdminActivity(event, { action: 'delete', resource: 'work', resourceId: id });
 		return { success: true, message: 'Work item deleted.', action: 'deleteWork', itemId: id };
 	},
 };

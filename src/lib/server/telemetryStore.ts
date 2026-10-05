@@ -32,12 +32,8 @@ const withPostgresFallback = async <T>(
 		return fallback();
 	}
 
-	try {
-		await ensureTelemetrySchema();
-		return await operation();
-	} catch {
-		return fallback();
-	}
+	await ensureTelemetrySchema();
+	return operation();
 };
 
 export const createInboundMessage = async (
@@ -116,18 +112,19 @@ export const createTrackingEvent = async (
 	referrer: string | null,
 	userAgent: string | null,
 	ip: string | null,
-	payload: string | null
+	payload: string | null,
+	actor: { actorType: 'visitor'; source: 'public' } | { actorType: 'admin'; source: 'server' } = { actorType: 'visitor', source: 'public' }
 ) => {
 	const result = await withPostgresFallback(
 		async () => {
 			const now = new Date().toISOString();
 			await queryPostgres(
-				`INSERT INTO tracking_events (type, name, path, referrer, user_agent, ip, payload, created_at)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-				[type, name, pathValue, referrer, userAgent, ip, payload, now]
+				`INSERT INTO tracking_events (type, name, path, referrer, user_agent, ip, payload, created_at, actor_type, source)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+				[type, name, pathValue, referrer, userAgent, ip, payload, now, actor.actorType, actor.source]
 			);
 		},
-		() => createTrackingEventSqlite(type, name, pathValue, referrer, userAgent, ip, payload)
+		() => createTrackingEventSqlite(type, name, pathValue, referrer, userAgent, ip, payload, actor)
 	);
 
 	await invalidateCachedPrefix(TRACKING_CACHE_PREFIX);
@@ -141,7 +138,7 @@ export const getTrackingEvents = async (limit = 100): Promise<TrackingEvent[]> =
 			async () => {
 				return queryPostgres<TrackingEvent>(
 					`SELECT
-						id, type, name, path, referrer, user_agent as "userAgent", ip, payload, created_at as "createdAt"
+						id, type, name, path, referrer, user_agent as "userAgent", ip, payload, created_at as "createdAt", actor_type as "actorType", source
 				 FROM tracking_events
 				 ORDER BY created_at DESC, id DESC
 				 LIMIT $1`,

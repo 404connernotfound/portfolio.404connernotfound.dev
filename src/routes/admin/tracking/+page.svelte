@@ -79,7 +79,7 @@
 				{#each data.events as item}
 					<div class="rounded-2xl border border-ink-200/30 bg-white/5 p-4 text-sm text-ink-200">
 						<div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-ink-300">
-							<span>{item.type}</span>
+							<span>{item.actorType === 'admin' && item.source === 'server' ? 'Admin audit' : item.source === 'legacy' ? 'Historical activity' : 'Visitor telemetry'} · {item.type}</span>
 							<span>{item.createdAt}</span>
 						</div>
 						<p class="mt-2 text-white">{item.name ?? 'Unnamed event'}</p>

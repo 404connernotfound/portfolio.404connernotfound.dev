@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import SiteNav from '$lib/components/SiteNav.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
-	import { trackPageview } from '$lib/utils/tracking';
+	import { trackPageview } from '$lib/telemetry/client';
 	import type { LayoutData } from './$types';
 
 	let { children, data } = $props<{ data: LayoutData }>();

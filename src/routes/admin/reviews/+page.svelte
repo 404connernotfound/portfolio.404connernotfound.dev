@@ -7,8 +7,8 @@
 
 	export let data: PageData;
 	export let form: ActionData | undefined;
-	$: pending = data.reviews.filter((review) => review.approved === 0);
-	$: resolved = data.reviews.filter((review) => review.approved !== 0);
+	$: pending = data.reviews.filter((review) => moderationFromDatabase(review.approved) === 'pending');
+	$: resolved = data.reviews.filter((review) => moderationFromDatabase(review.approved) !== 'pending');
 
 	const submittedLabel = (createdAt: string) =>
 		new Intl.DateTimeFormat('en-US', {

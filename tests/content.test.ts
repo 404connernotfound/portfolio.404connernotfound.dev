@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 
-const testDbPath = path.join('/tmp', `portfolio-content-${process.pid}-${Date.now()}.sqlite`);
+const testDbPath = path.join(tmpdir(), `portfolio-content-${process.pid}-${Date.now()}.sqlite`);
 process.env.DB_PATH = testDbPath;
 process.env.DB_AUTO_SEED = 'true';
 process.env.NODE_ENV = 'test';

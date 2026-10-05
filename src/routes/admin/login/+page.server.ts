@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import { isAdminAuthenticatedCached, setAdminSession, verifyAdminCredentials } from '$lib/server/auth';
 import { rateLimit } from '$lib/server/rateLimit';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 
 export const load: PageServerLoad = async (event) => {
 	if (await isAdminAuthenticatedCached(event)) {
@@ -45,10 +46,12 @@ export const actions: Actions = {
 		}
 
 		try {
-			setAdminSession(event);
+			await setAdminSession(event);
 		} catch (error) {
-			return fail(500, { message: 'ADMIN_SESSION_SECRET is required to sign admin sessions.' });
+			console.error('[auth] failed to create admin session', error);
+			return fail(503, { message: 'Admin login is temporarily unavailable.' });
 		}
+		await recordAdminActivity(event, { action: 'login', resource: 'session' });
 		throw redirect(303, '/admin');
 	}
 };

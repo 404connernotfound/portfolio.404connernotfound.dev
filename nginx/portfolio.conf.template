@@ -45,6 +45,10 @@ server {
 		access_log off;
 		expires 1h;
 		add_header Cache-Control "public, max-age=3600";
+		# Location-level add_header suppresses the inherited server headers.
+		add_header X-Content-Type-Options "nosniff" always;
+		types { application/pdf pdf; }
+		default_type application/octet-stream;
 	}
 
 	location ^~ /assets/work/ {
@@ -52,6 +56,7 @@ server {
 		access_log off;
 		expires 1h;
 		add_header Cache-Control "public, max-age=3600";
+		add_header X-Content-Type-Options "nosniff" always;
 	}
 
 	location = /healthz {

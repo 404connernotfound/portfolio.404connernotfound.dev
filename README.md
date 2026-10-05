@@ -2,6 +2,10 @@
 
 SvelteKit + Tailwind portfolio site with an admin UI, PostgreSQL-first storage, Redis-backed caching/rate limiting, and a Docker/Nginx deployment path for `portfolio.404connernotfound.dev`.
 
+See [security and data integrity operations](docs/security-remediation.md) for
+session revocation, ordered migrations, test services, proxy trust verification,
+and the intentionally non-production root `portfolio.env`.
+
 ## Requirements
 - Node `24.13.0` for local development (see `.nvmrc`)
 - npm (engine strict is enabled via `.npmrc`)
@@ -23,7 +27,7 @@ SvelteKit + Tailwind portfolio site with an admin UI, PostgreSQL-first storage, 
 - `ADDRESS_HEADER`: Trusted header used by `event.getClientAddress()`; production Nginx sets `X-Real-IP`
 - `PG_SSL`: Enable SSL for PostgreSQL (`true` / `false`)
 - `PG_POOL_MAX`: Maximum PostgreSQL connection pool size
-- `REDIS_URL`: Redis connection string for distributed rate limiting and caching
+- `REDIS_URL`: Redis connection string for authoritative admin sessions, rate limiting and caching
 - `REDIS_PREFIX`: Redis key prefix (default `portfolio:`)
 - `BODY_SIZE_LIMIT`: Node adapter max request body size (default `512K`, set `8M` for admin uploads)
 - `DB_PATH`: SQLite file path for fallback/local data storage (relative to project root if not absolute)

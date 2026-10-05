@@ -766,15 +766,13 @@ const ensurePostgresSeeded = async (force = false) => {
 const ensurePostgresReady = async () => {
 	if (!isPostgresConfigured()) return false;
 	if (!pgReadyPromise) {
-		pgReadyPromise = ensurePostgresAppSchema()
-			.then(() => true)
-			.catch(() => false);
+		pgReadyPromise = ensurePostgresAppSchema().then(() => true);
 	}
 	const ready = await pgReadyPromise;
 	if (!ready) return false;
 
 	if (!pgSeedPromise) {
-		pgSeedPromise = ensurePostgresSeeded().catch(() => undefined);
+		pgSeedPromise = ensurePostgresSeeded();
 	}
 	await pgSeedPromise;
 	return true;
@@ -783,11 +781,7 @@ const ensurePostgresReady = async () => {
 const withDbFallback = async <T>(primary: () => Promise<T>, fallback: () => T | Promise<T>) => {
 	const ready = await ensurePostgresReady();
 	if (ready) {
-		try {
-			return await primary();
-		} catch {
-			return fallback();
-		}
+		return primary();
 	}
 
 	return fallback();

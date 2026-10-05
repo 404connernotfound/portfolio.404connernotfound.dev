@@ -4,6 +4,7 @@
 .playwright-mcp
 build
 data
+.run
 node_modules
 npm-debug.log*
 error.log

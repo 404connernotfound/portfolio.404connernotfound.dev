@@ -7,6 +7,7 @@ import {
 	type SiteSettingsDefaultSection,
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 export const load: PageServerLoad = async (event) => {
@@ -40,6 +41,7 @@ export const actions: Actions = {
 			focusHeadline: String(data.get('focusHeadline') ?? '').trim(),
 			focusBody: String(data.get('focusBody') ?? '').trim(),
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'site' });
 
 		return { success: true, message: 'Site settings saved.' };
 	},
@@ -55,6 +57,7 @@ const restoreDefaults = async (event: RequestEvent, section: SiteSettingsDefault
 	}
 
 	await restoreSiteSettingsDefaults(section);
+	await recordAdminActivity(event, { action: 'settings_change', resource: section });
 	return {
 		success: true,
 		message: `${section === 'hero' ? 'Hero' : 'Focus'} copy restored to the portfolio defaults.`,

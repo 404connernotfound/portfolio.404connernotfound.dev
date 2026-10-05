@@ -15,7 +15,7 @@ Environment=BODY_SIZE_LIMIT=8M
 Environment=SHUTDOWN_TIMEOUT=30
 Environment=IDLE_TIMEOUT=60
 EnvironmentFile=/etc/portfolio/portfolio.env
-ExecStart=/usr/bin/node build/index.js
+ExecStart=/usr/bin/node scripts/start-server.mjs
 Restart=always
 RestartSec=5
 KillSignal=SIGTERM

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 import {
 	buildAvailability,
 	isProjectCategory,
@@ -48,7 +49,7 @@ assert.equal(
 );
 
 process.env.DB_PATH = path.join(
-	'/tmp',
+	tmpdir(),
 	`portfolio-booking-review-${process.pid}-${Date.now()}.sqlite`,
 );
 process.env.DB_AUTO_SEED = 'true';

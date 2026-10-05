@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { getSiteSettings, updateSiteSettings } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value);
@@ -52,6 +53,7 @@ export const actions: Actions = {
 			contactEmail,
 			githubUrl
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'contact' });
 
 		return { success: true, message: 'Contact settings saved.' };
 	}

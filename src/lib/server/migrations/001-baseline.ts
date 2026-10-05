@@ -1,0 +1,292 @@
+export const baselineSql = `
+	CREATE TABLE IF NOT EXISTS site_settings (
+		id BIGINT PRIMARY KEY,
+		hero_headline TEXT NOT NULL,
+		hero_subheadline TEXT NOT NULL,
+		hero_note_title TEXT NOT NULL,
+		hero_note_body TEXT NOT NULL,
+		hero_highlights_title TEXT NOT NULL,
+		hero_highlights_body TEXT NOT NULL,
+		about_headline TEXT NOT NULL,
+		about_body TEXT NOT NULL,
+		focus_headline TEXT NOT NULL,
+		focus_body TEXT NOT NULL,
+		stack_title TEXT NOT NULL,
+		stack_intro TEXT NOT NULL,
+		work_title TEXT NOT NULL,
+		work_intro TEXT NOT NULL,
+		blog_title TEXT NOT NULL,
+		blog_intro TEXT NOT NULL,
+		contact_title TEXT NOT NULL,
+		contact_body TEXT NOT NULL,
+		contact_email TEXT NOT NULL,
+		github_url TEXT NOT NULL,
+		footer_badge TEXT NOT NULL,
+		footer_headline TEXT NOT NULL,
+		footer_body TEXT NOT NULL,
+		footer_cta_label TEXT NOT NULL,
+		footer_cta_href TEXT NOT NULL,
+		maintenance_enabled INTEGER NOT NULL DEFAULT 0,
+		maintenance_title TEXT NOT NULL,
+		maintenance_body TEXT NOT NULL,
+		error_403_title TEXT NOT NULL,
+		error_403_body TEXT NOT NULL,
+		error_404_title TEXT NOT NULL,
+		error_404_body TEXT NOT NULL,
+		error_500_title TEXT NOT NULL,
+		error_500_body TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS stack_items (
+		id BIGSERIAL PRIMARY KEY,
+		label TEXT NOT NULL,
+		detail TEXT,
+		category TEXT,
+		sort INTEGER NOT NULL DEFAULT 0
+	);
+
+	CREATE TABLE IF NOT EXISTS work_items (
+		id BIGSERIAL PRIMARY KEY,
+		title TEXT NOT NULL,
+		description TEXT NOT NULL,
+		long_description TEXT,
+		highlights TEXT,
+		role TEXT,
+		tech TEXT,
+		lifecycle TEXT,
+		owner TEXT,
+		domain TEXT,
+		version TEXT,
+		subsystems TEXT,
+		trace TEXT,
+		link TEXT,
+		image_path TEXT,
+		image_url TEXT,
+		image_alt TEXT,
+		featured INTEGER NOT NULL DEFAULT 0,
+		sort INTEGER NOT NULL DEFAULT 0
+	);
+
+	CREATE TABLE IF NOT EXISTS posts (
+		id BIGSERIAL PRIMARY KEY,
+		title TEXT NOT NULL,
+		slug TEXT NOT NULL UNIQUE,
+		excerpt TEXT,
+		content TEXT,
+		tags TEXT,
+		draft INTEGER NOT NULL DEFAULT 0,
+		featured INTEGER NOT NULL DEFAULT 0,
+		published_at TEXT,
+		created_at TEXT NOT NULL,
+		references_json TEXT
+	);
+
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS image_url TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS lifecycle TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS owner TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS domain TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS version TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS subsystems TEXT;
+	ALTER TABLE work_items ADD COLUMN IF NOT EXISTS trace TEXT;
+	UPDATE work_items SET owner = COALESCE(owner, 'Personal')
+		WHERE link LIKE 'https://github.com/ConnerAdamsMaine/%';
+	UPDATE work_items SET owner = COALESCE(owner, 'Winux Foundation')
+		WHERE link LIKE 'https://github.com/Winux-Core/%';
+	UPDATE work_items
+		SET lifecycle = COALESCE(lifecycle, 'EXPERIMENT'),
+			domain = COALESCE(domain, 'ML systems'),
+			subsystems = COALESCE(subsystems, E'Training\nInference\nProblem tracking')
+		WHERE title = 'Unum.rs' AND long_description LIKE '%in-progress%';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Languages / runtimes'),
+			subsystems = COALESCE(subsystems, E'Parser\nRuntime')
+		WHERE title = 'TinyOne';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Networking / hardware'),
+			subsystems = COALESCE(subsystems, E'Access point\nRouter\nModem\nSwitch\nFirewall')
+		WHERE title = 'PiFi2';
+	UPDATE work_items
+		SET domain = COALESCE(domain, 'Filesystems'),
+			subsystems = COALESCE(subsystems, E'Filesystem index\nCLI lookup\nBackground daemon')
+		WHERE title = 'Winux PTree';
+	ALTER TABLE posts ADD COLUMN IF NOT EXISTS references_json TEXT;
+
+	CREATE TABLE IF NOT EXISTS assets (
+		id BIGSERIAL PRIMARY KEY,
+		label TEXT NOT NULL,
+		filename TEXT NOT NULL,
+		path TEXT NOT NULL,
+		mime TEXT NOT NULL,
+		size BIGINT NOT NULL,
+		public INTEGER NOT NULL DEFAULT 1,
+		created_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS testimonials (
+		id BIGSERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		role TEXT,
+		company TEXT,
+		quote TEXT NOT NULL,
+		project TEXT,
+		result TEXT,
+		email TEXT,
+		rating INTEGER NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+		fingerprint TEXT,
+		approved INTEGER NOT NULL DEFAULT 0,
+		created_at TEXT NOT NULL
+	);
+	ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS rating INTEGER NOT NULL DEFAULT 5;
+	ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS fingerprint TEXT;
+
+	CREATE TABLE IF NOT EXISTS appointments (
+		id BIGSERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		email TEXT NOT NULL,
+		company TEXT,
+		project_type TEXT NOT NULL,
+		description TEXT NOT NULL,
+		starts_at TEXT NOT NULL,
+		visitor_timezone TEXT NOT NULL,
+		status TEXT NOT NULL DEFAULT 'pending',
+		ip_hash TEXT NOT NULL,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS tracking_events (
+		id BIGSERIAL PRIMARY KEY,
+		type TEXT NOT NULL,
+		name TEXT,
+		path TEXT,
+		referrer TEXT,
+		user_agent TEXT,
+		ip TEXT,
+		payload TEXT,
+		created_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS inbound_messages (
+		id BIGSERIAL PRIMARY KEY,
+		channel TEXT NOT NULL,
+		name TEXT NOT NULL,
+		email TEXT NOT NULL,
+		scope TEXT NOT NULL,
+		ip TEXT,
+		user_agent TEXT,
+		created_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS newsletter_subscriptions (
+		id BIGSERIAL PRIMARY KEY,
+		email TEXT NOT NULL UNIQUE,
+		name TEXT,
+		interest TEXT,
+		ip TEXT,
+		user_agent TEXT,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS crisis_items (
+		id BIGSERIAL PRIMARY KEY,
+		title TEXT NOT NULL,
+		description TEXT,
+		category TEXT,
+		sort INTEGER NOT NULL DEFAULT 0,
+		created_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS footer_links (
+		id BIGSERIAL PRIMARY KEY,
+		section TEXT NOT NULL,
+		label TEXT NOT NULL,
+		href TEXT,
+		external INTEGER NOT NULL DEFAULT 0,
+		sort INTEGER NOT NULL DEFAULT 0
+	);
+
+	CREATE TABLE IF NOT EXISTS playsets (
+		id BIGSERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		slug TEXT NOT NULL UNIQUE,
+		runtime TEXT NOT NULL,
+		description TEXT NOT NULL,
+		docker_image TEXT NOT NULL,
+		start_command TEXT,
+		default_command TEXT,
+		artifact_type TEXT NOT NULL DEFAULT 'generic',
+		artifact_path TEXT NOT NULL DEFAULT '',
+		extracted_path TEXT NOT NULL DEFAULT '',
+		compose_path TEXT,
+		verify_status TEXT NOT NULL DEFAULT 'pending',
+		verify_log TEXT,
+		last_verified_at TEXT,
+		enabled INTEGER NOT NULL DEFAULT 1,
+		max_sessions INTEGER NOT NULL DEFAULT 5,
+		idle_timeout_seconds INTEGER NOT NULL DEFAULT 900,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS playground_sessions (
+		id BIGSERIAL PRIMARY KEY,
+		session_id TEXT NOT NULL UNIQUE,
+		playset_id BIGINT NOT NULL,
+		status TEXT NOT NULL,
+		join_token TEXT NOT NULL,
+		container_id TEXT,
+		reason TEXT,
+		client_ip TEXT,
+		user_agent TEXT,
+		created_at TEXT NOT NULL,
+		updated_at TEXT NOT NULL,
+		ended_at TEXT,
+		FOREIGN KEY (playset_id) REFERENCES playsets(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS playground_socket_connections (
+		id BIGSERIAL PRIMARY KEY,
+		ws_id TEXT NOT NULL UNIQUE,
+		session_id TEXT NOT NULL,
+		connected_at TEXT NOT NULL,
+		disconnected_at TEXT,
+		close_code INTEGER,
+		close_reason TEXT,
+		FOREIGN KEY (session_id) REFERENCES playground_sessions(session_id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS playground_logs (
+		id BIGSERIAL PRIMARY KEY,
+		session_id TEXT NOT NULL,
+		ws_id TEXT,
+		level TEXT NOT NULL,
+		event TEXT NOT NULL,
+		message TEXT NOT NULL,
+		payload TEXT,
+		created_at TEXT NOT NULL,
+		FOREIGN KEY (session_id) REFERENCES playground_sessions(session_id) ON DELETE CASCADE
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_playground_sessions_status
+		ON playground_sessions(status, created_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_playground_sessions_playset
+		ON playground_sessions(playset_id, created_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_playground_socket_connections_session
+		ON playground_socket_connections(session_id, connected_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_playground_logs_session
+		ON playground_logs(session_id, created_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_inbound_messages_channel_created
+		ON inbound_messages(channel, created_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_newsletter_subscriptions_updated
+		ON newsletter_subscriptions(updated_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_tracking_events_created
+		ON tracking_events(created_at DESC);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_active_start
+		ON appointments(starts_at) WHERE status IN ('pending', 'confirmed');
+	CREATE INDEX IF NOT EXISTS idx_appointments_status_start
+		ON appointments(status, starts_at);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_testimonials_fingerprint
+		ON testimonials(fingerprint) WHERE fingerprint IS NOT NULL;
+`;

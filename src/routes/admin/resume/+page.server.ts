@@ -4,6 +4,8 @@ import { requireAdminCached } from '$lib/server/auth';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseResumeUpload, UploadError } from '$lib/server/uploads';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 
 const RESUME_DIR = path.resolve('static/uploads/resume');
 const RESUME_FILENAME = 'resume.pdf';
@@ -42,14 +44,17 @@ export const actions: Actions = {
 			return fail(400, { message: 'Please attach a PDF.' });
 		}
 
-		const extension = path.extname(file.name).toLowerCase();
-		if (extension !== '.pdf' && file.type !== 'application/pdf') {
-			return fail(400, { message: 'Resume must be a PDF.' });
+		let buffer: Buffer;
+		try {
+			buffer = await parseResumeUpload(file);
+		} catch (error) {
+			if (!(error instanceof UploadError)) throw error;
+			return fail(400, { message: error.message });
 		}
 
 		fs.mkdirSync(RESUME_DIR, { recursive: true });
-		const buffer = Buffer.from(await file.arrayBuffer());
 		fs.writeFileSync(path.join(RESUME_DIR, RESUME_FILENAME), buffer);
+		await recordAdminActivity(event, { action: 'update', resource: 'resume' });
 
 		return { success: true, message: 'Resume uploaded.' };
 	}

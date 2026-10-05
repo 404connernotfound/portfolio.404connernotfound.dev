@@ -9,6 +9,7 @@ import {
 	deleteFooterLink
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 const parseNumber = (value: FormDataEntryValue | null, fallback = 0) => {
@@ -79,6 +80,7 @@ export const actions: Actions = {
 			footerCtaLabel,
 			footerCtaHref
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'footer' });
 
 		return { success: true, message: 'Footer copy saved.', action: 'updateFooterCopy' };
 	},
@@ -103,6 +105,7 @@ export const actions: Actions = {
 		}
 
 		await createFooterLink(section, label, href, parseCheckbox(data, 'external'), parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'create', resource: 'footer_link' });
 		return { success: true, message: 'Footer link added.', action: 'createFooterLink' };
 	},
 	updateFooterLink: async (event) => {
@@ -128,6 +131,7 @@ export const actions: Actions = {
 		}
 
 		await updateFooterLink(id, section, label, href, parseCheckbox(data, 'external'), parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'update', resource: 'footer_link', resourceId: id });
 		return { success: true, message: 'Footer link updated.', action: 'updateFooterLink', itemId: id };
 	},
 	deleteFooterLink: async (event) => {
@@ -141,6 +145,7 @@ export const actions: Actions = {
 			return fail(400, { action: 'deleteFooterLink', message: 'Invalid link.' });
 		}
 		await deleteFooterLink(id);
+		await recordAdminActivity(event, { action: 'delete', resource: 'footer_link', resourceId: id });
 		return { success: true, message: 'Footer link deleted.', action: 'deleteFooterLink', itemId: id };
 	}
 };

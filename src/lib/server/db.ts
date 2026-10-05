@@ -48,7 +48,7 @@ type StackItem = {
 	label: string;
 	detail: string | null;
 	category: string | null;
-	sort: number;
+	sort: number | null;
 };
 
 type CrisisItem = {
@@ -56,7 +56,7 @@ type CrisisItem = {
 	title: string;
 	description: string | null;
 	category: string | null;
-	sort: number;
+	sort: number | null;
 	createdAt: string;
 };
 
@@ -78,8 +78,8 @@ type WorkItem = {
 	imagePath: string | null;
 	imageUrl: string | null;
 	imageAlt: string | null;
-	featured: number;
-	sort: number;
+	featured: number | null;
+	sort: number | null;
 };
 
 type WorkInspection = Pick<
@@ -94,8 +94,8 @@ type BlogPost = {
 	excerpt: string | null;
 	content: string | null;
 	tags: string | null;
-	draft: number;
-	featured: number;
+	draft: number | null;
+	featured: number | null;
 	publishedAt: string | null;
 	createdAt: string;
 	references: BlogReference[];
@@ -112,7 +112,7 @@ type Asset = {
 	path: string;
 	mime: string;
 	size: number;
-	public: number;
+	public: number | null;
 	createdAt: string;
 };
 
@@ -127,7 +127,7 @@ type Testimonial = {
 	email: string | null;
 	rating: number;
 	fingerprint: string | null;
-	approved: number;
+	approved: number | null;
 	createdAt: string;
 };
 
@@ -158,7 +158,10 @@ type TrackingEvent = {
 	ip: string | null;
 	payload: string | null;
 	createdAt: string;
-};
+} & (
+	| { actorType: 'visitor'; source: 'legacy' | 'public' }
+	| { actorType: 'admin'; source: 'server' }
+);
 
 type InboundMessageChannel = 'contact' | 'collaborate';
 
@@ -167,8 +170,8 @@ type FooterLink = {
 	section: string;
 	label: string;
 	href: string | null;
-	external: number;
-	sort: number;
+	external: number | null;
+	sort: number | null;
 };
 
 type Playset = {
@@ -1772,17 +1775,31 @@ const runMigrations = (database: Database.Database) => {
 			},
 		},
 		{ id: 27, name: 'consultations_and_review_moderation', up: ensureConsultationTables },
+		{
+			id: 28,
+			name: 'tracking_actor_trust_boundary',
+			up: (database) => {
+				database.exec(`
+					ALTER TABLE tracking_events ADD COLUMN actor_type TEXT NOT NULL DEFAULT 'visitor'
+						CHECK (actor_type IN ('visitor', 'admin'));
+					ALTER TABLE tracking_events ADD COLUMN source TEXT NOT NULL DEFAULT 'legacy'
+						CHECK ((actor_type = 'admin' AND source = 'server') OR
+						       (actor_type = 'visitor' AND source IN ('legacy', 'public')));
+				`);
+			},
+		},
 	];
 
 	for (const migration of migrations) {
 		if (appliedNames.has(migration.name)) continue;
 
-		migration.up(database);
 		const recordId = appliedIds.has(migration.id) ? nextId++ : migration.id;
-
-		database
-			.prepare('INSERT INTO migrations (id, name, applied_at) VALUES (?, ?, ?)')
-			.run(recordId, migration.name, new Date().toISOString());
+		database.transaction(() => {
+			migration.up(database);
+			database
+				.prepare('INSERT INTO migrations (id, name, applied_at) VALUES (?, ?, ?)')
+				.run(recordId, migration.name, new Date().toISOString());
+		})();
 		appliedIds.add(recordId);
 		appliedNames.add(migration.name);
 	}
@@ -1796,6 +1813,7 @@ const openDb = () => {
 	ensureDbPath(resolved);
 
 	db = new Database(resolved);
+	db.pragma('foreign_keys = ON');
 	db.pragma('journal_mode = WAL');
 	return db;
 };
@@ -2510,22 +2528,25 @@ export const createTrackingEvent = (
 	userAgent: string | null,
 	ip: string | null,
 	payload: string | null,
+	actor: { actorType: 'visitor'; source: 'public' } | { actorType: 'admin'; source: 'server' } = {
+		actorType: 'visitor', source: 'public',
+	},
 ) => {
 	const database = getDb();
 	const now = new Date().toISOString();
 	database
 		.prepare(
-			`INSERT INTO tracking_events (type, name, path, referrer, user_agent, ip, payload, created_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO tracking_events (type, name, path, referrer, user_agent, ip, payload, created_at, actor_type, source)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
-		.run(type, name, pathValue, referrer, userAgent, ip, payload, now);
+		.run(type, name, pathValue, referrer, userAgent, ip, payload, now, actor.actorType, actor.source);
 };
 
 export const getTrackingEvents = (limit = 100) => {
 	const database = getDb();
 	return database
 		.prepare(
-			`SELECT id, type, name, path, referrer, user_agent as userAgent, ip, payload, created_at as createdAt
+			`SELECT id, actor_type as actorType, source, type, name, path, referrer, user_agent as userAgent, ip, payload, created_at as createdAt
 			 FROM tracking_events
 			 ORDER BY created_at DESC, id DESC
 			 LIMIT ?`,

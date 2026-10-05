@@ -10,6 +10,7 @@ import {
 	reorderStackItems
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 const parseNumber = (value: FormDataEntryValue | null, fallback = 0) => {
@@ -43,6 +44,7 @@ export const actions: Actions = {
 			stackTitle: String(data.get('stackTitle') ?? '').trim(),
 			stackIntro: String(data.get('stackIntro') ?? '').trim()
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'stack' });
 
 		return { success: true, message: 'Stack section saved.', action: 'updateStackSection' };
 	},
@@ -61,6 +63,7 @@ export const actions: Actions = {
 		}
 
 		await createStackItem(label, detail || null, category || null, parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'create', resource: 'stack' });
 		return { success: true, message: 'Stack item added.', action: 'createStack' };
 	},
 	updateStack: async (event) => {
@@ -79,6 +82,7 @@ export const actions: Actions = {
 		}
 
 		await updateStackItem(id, label, detail || null, category || null, parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'update', resource: 'stack', resourceId: id });
 		return { success: true, message: 'Stack item updated.', action: 'updateStack', itemId: id };
 	},
 	reorderStack: async (event) => {
@@ -103,6 +107,7 @@ export const actions: Actions = {
 		}
 
 		await reorderStackItems(orderedIds);
+		await recordAdminActivity(event, { action: 'update', resource: 'stack_order' });
 		return { success: true, message: 'Stack order updated.', action: 'reorderStack' };
 	},
 	deleteStack: async (event) => {
@@ -116,6 +121,7 @@ export const actions: Actions = {
 			return fail(400, { action: 'deleteStack', message: 'Invalid item.' });
 		}
 		await deleteStackItem(id);
+		await recordAdminActivity(event, { action: 'delete', resource: 'stack', resourceId: id });
 		return { success: true, message: 'Stack item deleted.', action: 'deleteStack', itemId: id };
 	}
 };

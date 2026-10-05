@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { getSiteSettings, updateSiteSettings } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 export const load: PageServerLoad = async (event) => {
@@ -29,6 +30,7 @@ export const actions: Actions = {
 			aboutHeadline: String(data.get('aboutHeadline') ?? '').trim(),
 			aboutBody: String(data.get('aboutBody') ?? '').trim()
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'about' });
 
 		return { success: true, message: 'About content saved.' };
 	}

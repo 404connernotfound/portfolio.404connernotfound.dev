@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import { getTestimonials, updateTestimonialApproval } from '$lib/server/dataStore';
 import { isReviewModeration, moderationToDatabase } from '$lib/reviews/reviewSubmission';
@@ -21,6 +22,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid review update.' });
 		}
 		await updateTestimonialApproval(id, moderationToDatabase(moderation));
+		await recordAdminActivity(event, { action: 'moderate', resource: 'review', resourceId: id });
 		return { success: true, message: 'Review moderation updated.' };
 	},
 };

@@ -9,6 +9,7 @@ import {
 	deletePost,
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import { parseBlogReferencesForm } from '$lib/server/contentValidation';
 
@@ -76,6 +77,7 @@ export const actions: Actions = {
 			blogTitle: String(data.get('blogTitle') ?? '').trim(),
 			blogIntro: String(data.get('blogIntro') ?? '').trim(),
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'blog' });
 		return { success: true, message: 'Blog section saved.', action: 'updateBlogSection' };
 	},
 	createPost: async (event) => {
@@ -127,6 +129,8 @@ export const actions: Actions = {
 			slug ?? undefined,
 			referenceResult.references,
 		);
+		await recordAdminActivity(event, { action: 'create', resource: 'post' });
+		if (publishing.draft === 0) await recordAdminActivity(event, { action: 'publish', resource: 'post' });
 
 		return {
 			success: true,
@@ -175,6 +179,7 @@ export const actions: Actions = {
 			});
 		}
 
+		const previous = (await getPosts()).find((post) => post.id === id);
 		await updatePost(
 			id,
 			title,
@@ -187,6 +192,10 @@ export const actions: Actions = {
 			slug ?? undefined,
 			referenceResult.references,
 		);
+		await recordAdminActivity(event, { action: 'update', resource: 'post', resourceId: id });
+		if (previous && previous.draft !== publishing.draft) {
+			await recordAdminActivity(event, { action: publishing.draft === 0 ? 'publish' : 'unpublish', resource: 'post', resourceId: id });
+		}
 
 		return {
 			success: true,
@@ -206,6 +215,7 @@ export const actions: Actions = {
 			return fail(400, { action: 'deletePost', message: 'Invalid post.' });
 		}
 		await deletePost(id);
+		await recordAdminActivity(event, { action: 'delete', resource: 'post', resourceId: id });
 		return { success: true, message: 'Post deleted.', action: 'deletePost', itemId: id };
 	},
 };

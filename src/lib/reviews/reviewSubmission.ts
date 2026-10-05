@@ -6,7 +6,7 @@ export const parseReviewRating = (value: string): ReviewRating | null => {
 	return Number.isInteger(rating) && rating >= 1 && rating <= 5 ? (rating as ReviewRating) : null;
 };
 
-export const moderationFromDatabase = (approved: number): ReviewModeration => {
+export const moderationFromDatabase = (approved: number | null): ReviewModeration => {
 	if (approved === 1) return 'approved';
 	if (approved === -1) return 'rejected';
 	return 'pending';

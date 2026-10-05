@@ -16,7 +16,7 @@
 		}
 
 		for (const links of groups.values()) {
-			links.sort((a, b) => a.sort - b.sort || a.id - b.id);
+			links.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.id - b.id);
 		}
 
 		const ordered = sectionOrder

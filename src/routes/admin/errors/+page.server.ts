@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 import { getSiteSettings, updateSiteSettings } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 export const load: PageServerLoad = async (event) => {
@@ -36,6 +37,7 @@ export const actions: Actions = {
 			error500Title: String(data.get('error500Title') ?? '').trim(),
 			error500Body: String(data.get('error500Body') ?? '').trim()
 		});
+		await recordAdminActivity(event, { action: 'settings_change', resource: 'errors' });
 
 		return { success: true, message: 'System pages saved.' };
 	}

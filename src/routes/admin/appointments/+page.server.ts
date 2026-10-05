@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 import { getAppointments, updateAppointmentStatus } from '$lib/server/dataStore';
 import type { AppointmentStatus } from '$lib/server/dataStore';
@@ -31,6 +32,7 @@ export const actions: Actions = {
 		} catch {
 			return fail(500, { message: 'The appointment could not be updated right now.' });
 		}
+		await recordAdminActivity(event, { action: 'status_change', resource: 'appointment', resourceId: id });
 		return { success: true, message: 'Appointment status updated.' };
 	},
 };

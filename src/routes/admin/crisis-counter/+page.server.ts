@@ -7,6 +7,7 @@ import {
 	deleteCrisisItem
 } from '$lib/server/dataStore';
 import { requireAdminCached } from '$lib/server/auth';
+import { recordAdminActivity } from '$lib/server/telemetry/audit';
 import { getCsrfToken, validateCsrfToken } from '$lib/server/csrf';
 
 const parseNumber = (value: FormDataEntryValue | null, fallback = 0) => {
@@ -49,6 +50,7 @@ export const actions: Actions = {
 		}
 
 		await createCrisisItem(title, description, category, parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'create', resource: 'crisis_item' });
 		return { success: true, message: 'Crisis added.', action: 'createCrisis' };
 	},
 	updateCrisis: async (event) => {
@@ -72,6 +74,7 @@ export const actions: Actions = {
 		}
 
 		await updateCrisisItem(id, title, description, category, parseNumber(data.get('sort')));
+		await recordAdminActivity(event, { action: 'update', resource: 'crisis_item', resourceId: id });
 		return { success: true, message: 'Crisis updated.', action: 'updateCrisis', itemId: id };
 	},
 	deleteCrisis: async (event) => {
@@ -85,6 +88,7 @@ export const actions: Actions = {
 			return fail(400, { action: 'deleteCrisis', message: 'Invalid crisis.' });
 		}
 		await deleteCrisisItem(id);
+		await recordAdminActivity(event, { action: 'delete', resource: 'crisis_item', resourceId: id });
 		return { success: true, message: 'Crisis deleted.', action: 'deleteCrisis', itemId: id };
 	}
 };
